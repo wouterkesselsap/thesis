@@ -1,3 +1,7 @@
+"""
+This module contains functions to visualize the results from the Landblad master equation solver of the QuTiP package, qutip.mesolve.
+"""
+
 import numpy as np
 import matplotlib.pyplot as plt
 from qutip.wigner import wigner as wig
@@ -8,15 +12,15 @@ def expect(ex_values, tlist, op=None, ops=None):
     
     Parameters:
     -----------
-    ex_values: qutip.Result.expect or list
-               expectation values per operator
-    tlist: list, or numpy array
-           times at which expectation values are evaluated
-    op: str
-        specified operator of which to plot the expectation values
-        'sx', or 'sy', or 'sz', or 'sm', or 'num_b'
-    ops: list
-         operators of which the expectation values are found in ex_values
+    ex_values : qutip.Result.expect or list
+                expectation values per operator
+    tlist : list, or numpy array
+            times at which expectation values are evaluated
+    op : str
+         specified operator of which to plot the expectation values
+         'sx', or 'sy', or 'sz', or 'sm', or 'num_b'
+    ops : list
+          operators of which the expectation values are found in ex_values
     """
     
     if op == None:
@@ -85,7 +89,7 @@ def dmatf(states, tlist, elems, obj='all', obj_descr=None):
             density matrices per time instant
     tlist: list, or numpy array
            times at which density matrices are evaluated, should be of same length as states
-    elems: list
+    elems: list of lists
            matrix elements (as [k,l]) of which to plot time evolution
     obj: int
          Index of desired object in quantum system
