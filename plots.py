@@ -1,8 +1,5 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib.animation as animation
-from mpl_toolkits.mplot3d import Axes3D
-from qutip.ipynbtools import plot_animation
 from qutip.wigner import wigner as wig
 
 
@@ -43,13 +40,15 @@ def expect(ex_values, tlist, op=None, ops=None):
     plt.show()
 
 
-def dmat(rho, ind=None, roff=2):
+def dmat(rho, obj='all', ind=None, roff=2):
     """Prints specified density matrix.
     
     Parameters:
     -----------
     rho: qutip.Result.states, or qutip.qobj
          (Collection of) density matrix/matrices
+    obj: int
+         Index of desired object in quantum system
     ind: int
          Index of specific density matrix to plot when rho is of qutip.Result.states format
     roff: int
@@ -61,21 +60,48 @@ def dmat(rho, ind=None, roff=2):
         return
     
     if (ind == None and len(rho) == 1):
-        dm = np.round(rho, roff)
+        dm = rho
     else:
-        dm = np.round(rho[ind].full(), roff)
+        dm = rho[ind]
+    
+    if obj != 'all':
+        if not isinstance(obj, int):
+            raise ValueError("Give integer value for 'obj'")
+        dm = dm.ptrace(obj)
+    
+    dm = np.round(dm.full(), roff)
+    
     print('Density matrix:')
     print(dm)
     return dm
 
 
-def wigner(rho, ind=None, x=np.linspace(-3,3,200), y=np.linspace(-3,3,200)):
+def dmatf(states, tlist, elem, obj='all', obj_descr=None):
+    """Plots time evolution of density matrix elements.
+    
+    Parameters:
+    -----------
+    states: qutip.Result.states
+            density matrices per time instant
+    tlist: list, or numpy array
+           times at which density matrices are evaluated, should be of same length as states
+    elem: list
+          matrix elements of which to plot time evolution
+    obj: int
+         Index of desired object in quantum system
+    """
+    
+
+
+def wigner(rho, obj='all', ind=None, x=np.linspace(-3,3,200), y=np.linspace(-3,3,200)):
     """Plots Wigner function of specified density matrix.
     
     Parameters:
     -----------
     rho: qutip.Result.states, or qutip.qobj
          (Collection of) density matrix/matrices
+    obj: int
+         Index of desired object in quantum system
     ind: int
          Index of specific density matrix to plot when rho is of qutip.Result.states format
     x: list, or numpy array
@@ -92,6 +118,11 @@ def wigner(rho, ind=None, x=np.linspace(-3,3,200), y=np.linspace(-3,3,200)):
         dm = rho
     else:
         dm = rho[ind]
+    
+    if obj != 'all':
+        if not isinstance(obj, int):
+            raise ValueError("Give integer value for 'obj'")
+        dm = dm.ptrace(obj)
         
     W = wig(dm, x, y)
     plt.figure(figsize=([6,5]))
