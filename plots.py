@@ -76,7 +76,7 @@ def dmat(rho, obj='all', ind=None, roff=2):
     return dm
 
 
-def dmatf(states, tlist, elem, obj='all', obj_descr=None):
+def dmatf(states, tlist, elems, obj='all', obj_descr=None):
     """Plots time evolution of density matrix elements.
     
     Parameters:
@@ -85,12 +85,37 @@ def dmatf(states, tlist, elem, obj='all', obj_descr=None):
             density matrices per time instant
     tlist: list, or numpy array
            times at which density matrices are evaluated, should be of same length as states
-    elem: list
-          matrix elements of which to plot time evolution
+    elems: list
+           matrix elements (as [k,l]) of which to plot time evolution
     obj: int
          Index of desired object in quantum system
+    obj_descr: string
+               Manual description of which object of the quantum system is plotted
     """
     
+    rhos = []
+    for i, t in enumerate(tlist):
+        if obj != 'all':
+            if not isinstance(obj, int):
+                raise ValueError("Give integer value for 'obj'")
+            rhos.append(states[i].ptrace(obj).full())
+        else:
+            rhos.append(states[i].full())
+    dms = np.asarray(rhos)
+    
+    plt.figure()
+    colors = plt.cm.rainbow(np.linspace(0, 1, len(elems)))
+    for i, elem in enumerate(elems):
+        color = colors[i]
+        re = dms[:, elem[0], elem[1]].real
+        im = dms[:, elem[0], elem[1]].imag
+        plt.plot(tlist*10**9, re, '-',  color=color, label='Re({},{})'.format(elem[0], elem[1]))
+        plt.plot(tlist*10**9, im, '--', color=color, label='Im({},{})'.format(elem[0], elem[1]))
+    plt.xlabel('Time [ns]')
+    if obj_descr != None:
+        plt.title('Time evolution of $\\rho$ of the {}'.format(obj_descr))
+    plt.legend()
+    plt.show
 
 
 def wigner(rho, obj='all', ind=None, x=np.linspace(-3,3,200), y=np.linspace(-3,3,200)):
