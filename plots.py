@@ -6,6 +6,7 @@ This module contains functions to visualize the results from the Landblad master
 import numpy as np
 import matplotlib.pyplot as plt
 from qutip.wigner import wigner as wig
+from qutip.visualization import matrix_histogram, matrix_histogram_complex
 
 
 def expect(ex_values, tlist, op=None, ops=None):
@@ -121,6 +122,21 @@ def dmatf(states, tlist, elems, obj='all', obj_descr=None):
         plt.title('Time evolution of $\\rho$ of the {}'.format(obj_descr))
     plt.legend()
     plt.show
+
+    
+def dmat_hist(states, ind=None, im=False):
+    if isinstance(states, list):
+        dm = states[ind].full()
+    elif isinstance(states, qutip.qobj.Qobj):
+        dm = states.full()
+    
+    title = "Histogram of density matrix $\\rho$"
+    if im:
+        matrix_histogram_complex(dm, title=title)
+    else:
+        matrix_histogram(dm.real, title=title)
+    
+    
 
 
 def wigner(rho, obj='all', ind=None, x=np.linspace(-3,3,200), y=np.linspace(-3,3,200)):
