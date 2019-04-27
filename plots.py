@@ -6,7 +6,7 @@ This module contains functions to visualize the results from the Landblad master
 import numpy as np
 import matplotlib.pyplot as plt
 from qutip.wigner import wigner as wig
-from qutip.visualization import matrix_histogram, matrix_histogram_complex
+from qutip.visualization import hinton, matrix_histogram, matrix_histogram_complex
 
 
 def expect(ex_values, tlist, op=None, ops=None):
@@ -124,11 +124,49 @@ def dmatf(states, tlist, elems, obj='all', obj_descr=None):
     plt.show
 
     
-def dmat_hist(states, ind=None, im=False):
-    if isinstance(states, list):
-        dm = states[ind].full()
-    elif isinstance(states, qutip.qobj.Qobj):
-        dm = states.full()
+def dmat_hinton(rho, ind=None):
+    """Plots Hinton diagram of specified density matrix.
+    
+    Parameters:
+    -----------
+    rho: qutip.Result.states
+         density matrices per time instant
+    ind: int
+         Index of specific density matrix to plot when rho is of qutip.Result.states format
+    
+    Remark:
+    -------
+    Title is not set in correct place.
+    """
+    
+    if isinstance(rho, list):
+        dm = rho[ind]
+    else:
+        dm = rho
+    
+    # TODO: Show title in correct location above the diagram
+    title = "Hinton diagram of density matrix $\\rho$"
+    fig, ax = hinton(dm, title=title)
+    plt.title(title)
+
+    
+def dmat_hist(rho, ind=None, im=False):
+    """Plots 3D histogram of specified density matrix.
+    
+    Parameters:
+    -----------
+    rho: qutip.Result.states
+         density matrices per time instant
+    ind: int
+         Index of specific density matrix to plot when rho is of qutip.Result.states format
+    im: boolean
+        Include imaginary part
+    """
+    
+    if isinstance(rho, list):
+        dm = rho[ind].full()
+    else:
+        dm = rho.full()
     
     title = "Histogram of density matrix $\\rho$"
     if im:
