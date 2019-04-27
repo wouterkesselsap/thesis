@@ -3,10 +3,12 @@ This module contains functions to visualize the results from the Landblad master
 """
 
 
+
 import numpy as np
 import matplotlib.pyplot as plt
 from qutip.wigner import wigner as wig
 from qutip.visualization import hinton, matrix_histogram, matrix_histogram_complex
+
 
 
 def expect(ex_values, tlist, op=None, ops=None):
@@ -46,6 +48,7 @@ def expect(ex_values, tlist, op=None, ops=None):
     plt.show()
 
 
+
 def dmat(rho, obj='all', ind=None, roff=2):
     """Prints specified density matrix.
     
@@ -80,6 +83,7 @@ def dmat(rho, obj='all', ind=None, roff=2):
     print('Density matrix:')
     print(dm)
     return dm
+
 
 
 def dmatf(states, tlist, elems, obj='all', obj_descr=None):
@@ -123,14 +127,17 @@ def dmatf(states, tlist, elems, obj='all', obj_descr=None):
     plt.legend()
     plt.show
 
+
     
-def dmat_hinton(rho, ind=None):
+def dmat_hinton(rho, obj='all', ind=None):
     """Plots Hinton diagram of specified density matrix.
     
     Parameters:
     -----------
     rho: qutip.Result.states
          density matrices per time instant
+    obj: int
+         Index of desired object in quantum system
     ind: int
          Index of specific density matrix to plot when rho is of qutip.Result.states format
     
@@ -144,19 +151,33 @@ def dmat_hinton(rho, ind=None):
     else:
         dm = rho
     
+    if obj != 'all':
+        if not isinstance(obj, int):
+            raise ValueError("Give integer value for 'obj'")
+        dm = dm.ptrace(obj)
+    
     # TODO: Show title in correct location above the diagram
-    title = "Hinton diagram of density matrix $\\rho$"
+    if obj == 0:
+        title = "Hinton diagram of qubit"
+    elif obj == 1:
+        title = "Hinton diagram of cavity"
+    elif obj == 'all':
+        title = "Hinton diagram of total system"
+    
     fig, ax = hinton(dm, title=title)
     plt.title(title)
 
+
     
-def dmat_hist(rho, ind=None, im=False):
+def dmat_hist(rho, obj='all', ind=None, im=False):
     """Plots 3D histogram of specified density matrix.
     
     Parameters:
     -----------
     rho: qutip.Result.states
          density matrices per time instant
+    obj: int
+         Index of desired object in quantum system
     ind: int
          Index of specific density matrix to plot when rho is of qutip.Result.states format
     im: boolean
@@ -164,17 +185,27 @@ def dmat_hist(rho, ind=None, im=False):
     """
     
     if isinstance(rho, list):
-        dm = rho[ind].full()
+        dm = rho[ind]
     else:
-        dm = rho.full()
+        dm = rho
     
-    title = "Histogram of density matrix $\\rho$"
+    if obj != 'all':
+        if not isinstance(obj, int):
+            raise ValueError("Give integer value for 'obj'")
+        dm = dm.ptrace(obj)
+    
+    if obj == 0:
+        title = "Hinton diagram of qubit"
+    elif obj == 1:
+        title = "Hinton diagram of cavity"
+    elif obj == 'all':
+        title = "Hinton diagram of total system"
+    
     if im:
-        matrix_histogram_complex(dm, title=title)
+        matrix_histogram_complex(dm.full(), title=title)
     else:
-        matrix_histogram(dm.real, title=title)
-    
-    
+        matrix_histogram(dm.full().real, title=title)
+
 
 
 def wigner(rho, obj='all', ind=None, x=np.linspace(-3,3,200), y=np.linspace(-3,3,200)):
