@@ -6,6 +6,9 @@ This module contains functions to visualize the results from the Landblad master
 
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.colors import Normalize
+from matplotlib import cm
+from qutip.bloch import Bloch
 from qutip.wigner import wigner as wig
 from qutip.visualization import hinton, matrix_histogram, matrix_histogram_complex
 
@@ -46,6 +49,44 @@ def expect(ex_values, tlist, op=None, ops=None):
         elif op == 'num_b':
             plt.ylabel('Cavity photon number')
     plt.show()
+
+    
+    
+def bloch(ex_values, tlist, ops):
+    """Plots expectation values of sx, sy and sz on the Bloch sphere.
+    If one of these operators is not calculated, zeros are passed for that operator.
+    
+    Parameters:
+    -----------
+    ex_values : qutip.Result.expect or list
+                expectation values per operator
+    tlist : list, or numpy array
+            times at which expectation values are evaluated
+    ops : list
+          operators of which the expectation values are found in ex_values
+    """
+    
+    if 'sx' in ops:
+        sx_exp = ex_values[ops.index('sx')]
+    elif 'sx' not in ops:
+        sx_exp = np.zeros(len(list(tlist)))
+    if 'sy' in ops:
+        sy_exp = ex_values[ops.index('sy')]
+    elif 'sy' not in ops:
+        sy_exp = np.zeros(len(list(tlist)))
+    if 'sz' in ops:
+        sz_exp = ex_values[ops.index('sz')]
+    elif 'sz' not in ops:
+        sz_exp = np.zeros(len(list(tlist)))
+    
+    nrm = Normalize(-2,10)
+    colors = cm.hot(nrm(tlist))
+    
+    b = Bloch()
+    b.add_points([sx_exp, sy_exp, sz_exp], 'm')
+    b.point_color = list(colors)
+    b.point_marker = ['o']
+    b.show()
 
 
 
