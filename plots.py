@@ -7,6 +7,7 @@ This module contains functions to visualize the results from the Landblad master
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import Normalize
+from matplotlib.colorbar import ColorbarBase
 from matplotlib import cm
 from qutip.bloch import Bloch
 from qutip.wigner import wigner as wig
@@ -64,6 +65,10 @@ def bloch(ex_values, tlist, ops):
             times at which expectation values are evaluated
     ops : list
           operators of which the expectation values are found in ex_values
+    
+    Remark:
+    -------
+    Does not plot a color bar yet. The lines from the QuTiP tutorial (https://nbviewer.jupyter.org/github/qutip/qutip-notebooks/blob/master/examples/bloch_sphere_with_colorbar.ipynb), commented out down here, give an error which I have not been able to solve yet.
     """
     
     if 'sx' in ops:
@@ -79,13 +84,17 @@ def bloch(ex_values, tlist, ops):
     elif 'sz' not in ops:
         sz_exp = np.zeros(len(list(tlist)))
     
-    nrm = Normalize(-2,10)
-    colors = cm.hot(nrm(tlist))
-    
     b = Bloch()
     b.add_points([sx_exp, sy_exp, sz_exp], 'm')
+    
+    nrm = Normalize(-2,10)
+    colors = cm.hot(nrm(tlist))
     b.point_color = list(colors)
     b.point_marker = ['o']
+    # TODO: Plot color bar
+#     left, bottom, width, height = [0.98, 0.05, 0.05, 0.9]
+#     ax2 = b.fig.add_axes([left, bottom, width, height])
+#     ColorbarBase(ax2, cmap=cm.hot, norm=nrm, orientation='vertical')
     b.show()
 
 
