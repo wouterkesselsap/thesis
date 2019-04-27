@@ -195,11 +195,11 @@ def dmat_hist(rho, obj='all', ind=None, im=False):
         dm = dm.ptrace(obj)
     
     if obj == 0:
-        title = "Hinton diagram of qubit"
+        title = "Histogram of density matrix of qubit"
     elif obj == 1:
-        title = "Hinton diagram of cavity"
+        title = "Histogram of density matrix of cavity"
     elif obj == 'all':
-        title = "Hinton diagram of total system"
+        title = "Histogram of density matrix of total system"
     
     if im:
         matrix_histogram_complex(dm.full(), title=title)
