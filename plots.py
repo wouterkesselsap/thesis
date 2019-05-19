@@ -209,8 +209,8 @@ def dmat_hinton(rho, obj='all', ind=None):
     # TODO: Show title in correct location above the diagram
     if obj == 0:
         title = "Hinton diagram of qubit"
-    elif obj == 1:
-        title = "Hinton diagram of cavity"
+    elif (isinstance(obj, int) and obj > 0):
+        title = "Hinton diagram of cavity {}".format(obj)
     elif obj == 'all':
         title = "Hinton diagram of total system"
     
@@ -246,8 +246,8 @@ def dmat_hist(rho, obj='all', ind=None, im=False):
     
     if obj == 0:
         title = "Histogram of density matrix of qubit"
-    elif obj == 1:
-        title = "Histogram of density matrix of cavity"
+    elif (isinstance(obj, int) and obj > 0):
+        title = "Histogram of density matrix of cavity {}".format(obj)
     elif obj == 'all':
         title = "Histogram of density matrix of total system"
     
@@ -294,7 +294,13 @@ def wigner(rho, obj='all', ind=None, x=np.linspace(-3,3,200), y=np.linspace(-3,3
     cont = plt.contourf(x, y, W, 100)
     plt.xlabel('x')
     plt.ylabel('p')
-    plt.title('Wigner function')
+    if obj == 0:
+        title = "Wigner plot of qubit"
+    elif (isinstance(obj, int) and obj > 0):
+        title = "Wigner plot of cavity {}".format(obj)
+    elif obj == 'all':
+        title = "Wigner plot of total system"
+    plt.title(title)
     plt.colorbar()
     plt.show()
     return cont
