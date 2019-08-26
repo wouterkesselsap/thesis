@@ -115,12 +115,13 @@ def create_batches(t0, tf, Np, Nppb):
     return batches
 
 
-def saveprog(qstate, num, tlist, folder):
+def saveprog(result, num, folder):
     name = folder + "/evolution_" + str(num) + ".pkl"
     data = {
-        'qstate': qstate,
-        'num': num,
-        'tlist': tlist
+        'times': result.times,
+        'states': result.states,
+        'expect': result.expect,
+        'num': num
     }
     
     out_file = open(name, "wb")
@@ -131,13 +132,34 @@ def saveprog(qstate, num, tlist, folder):
 def combine_batches(folder):
     condition = folder + "/evolution_*"
     filecount = len(glob(condition))
+    
+    times = [None] * filecount
     states = [None] * filecount
-    tlists = [None] * filecount
+    expect = [None] * filecount
+    
     for file in glob(condition):
         infile = open(file, 'rb')
         data = pickle.load(infile)
-        states[data['num']] = data['qstate']
-        tlists[data['num']] = data['tlist']
+        
+        times[data['num']] = data['times']
+        states[data['num']] = data['states']
+        expect[data['num']] = data['expect']
+        
         infile.close()
-    tlist = np.asarray(list(chain.from_iterable(tlists)))
-    return states, tlist
+    
+    times_combined = np.asarray(list(chain.from_iterable(times)))
+    
+    states_combined = list()
+    for lst in states:
+        for state in lst:
+            states_combined.append(state)
+    
+    expect_combined = list()
+    for op in expect[0]:
+        expect_combined.append(list())
+    for i in range(len(expect[0])):
+        for batch in expect:
+            for value in batch[i]:
+                expect_combined[i].append(value)
+    
+    return times_combined, states_combined, expect_combined
