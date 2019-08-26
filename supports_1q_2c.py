@@ -1,5 +1,10 @@
 import numpy as np
+import pickle
 from scipy.special import erf
+from math import ceil
+from itertools import chain
+from glob import glob
+
 
 
 pi = np.pi
@@ -84,3 +89,55 @@ def square2(t, args):
     
     pulse = (rise + block + fall)*confine
     return pulse
+
+
+def create_batches(t0, tf, Np, Nppb):
+    """Creates a tuple with batches of time points for which to
+    sequentially evaluate the LME evolution.
+    t0 : start time
+    tf : final time
+    Np : total number of equidistant time points
+    Nppb : number of time points per batch
+    """
+    tlist = np.linspace(t0, tf, Np)
+    Nb = int(ceil(Np/Nppb))
+    tlist = np.append(tlist, np.inf*np.ones(int(ceil(Nb*Nppb - Np))))
+    tlist_reshaped = tlist.reshape(Nb, int(ceil(Nppb)))
+    batches = list()
+    for i in range(Nb):
+        if i == 0:
+            batches.append(tlist_reshaped[0])
+        elif (i > 0 and i < Nb-1):
+            batches.append(np.insert(tlist_reshaped[i], 0, tlist_reshaped[i-1][-1]))
+        elif i == Nb-1:
+            batch = np.insert(tlist_reshaped[i], 0, tlist_reshaped[i-1][-1])
+            batches.append(batch[batch != np.inf])
+    return batches
+
+
+def saveprog(qstate, num, tlist, folder):
+    name = folder + "/evolution_" + str(num) + ".pkl"
+    data = {
+        'qstate': qstate,
+        'num': num,
+        'tlist': tlist
+    }
+    
+    out_file = open(name, "wb")
+    pickle.dump(data, out_file)
+    out_file.close()
+
+
+def combine_batches(folder):
+    condition = folder + "/evolution_*"
+    filecount = len(glob(condition))
+    states = [None] * filecount
+    tlists = [None] * filecount
+    for file in glob(condition):
+        infile = open(file, 'rb')
+        data = pickle.load(infile)
+        states[data['num']] = data['qstate']
+        tlists[data['num']] = data['tlist']
+        infile.close()
+    tlist = np.asarray(list(chain.from_iterable(tlists)))
+    return states, tlist
