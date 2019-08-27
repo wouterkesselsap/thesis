@@ -141,9 +141,14 @@ def combine_batches(folder):
         infile = open(file, 'rb')
         data = pickle.load(infile)
         
-        times[data['num']] = data['times']
-        states[data['num']] = data['states']
-        expect[data['num']] = data['expect']
+        if data['num'] == 0:
+            times[data['num']] = data['times']
+            states[data['num']] = data['states']
+            expect[data['num']] = data['expect']
+        else:
+            times[data['num']] = data['times'][1:]
+            states[data['num']] = data['states'][1:]
+            expect[data['num']] = data['expect']
         
         infile.close()
     
@@ -158,8 +163,8 @@ def combine_batches(folder):
     for op in expect[0]:
         expect_combined.append(list())
     for i in range(len(expect[0])):
-        for batch in expect:
-            for value in batch[i]:
-                expect_combined[i].append(value)
+        for ib, batch in enumerate(expect):
+            [expect_combined[i].append(value) for value in batch[i] if ib == 0]
+            [expect_combined[i].append(value) for iv, value in enumerate(batch[i]) if (ib > 0 and iv > 0)]
     
     return times_combined, states_combined, expect_combined
