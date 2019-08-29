@@ -292,6 +292,8 @@ def wigner(rho, obj='all', ind=None, x=np.linspace(-3,3,200), y=np.linspace(-3,3
     W = wig(dm, x, y)
     plt.figure(figsize=([6,5]))
     cont = plt.contourf(x, y, W, 100)
+    plt.plot([0, 0], [min(y), max(y)], 'k--')
+    plt.plot([min(x), max(x)], [0, 0], 'k--')
     plt.xlabel('x')
     plt.ylabel('p')
     if obj == 0:
