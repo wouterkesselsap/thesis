@@ -32,6 +32,7 @@ def pump_strength(args):
 
 
 def pump(t, args):
+    """Just Gaussian envelope."""
     t0 = args['t0']  # start of pulse
     t1 = args['t1']  # end of pulse
     t6 = args['t6']  # end of cycle
@@ -44,6 +45,24 @@ def pump(t, args):
     
     pulse = exp(-(t-mu)**2/(2*std**2))*confine
     return pulse
+
+
+def pumpdrive(t, args):
+    """Gaussian envelope and rotating wave."""
+    t0 = args['t0']  # start of pulse
+    t1 = args['t1']  # end of pulse
+    t6 = args['t6']  # end of cycle
+    Q  = args['Q']   # number of std's in Gaussian rise and fall
+    wd = args['wd']  # drive frequency
+    
+    t = t%t6  # repeat cycle
+    mu = (t1-t0)/2  # pulse center in time domain
+    std = (t1-t0)/(2*Q)  # standard deviation
+    confine = np.heaviside((t-t0), 0) - np.heaviside((t-t1), 0)  # entire pulse
+    
+    pulse = exp(-(t-mu)**2/(2*std**2))*confine
+    envelope = pulse*np.cos(wd*t)
+    return envelope
 
 
 def square1(t, args):
