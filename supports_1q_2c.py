@@ -4,6 +4,7 @@ from scipy.special import erf
 from math import ceil
 from itertools import chain
 from glob import glob
+from qutip import *
 
 
 
@@ -12,6 +13,11 @@ exp = np.exp
 sqrt = np.sqrt
 hbar = 1.0546e-34*1e-9  # reduced Planck constant
 All = 'all'
+
+
+psi_0pi = lambda Nq : basis(Nq, 0)
+psi_halfpi = lambda Nq : (basis(Nq, 0) + basis(Nq, 1)).unit()
+psi_pi = lambda Nq : basis(Nq, 1)
 
 
 def pump_strength(args):
@@ -65,12 +71,54 @@ def pumpdrive(t, args):
     return envelope
 
 
+def pumpdrive_b(t, args):
+    """Gaussian envelope and rotating wave."""
+    t0 = args['t0']  # start of pulse
+    t1 = args['t1']  # end of pulse
+    t6 = args['t6']  # end of cycle
+    Q  = args['Q']   # number of std's in Gaussian rise and fall
+    wd = args['wd']  # drive frequency
+    
+    t = t%t6  # repeat cycle
+    mu = (t1-t0)/2  # pulse center in time domain
+    std = (t1-t0)/(2*Q)  # standard deviation
+    confine = np.heaviside((t-t0), 0) - np.heaviside((t-t1), 0)  # entire pulse
+    
+    pulse = exp(-(t-mu)**2/(2*std**2))*confine
+    envelope = pulse*np.exp(1j*wd*t)
+    return envelope
+
+
+def pumpdrive_bdag(t, args):
+    """Gaussian envelope and rotating wave."""
+    t0 = args['t0']  # start of pulse
+    t1 = args['t1']  # end of pulse
+    t6 = args['t6']  # end of cycle
+    Q  = args['Q']   # number of std's in Gaussian rise and fall
+    wd = args['wd']  # drive frequency
+    
+    t = t%t6  # repeat cycle
+    mu = (t1-t0)/2  # pulse center in time domain
+    std = (t1-t0)/(2*Q)  # standard deviation
+    confine = np.heaviside((t-t0), 0) - np.heaviside((t-t1), 0)  # entire pulse
+    
+    pulse = exp(-(t-mu)**2/(2*std**2))*confine
+    envelope = pulse*np.exp(-1j*wd*t)
+    return envelope
+
+
+def sideband(t, args):
+    wsb = args['wsb']
+    return np.cos(wsb*t)
+
+
 def square1(t, args):
     t2 = args['t2']  # start of pulse
     t3 = args['t3']  # end of pulse
     t6 = args['t6']  # end of cycle
     tg = args['tg']  # time of Gaussian rise and fall
     Q  = args['Q']   # number of std's in Gaussian rise and fall
+    smooth = args['smooth']  # rise and fall with Gaussian or not
     
     t = t%t6  # repeat cycle
     confine = np.heaviside((t-t2), 0) - np.heaviside((t-t3), 0)  # entire pulse
@@ -79,11 +127,14 @@ def square1(t, args):
     std = tg/Q  # standard deviation of Gaussian
     gauss = lambda mu : exp(-(t-mu)**2/(2*std**2))  # Gaussian
     
-    block = np.heaviside((t-(t2+tg)), 0) - np.heaviside((t-(t3-tg)), 0)
-    rise = gauss(t2+tg) * (1-np.heaviside((t-(t2+tg)), 0))
-    fall = gauss(t3-tg) * (np.heaviside((t-(t3-tg)), 0))
+    if smooth:
+        block = np.heaviside((t-(t2+tg)), 0) - np.heaviside((t-(t3-tg)), 0)
+        rise = gauss(t2+tg) * (1-np.heaviside((t-(t2+tg)), 0))
+        fall = gauss(t3-tg) * (np.heaviside((t-(t3-tg)), 0))
+        pulse = (rise + block + fall)*confine
+    else:
+        pulse = confine
     
-    pulse = (rise + block + fall)*confine
     return pulse
 
 
@@ -94,6 +145,7 @@ def square2(t, args):
     tg = args['tg']  # time of Gaussian rise and fall
     g2 = args['g2']  # pulse strength
     Q  = args['Q']   # number of std's in Gaussian rise and fall
+    smooth = args['smooth']  # rise and fall with Gaussian or not
     
     t = t%t6  # repeat cycle
     confine = np.heaviside((t-t4), 0) - np.heaviside((t-t5), 0)  # entire pulse
@@ -102,11 +154,14 @@ def square2(t, args):
     std = tg/Q  # standard deviation of Gaussian
     gauss = lambda mu : exp(-(t-mu)**2/(2*std**2))  # Gaussian
     
-    block = np.heaviside((t-(t4+tg)), 0) - np.heaviside((t-(t5-tg)), 0)
-    rise = gauss(t4+tg) * (1-np.heaviside((t-(t4+tg)), 0))
-    fall = gauss(t5-tg) * (np.heaviside((t-(t5-tg)), 0))
+    if smooth:
+        block = np.heaviside((t-(t4+tg)), 0) - np.heaviside((t-(t5-tg)), 0)
+        rise = gauss(t4+tg) * (1-np.heaviside((t-(t4+tg)), 0))
+        fall = gauss(t5-tg) * (np.heaviside((t-(t5-tg)), 0))
+        pulse = (rise + block + fall)*confine
+    else:
+        pulse = confine
     
-    pulse = (rise + block + fall)*confine
     return pulse
 
 
