@@ -18,6 +18,8 @@ All = 'all'
 psi_0pi = lambda Nq : basis(Nq, 0)
 psi_halfpi = lambda Nq : (basis(Nq, 0) + basis(Nq, 1)).unit()
 psi_pi = lambda Nq : basis(Nq, 1)
+psi_1pi = psi_pi
+psi_2pi = psi_0pi
 
 
 def pump_strength(args):
