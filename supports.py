@@ -1,3 +1,4 @@
+import os
 import numpy as np
 import pickle
 from scipy.special import erf
@@ -206,9 +207,13 @@ def saveprog(result, num, folder):
     out_file.close()
 
 
-def combine_batches(folder, quants, return_data=True):
+def combine_batches(folder, selection='all', reduction=1, quants='all', return_data=True):
     """
     folder : str
+    selection : tuple (T1, T2)
+        Range of time for which to save the data
+    reduction : int
+        1/fraction of data points to save
     quants : list of str
         Can contain 'times', 'states' and 'expect'
     """
@@ -216,6 +221,20 @@ def combine_batches(folder, quants, return_data=True):
         quants = ['times', 'states', 'expect']
     if isinstance(quants, str):
         quants = [quants]
+    
+    # Remove already existing files with combined batches
+    try:
+        os.remove(folder + "/times.pkl")
+    except:
+        pass
+    try:
+        os.remove(folder + "/states.pkl")
+    except:
+        pass
+    try:
+        os.remove(folder + "/expect.pkl")
+    except:
+        pass
     
     condition = folder + "/evolution_*"
     filecount = len(glob(condition))
@@ -228,6 +247,10 @@ def combine_batches(folder, quants, return_data=True):
                 infile = open(file, 'rb')
                 data = pickle.load(infile)
                 if data['num'] == 0:
+#                     sill = data['times']
+#                     if ( min(sill) <= selection[0] and max(sill) >= selection[0] ):
+#                         # batch contains lower bound
+                        
                     times[data['num']] = data['times']
                 else:
                     times[data['num']] = data['times'][1:]
