@@ -111,8 +111,29 @@ def pumpdrive_bdag(t, args):
 
 
 def sideband(t, args):
-    wsb = args['wsb']
-    return np.cos(wsb*t)
+    t1 = args['t1']    # start of pulse
+    t2 = args['t2']    # end of pulse
+    tg = args['tg']    # time of Gaussian rise and fall
+    smooth = args['smooth']  # whether or not to rise and fall with gaussian
+    Q  = args['Q']     # number of std's in Gaussian rise and fall
+    wsb = args['wsb']  # drive frequency
+    
+    confine = np.heaviside((t-t1), 0) - np.heaviside((t-t2), 0)  # entire pulse
+    
+    # Rise and fall with Gaussian
+    std = tg/Q  # standard deviation of Gaussian
+    gauss = lambda mu : exp(-(t-mu)**2/(2*std**2))  # Gaussian
+    
+    if smooth:
+        block = np.heaviside((t-(t1+tg)), 0) - np.heaviside((t-(t2-tg)), 0)
+        rise = gauss(t1+tg) * (1-np.heaviside((t-(t1+tg)), 0))
+        fall = gauss(t2-tg) * (np.heaviside((t-(t2-tg)), 0))
+        pulse = (rise + block + fall)*confine
+    else:
+        pulse = confine
+    
+    envelope = pulse*np.cos(wsb*t)
+    return envelope
 
 
 def square1(t, args):
