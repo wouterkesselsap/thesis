@@ -110,13 +110,14 @@ def pumpdrive_bdag(t, args):
     return envelope
 
 
-def sideband(t, args):
+def drive(t, args):
+    "Sideband drive with oscillating term."
     t1 = args['t1']    # start of pulse
     t2 = args['t2']    # end of pulse
     tg = args['tg']    # time of Gaussian rise and fall
     smooth = args['smooth']  # whether or not to rise and fall with gaussian
     Q  = args['Q']     # number of std's in Gaussian rise and fall
-    wsb = args['wsb']  # drive frequency
+    wd = args['wd']  # drive frequency
     
     confine = np.heaviside((t-t1), 0) - np.heaviside((t-t2), 0)  # entire pulse
     
@@ -132,17 +133,17 @@ def sideband(t, args):
     else:
         pulse = confine
     
-    envelope = pulse*np.cos(wsb*t)
+    envelope = pulse*np.cos(wd*t)
     return envelope
     
     
-def sideband_nonosc(t, args):
+def drive_nonosc(t, args):
+    "Sideband drive without oscillating term."
     t1 = args['t1']    # start of pulse
     t2 = args['t2']    # end of pulse
     tg = args['tg']    # time of Gaussian rise and fall
     smooth = args['smooth']  # whether or not to rise and fall with gaussian
     Q  = args['Q']     # number of std's in Gaussian rise and fall
-    wsb = args['wsb']  # drive frequency
     
     confine = np.heaviside((t-t1), 0) - np.heaviside((t-t2), 0)  # entire pulse
     
