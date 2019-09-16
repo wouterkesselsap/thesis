@@ -240,12 +240,14 @@ def create_batches(t0, tf, Np, Nppb):
     return batches
 
 
-def saveprog(result, num, folder):
+def saveprog(result, e0g1, e1g0, num, folder):
     name = folder + "/evolution_" + str(num) + ".pkl"
     data = {
         'times': result.times,
         'states': result.states,
         'expect': result.expect,
+        'e0g1' : e0g1,
+        'e1g0' : e1g0,
         'num': num
     }
     
@@ -375,6 +377,71 @@ def combine_batches(folder, selection='all', reduction=1, quants='all', return_d
             del expect
             if not return_data:
                 del expect_combined
+            
+        elif quant == 'e0g1':
+            e0g1 = [None] * filecount
+            for file in glob(condition):
+                infile = open(file, 'rb')
+                data = pickle.load(infile)
+                if data['num'] == 0:
+                    e0g1[data['num']] = data['e0g1']
+                else:
+                    e0g1[data['num']] = data['e0g1'][1:]
+                infile.close()
+            e0g1_combined = np.asarray(list(chain.from_iterable(e0g1)))
+            
+            name = folder + "/e0g1.pkl"
+            data = {
+                'quantity' : quant,
+                'data' : e0g1_combined
+            }
+            out_file = open(name, "wb")
+            pickle.dump(data, out_file)
+            out_file.close()
+            
+            del e0g1
+            if not return_data:
+                del e0g1_combined
+        
+        elif quant == 'e1g0':
+            e1g0 = [None] * filecount
+            for file in glob(condition):
+                infile = open(file, 'rb')
+                data = pickle.load(infile)
+                if data['num'] == 0:
+                    e1g0[data['num']] = data['e1g0']
+                else:
+                    e1g0[data['num']] = data['e1g0'][1:]
+                infile.close()
+            e1g0_combined = np.asarray(list(chain.from_iterable(e1g0)))
+            
+            name = folder + "/e1g0.pkl"
+            data = {
+                'quantity' : quant,
+                'data' : e1g0_combined
+            }
+            out_file = open(name, "wb")
+            pickle.dump(data, out_file)
+            out_file.close()
+            
+            del e1g0
+            if not return_data:
+                del e1g0_combined
     
     if return_data:
-        return times_combined, states_combined, expect_combined
+        return times_combined, states_combined, expect_combined, e0g1_combined, e1g0_combined
+
+
+def combined_probs(states, Nc):
+    """Calculates |e,0> - |g,1> and |e,1> - |g,0>."""
+    inds = ((1,0), (0,1), (1,1), (0,0))
+    probs = list()
+    [probs.append(list()) for i in range(len(inds))]
+    
+    for i, ind in enumerate(inds):
+        for state in states:
+            probs[i].append((state.data[ind[0] + Nc*ind[1], 0]*state.data[ind[0] + Nc*ind[1], 0].conj()).real)
+    
+    e0g1 = np.asarray(probs[0]) - np.asarray(probs[1])
+    e1g0 = np.asarray(probs[2]) - np.asarray(probs[3])
+    return e0g1, e1g0
