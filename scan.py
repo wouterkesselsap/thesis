@@ -14,11 +14,8 @@ from scipy.special import erf
 from scipy.signal import argrelextrema
 
 
-def sample(Nq, wq, wc, wd, t0, t1, t2, t3, tg, psi0):
+def sample(Nq, wq, wc, wd, t0, t1, t2, t3, tg, psi0, Np_per_batch, options):
     from supports import drive
-    
-    options = Options()
-    options.store_states=True
     
     Nc = 10  # number of levels in resonator 1
 
@@ -60,19 +57,6 @@ def sample(Nq, wq, wc, wd, t0, t1, t2, t3, tg, psi0):
         
     H = [Hjc, [Hc, drive_nonosc], [Hd, drive]]  # complete Hamiltonian
     
-    # Select these options for bdf method
-    options.method = 'bdf'
-    options.rtol = 1e-10
-    options.atol = 1e-10
-
-    # Select these options for adams method
-#     options.nsteps = 1000
-#     options.rtol = 1e-12
-#     options.atol = 1e-12
-#     options.max_step = 0
-
-    Np_per_batch = Np/20  # number of time points per batch
-
     batches = create_batches(0, t3, Np, Np_per_batch)
 
     # Remove existing progress folder
