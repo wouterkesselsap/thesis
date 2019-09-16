@@ -14,7 +14,7 @@ from scipy.special import erf
 from scipy.signal import argrelextrema
 
 
-def sample(Nq, wq, wc, wd, t0, t1, t2, t3, tg, psi0, Np_per_batch, options):
+def sample(Nq, wq, wc, wd, smooth, Q, t0, t1, t2, t3, tg, psi0, Np_per_batch, options):
     from supports import drive
     
     Nc = 10  # number of levels in resonator 1
@@ -26,9 +26,6 @@ def sample(Nq, wq, wc, wd, t0, t1, t2, t3, tg, psi0, Np_per_batch, options):
 
     Omega = 0.3*2*pi  # amplitude of sideband transitions
     wq_mod = wq + Omega**2/(2*(wq-wd)) + Omega**2/(2*(wq+wd))
-        
-    smooth = True  # whether or not to rise and fall with gaussian
-    Q = 3          # number of std's in gaussian rise and fall
     
     Np = 100*int(t3)     # number of discrete time steps for which to store the output
     
