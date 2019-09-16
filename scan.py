@@ -55,7 +55,7 @@ def sample(Nq, wq, wc, wd, smooth, Q, t0, t1, t2, t3, tg, psi0, Np_per_batch, op
     H = [Hjc, [Hc, drive_nonosc], [Hd, drive]]  # complete Hamiltonian
     
     batches = create_batches(0, t3, Np, Np_per_batch)
-
+    
     # Remove existing progress folder
     for folder in glob("/home/student/thesis/prog_*"):
         shutil.rmtree(folder)
@@ -68,50 +68,25 @@ def sample(Nq, wq, wc, wd, smooth, Q, t0, t1, t2, t3, tg, psi0, Np_per_batch, op
 
     # Calculate!
     for num, tlist in enumerate(batches):
+        print(num+1, "/", len(batches), ":", int(np.round(100*(num+1)/len(batches))), "%")
         result = mesolve(H, psi0, tlist, c_ops=[], e_ops=e_ops, args=H_args, options=options)
-        e0g1, e1g0 = combined_probs(result.states, Nc)
-        saveprog(result, e0g1, e1g0, num, folder)
+        e0, g1, e1, g0 = combined_probs(result.states, Nc)
+        saveprog(result, e0, g1, e1, g0, num, folder)
         psi0 = copy(result.states[-1])
-        del result, e0g1, e1g0
+        del result, e0, g1, e1, g0
     end_calc = datetime.now()
 
     srcfolder = folder # "/home/student/thesis/"
     selection = All # (0, t3)
     reduction = 5
+    quants = ['times', 'expect', 'e0', 'g1', 'e1', 'g0']
 
+    start_comb = datetime.now()
     combine_batches(srcfolder, selection, reduction,
-                    quants=['times', 'expect', 'e0g1', 'e1g0'], return_data=False)
+                    quants=quants, return_data=False)
     end_comb = datetime.now()
-
-    tfile = open(srcfolder + "/times.pkl", 'rb')
-    tdata = pickle.load(tfile)
-    times = tdata['data']
-    tfile.close()
-    del tdata
-
-    # sfile = open(srcfolder + "/states.pkl", 'rb')
-    # sdata = pickle.load(sfile)
-    # states = sdata['data']
-    # sfile.close()
-    # del sdata
-
-    efile = open(srcfolder + "/expect.pkl", 'rb')
-    edata = pickle.load(efile)
-    expect = edata['data']
-    efile.close()
-    del edata
     
-    pfile = open(srcfolder + "/e0g1.pkl", 'rb')
-    pdata = pickle.load(pfile)
-    e0g1 = pdata['data']
-    pfile.close()
-    del pdata
-
-    pfile = open(srcfolder + "/e1g0.pkl", 'rb')
-    pdata = pickle.load(pfile)
-    e1g0 = pdata['data']
-    pfile.close()
-    del pdata
+    times, states, expect, e0, g1, e1, g0 = load_data(quants, srcfolder)
 
     print(wd/2/pi)
 

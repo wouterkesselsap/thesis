@@ -240,14 +240,16 @@ def create_batches(t0, tf, Np, Nppb):
     return batches
 
 
-def saveprog(result, e0g1, e1g0, num, folder):
+def saveprog(result, e0, g1, e1, g0, num, folder):
     name = folder + "/evolution_" + str(num) + ".pkl"
     data = {
         'times': result.times,
         'states': result.states,
         'expect': result.expect,
-        'e0g1' : e0g1,
-        'e1g0' : e1g0,
+        'e0' : e0,
+        'g0' : g0,
+        'g1' : g1,
+        'e1' : e1,
         'num': num
     }
     
@@ -267,7 +269,7 @@ def combine_batches(folder, selection='all', reduction=1, quants='all', return_d
         Can contain 'times', 'states' and 'expect'
     """
     if quants == 'all':
-        quants = ['times', 'states', 'expect']
+        quants = ['times', 'states', 'expect', 'g0', 'g1', 'e0', 'e1']
     if isinstance(quants, str):
         quants = [quants]
     
@@ -284,152 +286,302 @@ def combine_batches(folder, selection='all', reduction=1, quants='all', return_d
         os.remove(folder + "/expect.pkl")
     except:
         pass
+    try:
+        os.remove(folder + "/g0.pkl")
+    except:
+        pass
+    try:
+        os.remove(folder + "/g1.pkl")
+    except:
+        pass
+    try:
+        os.remove(folder + "/e0.pkl")
+    except:
+        pass
+    try:
+        os.remove(folder + "/e1.pkl")
+    except:
+        pass
     
     condition = folder + "/evolution_*"
     filecount = len(glob(condition))
     
-    for quant in quants:
-        
-        if quant == 'times':
-            times = [None] * filecount
-            for file in glob(condition):
-                infile = open(file, 'rb')
-                data = pickle.load(infile)
-                if data['num'] == 0:
+    if 'times' in quants:
+        times = [None] * filecount
+        for file in glob(condition):
+            infile = open(file, 'rb')
+            data = pickle.load(infile)
+            if data['num'] == 0:
 #                     sill = data['times']
 #                     if ( min(sill) <= selection[0] and max(sill) >= selection[0] ):
 #                         # batch contains lower bound
-                        
-                    times[data['num']] = data['times']
-                else:
-                    times[data['num']] = data['times'][1:]
-                infile.close()
-            times_combined = np.asarray(list(chain.from_iterable(times)))
-            
-            name = folder + "/times.pkl"
-            data = {
-                'quantity' : quant,
-                'data' : times_combined
-            }
-            out_file = open(name, "wb")
-            pickle.dump(data, out_file)
-            out_file.close()
-            
-            del times
-            if not return_data:
-                del times_combined
-            
-        elif quant == 'states':
-            states = [None] * filecount
-            for file in glob(condition):
-                infile = open(file, 'rb')
-                data = pickle.load(infile)
-                if data['num'] == 0:
-                    states[data['num']] = data['states']
-                else:
-                    states[data['num']] = data['states'][1:]
-                infile.close()
-            states_combined = list()
-            for lst in states:
-                for state in lst:
-                    states_combined.append(state)
-            
-            name = folder + "/states.pkl"
-            data = {
-                'quantity' : quant,
-                'data' : states_combined
-            }
-            out_file = open(name, "wb")
-            pickle.dump(data, out_file)
-            out_file.close()
-            
-            del states
-            if not return_data:
-                del states_combined
-            
-        elif quant == 'expect':
-            expect = [None] * filecount
-            for file in glob(condition):
-                infile = open(file, 'rb')
-                data = pickle.load(infile)
-                if data['num'] == 0:
-                    expect[data['num']] = data['expect']
-                else:
-                    expect[data['num']] = data['expect']
-                infile.close()
-            expect_combined = list()
-            for op in expect[0]:
-                expect_combined.append(list())
-            for i in range(len(expect[0])):
-                for ib, batch in enumerate(expect):
-                    [expect_combined[i].append(value) for value in batch[i] if ib == 0]
-                    [expect_combined[i].append(value) for iv, value in enumerate(batch[i]) if (ib > 0 and iv > 0)]
-            
-            name = folder + "/expect.pkl"
-            data = {
-                'quantity' : quant,
-                'data' : expect_combined
-            }
-            out_file = open(name, "wb")
-            pickle.dump(data, out_file)
-            out_file.close()
-            
-            del expect
-            if not return_data:
-                del expect_combined
-            
-        elif quant == 'e0g1':
-            e0g1 = [None] * filecount
-            for file in glob(condition):
-                infile = open(file, 'rb')
-                data = pickle.load(infile)
-                if data['num'] == 0:
-                    e0g1[data['num']] = data['e0g1']
-                else:
-                    e0g1[data['num']] = data['e0g1'][1:]
-                infile.close()
-            e0g1_combined = np.asarray(list(chain.from_iterable(e0g1)))
-            
-            name = folder + "/e0g1.pkl"
-            data = {
-                'quantity' : quant,
-                'data' : e0g1_combined
-            }
-            out_file = open(name, "wb")
-            pickle.dump(data, out_file)
-            out_file.close()
-            
-            del e0g1
-            if not return_data:
-                del e0g1_combined
+				
+                times[data['num']] = data['times']
+            else:
+                times[data['num']] = data['times'][1:]
+            infile.close()
+        times_combined = np.asarray(list(chain.from_iterable(times)))
         
-        elif quant == 'e1g0':
-            e1g0 = [None] * filecount
-            for file in glob(condition):
-                infile = open(file, 'rb')
-                data = pickle.load(infile)
-                if data['num'] == 0:
-                    e1g0[data['num']] = data['e1g0']
-                else:
-                    e1g0[data['num']] = data['e1g0'][1:]
-                infile.close()
-            e1g0_combined = np.asarray(list(chain.from_iterable(e1g0)))
-            
-            name = folder + "/e1g0.pkl"
-            data = {
-                'quantity' : quant,
-                'data' : e1g0_combined
-            }
-            out_file = open(name, "wb")
-            pickle.dump(data, out_file)
-            out_file.close()
-            
-            del e1g0
-            if not return_data:
-                del e1g0_combined
+        name = folder + "/times.pkl"
+        data = {
+            'quantity' : 'times',
+            'data'     : times_combined,
+        }
+        out_file = open(name, 'wb')
+        pickle.dump(data, out_file)
+        out_file.close()
+        
+        del times
+        if not return_data:
+            del times_combined
+    else:
+        times_combined = None
+    
+    if 'states' in quants:
+        states = [None] * filecount
+        for file in glob(condition):
+            infile = open(file, 'rb')
+            data = pickle.load(infile)
+            if data['num'] == 0:
+                states[data['num']] = data['states']
+            else:
+                states[data['num']] = data['states'][1:]
+            infile.close()
+        states_combined = list()
+        for lst in states:
+            for state in lst:
+                states_combined.append(state)
+        
+        name = folder + "/states.pkl"
+        data = {
+            'quantity' : 'states',
+            'data' : states_combined
+        }
+        out_file = open(name, "wb")
+        pickle.dump(data, out_file)
+        out_file.close()
+        
+        del states
+        if not return_data:
+            del states_combined
+    else:
+        states_combined = None
+		
+    if 'expect' in quants:
+        expect = [None] * filecount
+        for file in glob(condition):
+            infile = open(file, 'rb')
+            data = pickle.load(infile)
+            if data['num'] == 0:
+                expect[data['num']] = data['expect']
+            else:
+                expect[data['num']] = data['expect']
+            infile.close()
+        expect_combined = list()
+        for op in expect[0]:
+            expect_combined.append(list())
+        for i in range(len(expect[0])):
+            for ib, batch in enumerate(expect):
+                [expect_combined[i].append(value) for value in batch[i] if ib == 0]
+                [expect_combined[i].append(value) for iv, value in enumerate(batch[i]) if (ib > 0 and iv > 0)]
+        
+        name = folder + "/expect.pkl"
+        data = {
+            'quantity' : 'expect',
+            'data' : expect_combined
+        }
+        out_file = open(name, "wb")
+        pickle.dump(data, out_file)
+        out_file.close()
+        
+        del expect
+        if not return_data:
+            del expect_combined
+    else:
+        expect_combined = None
+	
+    if 'g0' in quants:
+        g0 = [None] * filecount
+        for file in glob(condition):
+            infile = open(file, 'rb')
+            data = pickle.load(infile)
+            if data['num'] == 0:				
+                g0[data['num']] = data['g0']
+            else:
+                g0[data['num']] = data['g0'][1:]
+            infile.close()
+        g0_combined = np.asarray(list(chain.from_iterable(g0)))
+        
+        name = folder + "/g0.pkl"
+        data = {
+            'quantity' : 'g0',
+            'data'     : g0_combined,
+        }
+        out_file = open(name, 'wb')
+        pickle.dump(data, out_file)
+        out_file.close()
+        
+        del g0
+        if not return_data:
+            del g0_combined
+    else:
+        g0_combined = None
+	
+    if 'g1' in quants:
+        g1 = [None] * filecount
+        for file in glob(condition):
+            infile = open(file, 'rb')
+            data = pickle.load(infile)
+            if data['num'] == 0:				
+                g1[data['num']] = data['g1']
+            else:
+                g1[data['num']] = data['g1'][1:]
+            infile.close()
+        g1_combined = np.asarray(list(chain.from_iterable(g1)))
+        
+        name = folder + "/g1.pkl"
+        data = {
+            'quantity' : 'g1',
+            'data'     : g1_combined,
+        }
+        out_file = open(name, 'wb')
+        pickle.dump(data, out_file)
+        out_file.close()
+        
+        del g1
+        if not return_data:
+            del g1_combined
+    else:
+        g1_combined = None
+		
+    if 'e0' in quants:
+        e0 = [None] * filecount
+        for file in glob(condition):
+            infile = open(file, 'rb')
+            data = pickle.load(infile)
+            if data['num'] == 0:				
+                e0[data['num']] = data['e0']
+            else:
+                e0[data['num']] = data['e0'][1:]
+            infile.close()
+        e0_combined = np.asarray(list(chain.from_iterable(e0)))
+        
+        name = folder + "/e0.pkl"
+        data = {
+            'quantity' : 'e0',
+            'data'     : e0_combined,
+        }
+        out_file = open(name, 'wb')
+        pickle.dump(data, out_file)
+        out_file.close()
+        
+        del e0
+        if not return_data:
+            del e0_combined
+    else:
+        e0_combined = None
+	
+    if 'e1' in quants:
+        e1 = [None] * filecount
+        for file in glob(condition):
+            infile = open(file, 'rb')
+            data = pickle.load(infile)
+            if data['num'] == 0:				
+                e1[data['num']] = data['e1']
+            else:
+                e1[data['num']] = data['e1'][1:]
+            infile.close()
+        e1_combined = np.asarray(list(chain.from_iterable(e1)))
+        
+        name = folder + "/e1.pkl"
+        data = {
+            'quantity' : 'e1',
+            'data'     : e1_combined,
+        }
+        out_file = open(name, 'wb')
+        pickle.dump(data, out_file)
+        out_file.close()
+        
+        del e1
+        if not return_data:
+            del e1_combined
+    else:
+        e1_combined = None
     
     if return_data:
-        return times_combined, states_combined, expect_combined, e0g1_combined, e1g0_combined
+        return times_combined, states_combined, expect_combined, e0_combined, g1_combined, e1_combined, g0_combined
+
+
+def load_data(quants, srcfolder):
+    if quants == 'all':
+        quants = ['times', 'states', 'expect', 'g0', 'g1', 'e0', 'e1']
+    if isinstance(quants, str):
+        quants = [quants]
+    
+    if 'times' in quants:
+        tfile = open(srcfolder + "/times.pkl", 'rb')
+        tdata = pickle.load(tfile)
+        times = tdata['data']
+        tfile.close()
+        del tdata
+    else:
+        times = None
+    
+    if 'states' in quants:
+        sfile = open(srcfolder + "/states.pkl", 'rb')
+        sdata = pickle.load(sfile)
+        states = sdata['data']
+        sfile.close()
+        del sdata
+    else:
+        states = None
+    
+    if 'expect' in quants:
+        efile = open(srcfolder + "/expect.pkl", 'rb')
+        edata = pickle.load(efile)
+        expect = edata['data']
+        efile.close()
+        del edata
+    else:
+        expect = None
+    
+    if 'e0' in quants:
+        pfile = open(srcfolder + "/e0.pkl", 'rb')
+        pdata = pickle.load(pfile)
+        e0 = pdata['data']
+        pfile.close()
+        del pdata
+    else:
+        e0 = None
+    
+    if 'g1' in quants:
+        pfile = open(srcfolder + "/g1.pkl", 'rb')
+        pdata = pickle.load(pfile)
+        g1 = pdata['data']
+        pfile.close()
+        del pdata
+    else:
+        g1 = None
+
+    if 'e1' in quants:
+        pfile = open(srcfolder + "/e1.pkl", 'rb')
+        pdata = pickle.load(pfile)
+        e1 = pdata['data']
+        pfile.close()
+        del pdata
+    else:
+        e1 = None
+    
+    if 'g0' in quants:
+        pfile = open(srcfolder + "/g0.pkl", 'rb')
+        pdata = pickle.load(pfile)
+        g0 = pdata['data']
+        pfile.close()
+        del pdata
+    else:
+        g0 = None
+    
+    return times, states, expect, e0, g1, e1, g0
 
 
 def combined_probs(states, Nc):
@@ -440,8 +592,10 @@ def combined_probs(states, Nc):
     
     for i, ind in enumerate(inds):
         for state in states:
-            probs[i].append((state.data[ind[0] + Nc*ind[1], 0]*state.data[ind[0] + Nc*ind[1], 0].conj()).real)
+            probs[i].append((state.data[ind[1] + Nc*ind[0], 0]*state.data[ind[1] + Nc*ind[0], 0].conj()).real)
     
-    e0g1 = np.asarray(probs[0]) - np.asarray(probs[1])
-    e1g0 = np.asarray(probs[2]) - np.asarray(probs[3])
-    return e0g1, e1g0
+    e0 = np.asarray(probs[0])
+    g1 = np.asarray(probs[1])
+    e1 = np.asarray(probs[2])
+    g0 = np.asarray(probs[3])
+    return e0, g1, e1, g0
