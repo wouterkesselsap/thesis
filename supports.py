@@ -1,10 +1,14 @@
 import os
+import shutil
 import numpy as np
 import pickle
+import time
+from datetime import datetime
 from scipy.special import erf
 from math import ceil
 from itertools import chain
 from glob import glob
+from copy import copy
 from qutip import *
 
 
@@ -257,6 +261,40 @@ def saveprog(result, e0, g1, e1, g0, num, folder):
     out_file = open(name, "wb")
     pickle.dump(data, out_file)
     out_file.close()
+
+
+def calculate(H, psi0, e_ops, H_args, options, Nc, Np, Np_per_batch, verbose=True):
+    "Integrate through time evolution."
+    
+    t0 = H_args['t0']
+    t3 = H_args['t3']
+    
+    batches = create_batches(t0, t3, Np, Np_per_batch)
+
+    # Remove existing progress folder
+    for folder in glob("/home/student/thesis/prog_*"):
+        shutil.rmtree(folder)
+
+    # Make new progress folder
+    now = datetime.now()
+    nowstr = now.strftime("%y%m%d_%H%M%S")
+    folder = "/home/student/thesis/prog_" + nowstr
+    os.makedirs(folder)
+
+    # Calculate!
+    for num, tlist in enumerate(batches):
+        if verbose:
+            print(num+1, "/", len(batches), ":", int(np.round(100*(num+1)/len(batches))), "%")
+        result = mesolve(H, psi0, tlist, c_ops=[], e_ops=e_ops, args=H_args, options=options)
+        e0, g1, e1, g0 = combined_probs(result.states, Nc)
+        saveprog(result, e0, g1, e1, g0, num, folder)
+        psi0 = copy(result.states[-1])
+        del result, e0, g1, e1, g0
+    end_calc = datetime.now()
+    if verbose:
+        print("Evolution completed in {} s".format((end_calc - now).total_seconds()))
+    
+    return now, nowstr, folder
 
 
 def combine_batches(folder, selection='all', reduction=1, quants='all', return_data=True):

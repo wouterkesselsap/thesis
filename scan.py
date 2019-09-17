@@ -1,14 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import plots
-import os
-import shutil
-import time
-from datetime import datetime
-from glob import glob
-from copy import copy
 from supports import *
-from supports import drive
 from qutip import *
 from scipy.special import erf
 from scipy.signal import argrelextrema
@@ -56,26 +49,7 @@ def sample(Nq, wq, wc, wd, smooth, Q, t0, t1, t2, t3, tg, psi0, Np_per_batch, op
         
     H = [Hjc, [Hc, drive_nonosc], [Hd, drive]]  # complete Hamiltonian
     
-    batches = create_batches(0, t3, Np, Np_per_batch)
-    
-    # Remove existing progress folder
-    for folder in glob("/home/student/thesis/prog_*"):
-        shutil.rmtree(folder)
-
-    # Make new progress folder
-    now = datetime.now()
-    nowstr = now.strftime("%y_%m_%d_%H_%M_%S")
-    folder = "/home/student/thesis/prog_" + nowstr
-    os.makedirs(folder)
-
-    # Calculate!
-    for num, tlist in enumerate(batches):
-        result = mesolve(H, psi0, tlist, c_ops=[], e_ops=e_ops, args=H_args, options=options)
-        e0, g1, e1, g0 = combined_probs(result.states, Nc)
-        saveprog(result, e0, g1, e1, g0, num, folder)
-        psi0 = copy(result.states[-1])
-        del result, e0, g1, e1, g0
-    end_calc = datetime.now()
+    now, nowstr, folder = calculate(H, psi0, e_ops, H_args, options, Nc, Np, Np_per_batch, verbose=False)
 
     srcfolder = folder # "/home/student/thesis/"
     selection = All # (0, t3)
