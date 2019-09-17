@@ -17,6 +17,8 @@ from scipy.signal import argrelextrema
 def sample(Nq, wq, wc, wd, smooth, Q, t0, t1, t2, t3, tg, psi0, Np_per_batch, options):
     from supports import drive
     
+    print(wd/2/pi)
+    
     Nc = 10  # number of levels in resonator 1
 
     delta = wq - wc  # detuning
@@ -24,7 +26,7 @@ def sample(Nq, wq, wc, wd, smooth, Q, t0, t1, t2, t3, tg, psi0, Np_per_batch, op
     g = 0.2 *2*pi  # drive frequency resonator 1, coupling between qubit and resonator 1
     chi = 30e-6 *2*pi  # photon number-dependent frequency shift of qubit
 
-    Omega = 0.3*2*pi  # amplitude of sideband transitions
+    Omega = 0.3 *2 *2*pi  # amplitude of sideband transitions
     wq_mod = wq + Omega**2/(2*(wq-wd)) + Omega**2/(2*(wq+wd))
     
     Np = 100*int(t3)     # number of discrete time steps for which to store the output
@@ -68,7 +70,6 @@ def sample(Nq, wq, wc, wd, smooth, Q, t0, t1, t2, t3, tg, psi0, Np_per_batch, op
 
     # Calculate!
     for num, tlist in enumerate(batches):
-        print(num+1, "/", len(batches), ":", int(np.round(100*(num+1)/len(batches))), "%")
         result = mesolve(H, psi0, tlist, c_ops=[], e_ops=e_ops, args=H_args, options=options)
         e0, g1, e1, g0 = combined_probs(result.states, Nc)
         saveprog(result, e0, g1, e1, g0, num, folder)
@@ -88,8 +89,6 @@ def sample(Nq, wq, wc, wd, smooth, Q, t0, t1, t2, t3, tg, psi0, Np_per_batch, op
     
     times, states, expect, e0, g1, e1, g0 = load_data(quants, srcfolder)
 
-    print(wd/2/pi)
-
     fig, ax1 = plt.subplots(figsize=[12,3])
     ax1.plot(times, expect[0], color='b', label='Qubit')
     ax1.plot(times, expect[1], color='r', label='Cavity')
@@ -103,7 +102,7 @@ def sample(Nq, wq, wc, wd, smooth, Q, t0, t1, t2, t3, tg, psi0, Np_per_batch, op
     drive = wd/(2*pi)*drive_nonosc(times, H_args)
     ax2 = ax1.twinx()
     ax2.plot(times, drive, color='g', label='Drive, coupling')
-    ax2.set_ylabel('$\Omega$ [GHz]')
+    ax2.set_ylabel('$\Omega$, $g$ [GHz]')
     ax2.tick_params(axis='y')
     ax2.legend(loc='center right')
 
