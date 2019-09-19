@@ -49,7 +49,7 @@ def sample(Nq, wq, wc, wd, smooth, Q, t0, t1, t2, t3, tg, psi0, Np_per_batch, op
         
     H = [Hjc, [Hc, drive_nonosc], [Hd, drive]]  # complete Hamiltonian
     
-    now, nowstr, folder = calculate(H, psi0, e_ops, H_args, options, Nc, Np, Np_per_batch, verbose=False)
+    ID, IDstr, folder = calculate(H, psi0, e_ops, H_args, options, Nc, Np, Np_per_batch, verbose=False)
 
     srcfolder = folder # "/home/student/thesis/"
     selection = All # (0, t3)

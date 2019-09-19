@@ -28,6 +28,18 @@ psi_1pi = psi_pi
 psi_2pi = psi_0pi
 
 
+def ops(Nq, Nc):
+    # Qubit operators
+    b = tensor(destroy(Nq), qeye(Nc))
+    nq = b.dag()*b
+
+    # Cavity operators
+    a = tensor(qeye(Nq), destroy(Nc))
+    nc = a.dag()*a
+    
+    return b, a, nq, nc
+
+
 def pump_strength(args):
     t0 = args['t0']
     t1 = args['t1']
@@ -638,3 +650,82 @@ def combined_probs(states, Nc):
     e1 = np.asarray(probs[2])
     g0 = np.asarray(probs[3])
     return e0, g1, e1, g0
+
+
+def remove_micromotion(x, times, method='retain'):
+    """Removes micromotion from input by determining all local maxima
+    and minima, and subsequently draw the output in the middle of the
+    region defined by these local maxima and minima.
+    
+    Method is either
+    - 'artificial' : create artificial data points in the middle of
+      the line that connects a minimum with an adjacent maximum or
+      vice versa; or
+    - 'retain' : return the set of points from x that are vertically
+      nearest to the middle of the line that connects a minimum with
+      an adjacent maximum or vice versa
+    """
+    xnew = list()
+    tnew = list()
+    maxima = list()
+    t_maxima = list()
+    n_maxima = list()
+    minima = list()
+    t_minima = list()
+    n_minima = list()
+    
+    for n, value, t in zip(range(len(x)), x, times):
+        
+        # If first element
+        if (n == 0 and value > x[1]):
+            maxima.append(value)
+            t_maxima.append(t)
+            n_maxima.append(n)
+        elif (n == 0 and value < x[1]):
+            minima.append(value)
+            t_minima.append(t)
+            n_minima.append(n)
+        
+        # If last element
+        elif (n == len(x)-1 and value > x[1]):
+            maxima.append(value)
+            t_maxima.append(t)
+            n_maxima.append(n)
+        elif (n == len(x)-1 and value < x[1]):
+            minima.append(value)
+            t_minima.append(t)
+            n_minima.append(n)
+        
+        # Check if maximum
+        elif (value > x[n-1] and value > x[n+1]):
+            maxima.append(value)
+            t_maxima.append(t)
+            n_maxima.append(n)
+        
+        # Check if minimum
+        elif (value < x[n-1] and value < x[n+1]):
+            minima.append(value)
+            t_minima.append(t)
+            n_minima.append(n)
+    
+    if method == 'artificial':
+        supports = copy(maxima)
+        supports.extend(minima)
+        t_supports = copy(t_maxima)
+        t_supports.extend(t_minima)
+        
+        supports_zipped = sorted(zip(t_supports, supports))
+        t_supports, supports = zip(*supports_zipped)
+        
+        for interval in range(1, len(supports)):
+            maxval = max(supports[interval-1], supports[interval])
+            minval = min(supports[interval-1], supports[interval])
+            xval = minval + (maxval - minval)/2
+            tval = t_supports[interval-1] + (t_supports[interval] - t_supports[interval-1])/2
+            xnew.append(xval)
+            tnew.append(tval)
+    
+    elif method == 'retain':
+        raise ValueError("'retain' method not yet supported, use 'artificial' method")
+    
+    return xnew, tnew
