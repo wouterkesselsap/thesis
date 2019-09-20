@@ -830,7 +830,7 @@ def sideband_freq(x, times):
     if len(supports) < 3:
         print("WARNING: not enough sideband oscillations to determinde frequency,")
         print("         increase the simulation time")
-        return 0, 0
+        return 0
     else:
         dts = np.diff(t_supports)
         Tsb = 2*sum(dts)/len(dts)  # sideband transition period [ns]
