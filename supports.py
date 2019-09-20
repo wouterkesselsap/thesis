@@ -3,10 +3,12 @@ import shutil
 import numpy as np
 import pickle
 import time
+import matplotlib.pyplot as plt
 from datetime import datetime
 from scipy.special import erf
 from math import ceil
-from itertools import chain
+from itertools import chain, groupby
+from operator import itemgetter
 from glob import glob
 from copy import copy
 from qutip import *
@@ -275,6 +277,21 @@ def saveprog(result, e0, g1, e1, g0, num, folder):
     out_file.close()
 
 
+def saveID(ID, folder):
+    name = folder + "/ID.pkl"
+    outfile = open(name, 'wb')
+    pickle.dump(ID, outfile)
+    outfile.close()
+
+
+def getID(folder):
+    file = folder + "/ID.pkl"
+    infile = open(file, 'rb')
+    ID = pickle.load(infile)
+    infile.close()
+    return ID
+
+
 def calculate(H, psi0, e_ops, H_args, options, Nc, Np, Np_per_batch, verbose=True):
     "Integrate through time evolution."
     
@@ -289,9 +306,10 @@ def calculate(H, psi0, e_ops, H_args, options, Nc, Np, Np_per_batch, verbose=Tru
 
     # Make new progress folder
     now = datetime.now()
-    nowstr = now.strftime("%y%m%d_%H%M%S")
-    folder = "/home/student/thesis/prog_" + nowstr
+    ID = now.strftime("%y%m%d_%H%M%S")
+    folder = "/home/student/thesis/prog_" + ID
     os.makedirs(folder)
+    saveID(ID, folder)
 
     # Calculate!
     for num, tlist in enumerate(batches):
@@ -306,7 +324,7 @@ def calculate(H, psi0, e_ops, H_args, options, Nc, Np, Np_per_batch, verbose=Tru
     if verbose:
         print("Evolution completed in {} s".format((end_calc - now).total_seconds()))
     
-    return now, nowstr, folder
+    return folder
 
 
 def combine_batches(folder, selection='all', reduction=1, quants='all', return_data=True):
@@ -652,21 +670,7 @@ def combined_probs(states, Nc):
     return e0, g1, e1, g0
 
 
-def remove_micromotion(x, times, method='retain'):
-    """Removes micromotion from input by determining all local maxima
-    and minima, and subsequently draw the output in the middle of the
-    region defined by these local maxima and minima.
-    
-    Method is either
-    - 'artificial' : create artificial data points in the middle of
-      the line that connects a minimum with an adjacent maximum or
-      vice versa; or
-    - 'retain' : return the set of points from x that are vertically
-      nearest to the middle of the line that connects a minimum with
-      an adjacent maximum or vice versa
-    """
-    xnew = list()
-    tnew = list()
+def extrema(x, times):
     maxima = list()
     t_maxima = list()
     n_maxima = list()
@@ -708,6 +712,27 @@ def remove_micromotion(x, times, method='retain'):
             t_minima.append(t)
             n_minima.append(n)
     
+    return maxima, t_maxima, n_maxima, minima, t_minima, n_minima
+
+
+def remove_micromotion(x, times, method='retain'):
+    """Removes micromotion from input by determining all local maxima
+    and minima, and subsequently draw the output in the middle of the
+    region defined by these local maxima and minima.
+    
+    Method is either
+    - 'artificial' : create artificial data points in the middle of
+      the line that connects a minimum with an adjacent maximum or
+      vice versa; or
+    - 'retain' : return the set of points from x that are vertically
+      nearest to the middle of the line that connects a minimum with
+      an adjacent maximum or vice versa
+    """
+    xnew = list()
+    tnew = list()
+    
+    maxima, t_maxima, _, minima, t_minima, _ = extrema(x, times)
+    
     if method == 'artificial':
         supports = copy(maxima)
         supports.extend(minima)
@@ -720,12 +745,94 @@ def remove_micromotion(x, times, method='retain'):
         for interval in range(1, len(supports)):
             maxval = max(supports[interval-1], supports[interval])
             minval = min(supports[interval-1], supports[interval])
-            xval = minval + (maxval - minval)/2
-            tval = t_supports[interval-1] + (t_supports[interval] - t_supports[interval-1])/2
-            xnew.append(xval)
-            tnew.append(tval)
+            xnew.append(minval + (maxval - minval)/2)
+            tnew.append(t_supports[interval-1] + (t_supports[interval] - t_supports[interval-1])/2)
     
     elif method == 'retain':
         raise ValueError("'retain' method not yet supported, use 'artificial' method")
     
     return xnew, tnew
+
+
+def cluster(x, t, out='centroid'):
+    """Determine clusters in data and return a single point per cluster.
+    
+    out : str
+        'centroid' : return cluster centroid
+        'extremum' : return maximum or minimum
+    """
+    
+    # Determine clusters
+    xmin = min(x)
+    xmax = max(x)
+    k = 0
+    classified = [(0, 0)]
+    
+    if abs(x[0] - xmax) < abs(x[0] - xmin):
+        pole = 1
+    elif abs(x[0] - xmax) > abs(x[0] - xmin):
+        pole = -1
+    
+    for n, val in enumerate(x):
+        if n != 0:
+            if abs(val - xmax) < abs(val - xmin):
+                newpole = 1
+            elif abs(val - xmax) > abs(val - xmin):
+                newpole = -1
+            if newpole == pole:
+                classified.append((n, k))
+            elif newpole != pole:
+                pole = copy(newpole)
+                k += 1
+                classified.append((n, k))
+    clustered = list()
+    for key, group in groupby(classified, key=itemgetter(1)):
+        inds = [item[0] for item in group]
+        clustered.append(inds)
+    
+    # Calculate output per cluster
+    xlocs = list()
+    tlocs = list()
+    
+    for cluster in clustered:
+        if out == 'centroid':
+            xtot = 0
+            ttot = 0
+            for i in cluster:
+                xtot += x[i]
+                ttot += t[i]
+            xlocs.append(xtot/len(cluster))
+            tlocs.append(ttot/len(cluster))
+        
+        elif out == 'extremum':
+            raise ValueError("'extremum option not yet supported, use 'centroid' instead")
+    
+    return xlocs, tlocs
+
+
+def sideband_freq(x, times):
+    """Determine the sideband transition frequency [GHz] based on
+    expectation values from which the micromotion has been removed."""
+    
+    maxima, t_maxima, _, minima, t_minima, _ = extrema(x, times)
+    supports = copy(maxima)
+    supports.extend(minima)
+    t_supports = copy(t_maxima)
+    t_supports.extend(t_minima)
+    
+    supports_zipped = sorted(zip(t_supports, supports))
+    t_supports, supports = zip(*supports_zipped)
+    supports, t_supports = cluster(supports, t_supports)
+    
+    supports = supports[1:-1]  # remove first and last element
+    t_supports = t_supports[1:-1]  # remove first and last element
+    
+    if len(supports) < 3:
+        print("WARNING: not enough sideband oscillations to determinde frequency,")
+        print("         increase the simulation time")
+        return 0, 0
+    else:
+        dts = np.diff(t_supports)
+        Tsb = 2*sum(dts)/len(dts)  # sideband transition period [ns]
+        wsb = 1/Tsb  # sideband transition frequency [GHz]
+        return wsb*2*pi
