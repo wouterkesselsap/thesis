@@ -24,21 +24,16 @@ def sample(Nq, wq, wc, wd, smooth, Q, t0, t1, t2, t3, tg, psi0, Np_per_batch, op
     
     Np = 100*int(t3)     # number of discrete time steps for which to store the output
     
-    # Qubit operators
-    b = tensor(destroy(Nq), qeye(Nc))
-    nq = b.dag()*b
-    
-    # Cavity operators
-    a = tensor(qeye(Nq), destroy(Nc))
-    nc = a.dag()*a
-    
+    # Operators
+    b, a, nq, nc = ops(Nq, Nc)
+
     # Jaynes-Cummings Hamiltonian
-    Hjc = wq*nq + wc*nc - Ec/2*b.dag()*b.dag()*b*b - chi*nq*nc
+    Hjc = wq*nq + wc*nc - Ec/2*b.dag()*b.dag()*b*b
     Hc = g*(a*b + a*b.dag() + b*a.dag() + a.dag()*b.dag())
-    
+
     # Sideband transitions
     Hd = Omega*(b + b.dag())
-    
+
     # Hamiltonian arguments
     H_args = {'t0' : t0, 't1' : t1, 't2' : t2,
               't3' : t3, 'tg' : tg, 'Q'  : Q,
@@ -49,18 +44,20 @@ def sample(Nq, wq, wc, wd, smooth, Q, t0, t1, t2, t3, tg, psi0, Np_per_batch, op
         
     H = [Hjc, [Hc, drive_nonosc], [Hd, drive]]  # complete Hamiltonian
     
-    ID, IDstr, folder = calculate(H, psi0, e_ops, H_args, options, Nc, Np, Np_per_batch, verbose=False)
+    progfolder = calculate(H, psi0, e_ops, H_args, options, Nc, Np, Np_per_batch, verbose=True)
+    
+    """ SAVE EVOLUTION """
 
-    srcfolder = folder # "/home/student/thesis/"
-    selection = All # (0, t3)
-    reduction = 5
+    srcfolder = progfolder #"/home/student/thesis/blue"
     quants = ['times', 'expect', 'e0', 'g1', 'e1', 'g0']
 
     start_comb = datetime.now()
-    combine_batches(srcfolder, selection, reduction,
-                    quants=quants, return_data=False)
+    new_folder_name = copy(srcfolder)
+    ID = getID(srcfolder)
+    combine_batches(srcfolder, quants=quants, return_data=False)
     end_comb = datetime.now()
-    
+    print("Batches combined    in {} s".format((end_comb - start_comb).total_seconds()))
+
     times, states, expect, e0, g1, e1, g0 = load_data(quants, srcfolder)
 
     fig, ax1 = plt.subplots(figsize=[12,3])

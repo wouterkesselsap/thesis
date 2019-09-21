@@ -6,6 +6,7 @@ import time
 import matplotlib.pyplot as plt
 from datetime import datetime
 from scipy.special import erf
+from scipy.signal import savgol_filter
 from math import ceil
 from itertools import chain, groupby
 from operator import itemgetter
@@ -715,30 +716,26 @@ def extrema(x, times):
     return maxima, t_maxima, n_maxima, minima, t_minima, n_minima
 
 
-def remove_micromotion(x, times, method='retain'):
-    """Removes micromotion from input by determining all local maxima
+def remove_micromotion(x, times, method, window_length=1001, order=2, **kwargs):
+    """Remove micromotion from input signal. by determining all local maxima
     and minima, and subsequently draw the output in the middle of the
     region defined by these local maxima and minima.
     
     Method is either
-    - 'artificial' : create artificial data points in the middle of
-      the line that connects a minimum with an adjacent maximum or
-      vice versa; or
-    - 'retain' : return the set of points from x that are vertically
-      nearest to the middle of the line that connects a minimum with
-      an adjacent maximum or vice versa
+    - 'bisect' : determines all local maxima
+      and minima, and subsequently draw the output on the bisection
+      of two subsequent extrema; or
+    - 'savgol' : Savitzky-Golay filter
     """
-    xnew = list()
-    tnew = list()
-    
-    maxima, t_maxima, _, minima, t_minima, _ = extrema(x, times)
-    
-    if method == 'artificial':
+    if method == 'bisect':
+        xnew = list()
+        tnew = list()
+        maxima, t_maxima, _, minima, t_minima, _ = extrema(x, times)
+        
         supports = copy(maxima)
         supports.extend(minima)
         t_supports = copy(t_maxima)
         t_supports.extend(t_minima)
-        
         supports_zipped = sorted(zip(t_supports, supports))
         t_supports, supports = zip(*supports_zipped)
         
@@ -747,14 +744,15 @@ def remove_micromotion(x, times, method='retain'):
             minval = min(supports[interval-1], supports[interval])
             xnew.append(minval + (maxval - minval)/2)
             tnew.append(t_supports[interval-1] + (t_supports[interval] - t_supports[interval-1])/2)
+            
+    elif method == 'savgol':
+        xnew = savgol_filter(x, window_length, order)
+        
+    return xnew, times
     
-    elif method == 'retain':
-        raise ValueError("'retain' method not yet supported, use 'artificial' method")
-    
-    return xnew, tnew
 
 
-def cluster(x, t, out='centroid'):
+def cluster(x, t, out='extremum'):
     """Determine clusters in data and return a single point per cluster.
     
     out : str
@@ -773,6 +771,8 @@ def cluster(x, t, out='centroid'):
     elif abs(x[0] - xmax) > abs(x[0] - xmin):
         pole = -1
     
+    poles = [pole]
+    
     for n, val in enumerate(x):
         if n != 0:
             if abs(val - xmax) < abs(val - xmin):
@@ -785,6 +785,8 @@ def cluster(x, t, out='centroid'):
                 pole = copy(newpole)
                 k += 1
                 classified.append((n, k))
+                poles.append(pole)
+    
     clustered = list()
     for key, group in groupby(classified, key=itemgetter(1)):
         inds = [item[0] for item in group]
@@ -794,7 +796,7 @@ def cluster(x, t, out='centroid'):
     xlocs = list()
     tlocs = list()
     
-    for cluster in clustered:
+    for ic, cluster in enumerate(clustered):
         if out == 'centroid':
             xtot = 0
             ttot = 0
@@ -805,14 +807,28 @@ def cluster(x, t, out='centroid'):
             tlocs.append(ttot/len(cluster))
         
         elif out == 'extremum':
-            raise ValueError("'extremum option not yet supported, use 'centroid' instead")
+            if poles[ic] == 1:
+                xmax = max(x[cluster[0] : cluster[-1] +1])
+                tmax = t[x.index(xmax)]
+                xlocs.append(xmax)
+                tlocs.append(tmax)
+            elif poles[ic] == -1:
+                xmin = min(x[cluster[0] : cluster[-1] +1])
+                tmin = t[x.index(xmin)]
+                xlocs.append(xmin)
+                tlocs.append(tmin)
     
     return xlocs, tlocs
 
 
-def sideband_freq(x, times):
+def sideband_freq(x, times, rm_micromotion=False, method='savgol', **kwargs):
     """Determine the sideband transition frequency [GHz] based on
-    expectation values from which the micromotion has been removed."""
+    expectation values.
+    If the micromotion is not already removed from the signal, rm_micromotion
+    should be set to True."""
+    
+    if rm_micromotion:
+        x, times = remove_micromotion(x, times, method)
     
     maxima, t_maxima, _, minima, t_minima, _ = extrema(x, times)
     supports = copy(maxima)
@@ -827,10 +843,17 @@ def sideband_freq(x, times):
     supports = supports[1:-1]  # remove first and last element
     t_supports = t_supports[1:-1]  # remove first and last element
     
-    if len(supports) < 3:
+    if len(supports) < 2:
         print("WARNING: not enough sideband oscillations to determinde frequency,")
         print("         increase the simulation time")
         return 0
+    elif len(supports) == 2:
+        print("WARNING: not enough sideband oscillations to accurately determinde frequency,")
+        print("         increase the simulation time for a more accurate result")
+        dts = np.diff(t_supports)
+        Tsb = 2*sum(dts)/len(dts)  # sideband transition period [ns]
+        wsb = 1/Tsb  # sideband transition frequency [GHz]
+        return wsb*2*pi
     else:
         dts = np.diff(t_supports)
         Tsb = 2*sum(dts)/len(dts)  # sideband transition period [ns]
