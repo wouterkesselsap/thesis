@@ -66,7 +66,7 @@ def sample(Nq, wq, wc, wd, smooth, Q, t0, t1, t2, t3, tg, psi0, Np_per_batch, op
 
     times, states, expect, e0, g1, e1, g0 = load_data(quants, srcfolder)
 
-    fig, ax1 = plt.subplots(figsize=[12,3])
+    fig, ax1 = plt.subplots(figsize=[15,3])
     ax1.plot(times, expect[0], color='b', label='Qubit')
     ax1.plot(times, expect[1], color='r', label='Cavity')
     ax1.set_xlabel("$t$ [ns]")
