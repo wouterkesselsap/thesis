@@ -25,6 +25,32 @@ def prepare_folder():
     return ID, folder, now
 
 
+def saveparams(Nq, Nc, Nt, wq, wc, Ec, g, sb,
+               t0, t1, t2, t3, tg, smooth, Q,
+               Np, Np_per_batch, H, psi0, e_ops, options,
+               folder, **kwargs):
+    """Save all parameters to file."""
+    data = {
+        'Nq' : Nq, 'Nc' : Nc, 'wq' : wq, 'wc' : wc, 'Ec' : Ec, 'g' : g, 'sb' : sb,
+        't0' : t0, 't1' : t1, 't2' : t2, 't3' : t3, 'tg' : tg, 'smooth' : smooth, 'Q' : Q,
+        'Np' : Np, 'Np_per_batch' : Np_per_batch, 'H' : H, 'psi0' : psi0, 'e_ops' : e_ops, 'options' : options        
+    }
+    if Nt == 1:
+        data['Omega'] = kwargs['Omega']
+        data['wd'] = kwargs['wd']
+    elif Nt == 2:
+        data['Omegaq'] = kwargs['Omegaq']
+        data['Omegac'] = kwargs['Omegac']
+        data['dw'] = kwargs['dw']
+        data['wdq'] = kwargs['wdq']
+        data['wdc'] = kwargs['wdc']
+    
+    name = folder + "/parameters.pkl"
+    out_file = open(name, "wb")
+    pickle.dump(data, out_file)
+    out_file.close()
+
+
 def create_batches(t0, tf, Np, Nppb):
     """Creates a tuple with batches of time points for which to
     sequentially evaluate the LME evolution.

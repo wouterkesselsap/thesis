@@ -1,14 +1,21 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import plots
+from plots import *
 from supports import *
+from process import *
+from calculate import *
+from envelopes import *
 from qutip import *
-from scipy.special import erf
-from scipy.signal import argrelextrema
+from ipywidgets import widgets
+from IPython.display import display
+
+home = "/home/student/thesis/"
+options = Options()
+options.store_states=True
 
 
 def sample(Nq, wq, wc, wd, smooth, Q, t0, t1, t2, t3, tg, psi0, Np_per_batch, options):
-    from supports import drive
+    from envelopes import drive
     
     print(wd/2/pi)
     
@@ -44,7 +51,7 @@ def sample(Nq, wq, wc, wd, smooth, Q, t0, t1, t2, t3, tg, psi0, Np_per_batch, op
         
     H = [Hjc, [Hc, drive_nonosc], [Hd, drive]]  # complete Hamiltonian
     
-    progfolder = calculate(H, psi0, e_ops, H_args, options, Nc, Np, Np_per_batch, verbose=True)
+    progfolder = calculate(H, psi0, e_ops, H_args, options, Nc, Np, Np_per_batch, verbose=False)
     
     """ SAVE EVOLUTION """
 
@@ -56,7 +63,6 @@ def sample(Nq, wq, wc, wd, smooth, Q, t0, t1, t2, t3, tg, psi0, Np_per_batch, op
     ID = getID(srcfolder)
     combine_batches(srcfolder, quants=quants, return_data=False)
     end_comb = datetime.now()
-    print("Batches combined    in {} s".format((end_comb - start_comb).total_seconds()))
 
     times, states, expect, e0, g1, e1, g0 = load_data(quants, srcfolder)
 
