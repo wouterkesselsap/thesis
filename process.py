@@ -27,28 +27,68 @@ def prepare_folder():
 
 def saveparams(Nq, Nc, Nt, wq, wc, Ec, g, sb,
                t0, t1, t2, t3, tg, smooth, Q,
-               Np, Np_per_batch, H, psi0, e_ops, options,
-               folder, **kwargs):
-    """Save all parameters to file."""
-    data = {
-        'Nq' : Nq, 'Nc' : Nc, 'wq' : wq, 'wc' : wc, 'Ec' : Ec, 'g' : g, 'sb' : sb,
-        't0' : t0, 't1' : t1, 't2' : t2, 't3' : t3, 'tg' : tg, 'smooth' : smooth, 'Q' : Q,
-        'Np' : Np, 'Np_per_batch' : Np_per_batch, 'H' : H, 'psi0' : psi0, 'e_ops' : e_ops, 'options' : options        
-    }
-    if Nt == 1:
-        data['Omega'] = kwargs['Omega']
-        data['wd'] = kwargs['wd']
-    elif Nt == 2:
-        data['Omegaq'] = kwargs['Omegaq']
-        data['Omegac'] = kwargs['Omegac']
-        data['dw'] = kwargs['dw']
-        data['wdq'] = kwargs['wdq']
-        data['wdc'] = kwargs['wdc']
+               Np, H, psi0, e_ops, options,
+               folder, frmt, **kwargs):
+    """Save all parameters to file.
     
-    name = folder + "/parameters.pkl"
-    out_file = open(name, "wb")
-    pickle.dump(data, out_file)
-    out_file.close()
+    frmt : str, or list of str
+        Can be "txt" and "pkl"
+    """
+    if isinstance(frmt, str):
+        frmt = [frmt]
+    
+    if 'pkl' in frmt:
+        data = {
+            'Nq' : Nq, 'Nc' : Nc, 'Nt' : Nt, 'wq' : wq, 'wc' : wc, 'Ec' : Ec, 'g' : g, 'sb' : sb,
+            't0' : t0, 't1' : t1, 't2' : t2, 't3' : t3, 'tg' : tg, 'smooth' : smooth, 'Q' : Q,
+            'Np' : Np, 'H' : H, 'psi0' : psi0, 'e_ops' : e_ops, 'options' : options        
+        }
+        if Nt == 1:
+            data['Omega'] = kwargs['Omega']
+            data['wd'] = kwargs['wd']
+        elif Nt == 2:
+            data['Omegaq'] = kwargs['Omegaq']
+            data['Omegac'] = kwargs['Omegac']
+            data['dw'] = kwargs['dw']
+            data['wdq'] = kwargs['wdq']
+            data['wdc'] = kwargs['wdc']
+
+        name = folder + "/parameters.pkl"
+        pklfile = open(name, "wb")
+        pickle.dump(data, pklfile)
+        pklfile.close()
+    
+    if 'txt' in frmt:
+        data = ["Nq     : {}\n".format(Nq),
+                "Nc     : {}\n".format(Nc),
+                "Nt     : {}\n".format(Nt),
+                "wq     : {}\n".format(wq),
+                "wc     : {}\n".format(wc),
+                "Ec     : {}\n".format(Ec),
+                "g      : {}\n".format(g),
+                "sb     : {}\n".format(sb),
+                "t0     : {}\n".format(t0),
+                "t1     : {}\n".format(t1),
+                "t2     : {}\n".format(t2),
+                "t3     : {}\n".format(t3),
+                "tg     : {}\n".format(tg),
+                "smooth : {}\n".format(smooth),
+                "Q      : {}\n".format(Q),
+                "Np     : {}\n".format(Np)]
+        
+        if Nt == 1:
+            data.append("Omega  : {}\n".format(kwargs['Omega']))
+            data.append("wd     : {}\n".format(kwargs['wd']))
+        elif Nt == 2:
+            data.append("Omegaq : {}\n".format(kwargs['Omegaq']))
+            data.append("wdq    : {}\n".format(kwargs['wdq']))
+            data.append("Omegac : {}\n".format(kwargs['Omegac']))
+            data.append("wdc    : {}\n".format(kwargs['wdc']))
+        
+        name = folder + "/parameters.txt"
+        txtfile = open(name, "w")
+        txtfile.writelines(data)
+        txtfile.close()
 
 
 def create_batches(t0, tf, Np, Nppb):
