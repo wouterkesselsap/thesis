@@ -8,6 +8,7 @@ from glob import glob
 from datetime import datetime
 from itertools import chain, groupby
 from operator import itemgetter
+from supports import *
 
 
 def prepare_folder():
@@ -59,15 +60,17 @@ def saveparams(Nq, Nc, Nt, wq, shift, wc, Ec, g, sb,
         pklfile.close()
     
     if 'txt' in frmt:
-        data = ["Nq     : {}\n (# of qubit levels)".format(Nq),
-                "Nc     : {}\n (# of cavity levels)".format(Nc),
-                "Nt     : {}\n (# of tones in drive)".format(Nt),
+        data = ["PRESET PARAMETERS\n",
+                "-----------------\n\n"
+                "Nq     : {} (# of qubit levels)\n".format(Nq),
+                "Nc     : {} (# of cavity levels)\n".format(Nc),
+                "Nt     : {} (# of tones in drive)\n".format(Nt),
                 "wq     : {} = {} GHz (qubit transition frequency)\n".format(wq, wq/2/pi),
                 "shift  : {} = {} GHz (ac-Stark shift of qubit)\n".format(shift, shift/2/pi),
                 "wc     : {} = {} GHz (cavity frequency)\n".format(wc, wc/2/pi),
                 "Ec     : {} = {} GHz (anharmonicity)\n".format(Ec, Ec/2/pi),
                 "g      : {} = {} GHz (coupling strength)\n".format(g, g/2/pi),
-                "sb     : {}\n (sideband transition)".format(sb),
+                "sb     : {} (sideband transition)\n".format(sb),
                 "t0     : {} ns (start of simulation)\n".format(t0),
                 "t1     : {} ns (start of drive)\n".format(t1),
                 "t2     : {} ns (end of drive)\n".format(t2),
@@ -86,6 +89,9 @@ def saveparams(Nq, Nc, Nt, wq, shift, wc, Ec, g, sb,
             data.append("Omegac : {} = {} GHz (amplitude of cavity-friendly drive tone)\\n".format(kwargs['Omegac'], kwargs['Omegac']/2/pi))
             data.append("wdc    : {} = {} GHz (frequency of cavity-friendly drive tone)\\n".format(kwargs['wdc'], kwargs['wdc']/2/pi))
             data.append("dw     : {} = {} GHz (detuning delta from wc)\n".format(kwargs['dw'], kwargs['dw']/2/pi))
+        
+        data.append("\nCALCULATED PARAMETERS\n")
+        data.append("---------------------\n\n")
         
         name = folder + "/parameters.txt"
         txtfile = open(name, "w")
