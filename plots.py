@@ -326,13 +326,15 @@ def sb_expect(times, expect, sb, Nt, H_args, coupling, xlim=None, ylim=None, fig
         ax1.set_xlim(xlim)
     elif ylim != None:
         ax1.set_ylim(ylim)
-
+    
+    ax2 = ax1.twinx()
     if Nt == 1:
         wd = kwargs['wd']
         drive_coupling = wd/(2*pi)*coupling
+        ax2.set_ylabel('$\Omega$, $g$ [GHz]')
     elif Nt == 2:
         drive_coupling = coupling
-    ax2 = ax1.twinx()
+        ax2.set_ylabel('$\Omega$, $g$ [a.u.]')
     ax2.plot(times, drive_coupling, color='g', label='Drive, coupling')
     ax2.set_ylabel('$\Omega$ [GHz]')
     ax2.tick_params(axis='y')
@@ -355,7 +357,6 @@ def sb_expect(times, expect, sb, Nt, H_args, coupling, xlim=None, ylim=None, fig
         elif Nt == 2:
             plt.title("Double-tone blue sideband transitions ($\\nu_{{sb}}$ = {} MHz)".format(
                       int(round(1000*wsb/2/pi))))
-    plt.show()
     
     return figqc
 
@@ -368,7 +369,7 @@ def sb_combined_probs(times, sb, Nt, H_args, coupling, xlim=None, ylim=None, fig
         ax1.plot(times, e0-g1, color='r', label='$P(e0) - P(g1)$')
     if sb == 'blue':
         e1 = kwargs['e1']
-        go = kwargs['g0']
+        g0 = kwargs['g0']
         ax1.plot(times, e1-g0, color='b', label='$P(e1) - P(g0)$')
     ax1.plot([times[0], times[-1]], [1, 1], ':', color='k')
     ax1.plot([times[0], times[-1]], [1/2, 1/2], ':', color='k')

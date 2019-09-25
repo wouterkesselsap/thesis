@@ -84,6 +84,7 @@ def saveparams(Nq, Nc, Nt, wq, wc, Ec, g, sb,
             data.append("wdq    : {}\n".format(kwargs['wdq']))
             data.append("Omegac : {}\n".format(kwargs['Omegac']))
             data.append("wdc    : {}\n".format(kwargs['wdc']))
+            data.append("dw     : {}\n".format(kwargs['dw']))
         
         name = folder + "/parameters.txt"
         txtfile = open(name, "w")
