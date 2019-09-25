@@ -12,6 +12,8 @@ from matplotlib import cm
 from qutip.bloch import Bloch
 from qutip.wigner import wigner as wig
 from qutip.visualization import hinton, matrix_histogram, matrix_histogram_complex
+from envelopes import *
+from supports import *
 
 
 
@@ -306,3 +308,112 @@ def wigner(rho, obj='all', ind=None, x=np.linspace(-3,3,200), y=np.linspace(-3,3
     plt.colorbar()
     plt.show()
     return cont
+
+
+def sb_expect(times, expect, sb, Nt, H_args, xlim=None, ylim=None, figsize=[15,3], **kwargs):
+    fig, ax1 = plt.subplots(figsize=figsize)
+    ax1.plot(times, expect[0], color='b', label='Qubit')
+    ax1.plot(times, expect[1], color='r', label='Cavity')
+    ax1.plot([times[0], times[-1]], [1, 1], ':', color='k')
+    ax1.plot([times[0], times[-1]], [1/2, 1/2], ':', color='k')
+    ax1.plot([times[0], times[-1]], [0, 0], ':', color='k')
+    ax1.set_xlabel("$t$ [ns]")
+    ax1.set_ylabel("$n$")
+    ax1.tick_params(axis='y')
+    ax1.legend(loc='center left')
+
+    if xlim != None:
+        ax1.set_xlim(xlim)
+    elif ylim != None:
+        ax1.set_ylim(ylim)
+
+    if Nt == 1:
+        wd = kwargs['wd']
+        drive_coupling = wd/(2*pi)*drive_nonosc(times, H_args)
+    elif Nt == 2:
+        drive_coupling = drive_nonosc(times, H_args)
+    ax2 = ax1.twinx()
+    ax2.plot(times, drive_coupling, color='g', label='Drive, coupling')
+    ax2.set_ylabel('$\Omega$ [GHz]')
+    ax2.tick_params(axis='y')
+    ax2.legend(loc='center right')
+
+    figqc = plt.gcf()
+    
+    wsb = kwargs['wsb']
+    if sb == 'red':
+        if Nt == 1:
+            plt.title("Single-tone red sideband transitions at $\\nu_d$ = {} GHz ($\\nu_{{sb}}$ = {} MHz)".format(
+                      round(wd/2/pi, 3), int(round(1000*wsb/2/pi))))
+        elif Nt == 2:
+            plt.title("Double-tone red sideband transitions ($\\nu_{{sb}}$ = {} MHz)".format(
+                      int(round(1000*wsb/2/pi))))
+    elif sb == 'blue':
+        if Nt == 1:
+            plt.title("Single-tone blue sideband transitions at $\\nu_d$ = {} GHz ($\\nu_{{sb}}$ = {} MHz)".format(
+                      round(wd/2/pi, 3), int(round(1000*wsb/2/pi))))
+        elif Nt == 2:
+            plt.title("Double-tone blue sideband transitions ($\\nu_{{sb}}$ = {} MHz)".format(
+                      int(round(1000*wsb/2/pi))))
+    plt.show()
+    
+    return figqc
+
+
+def sb_combined_probs(times, sb, Nt, H_args, xlim=None, ylim=None, figsize=[15,3], **kwargs):
+    fig, ax1 = plt.subplots(figsize=figsize)
+    if sb == 'red':
+        e0 = kwargs['e0']
+        g1 = kwargs['g1']
+        ax1.plot(times, e0-g1, color='r', label='$P(e0) - P(g1)$')
+    if sb == 'blue':
+        e1 = kwargs['e1']
+        go = kwargs['g0']
+        ax1.plot(times, e1-g0, color='b', label='$P(e1) - P(g0)$')
+    ax1.plot([times[0], times[-1]], [1, 1], ':', color='k')
+    ax1.plot([times[0], times[-1]], [1/2, 1/2], ':', color='k')
+    ax1.plot([times[0], times[-1]], [0, 0], ':', color='k')
+    ax1.plot([times[0], times[-1]], [-1/2, -1/2], ':', color='k')
+    ax1.plot([times[0], times[-1]], [-1, -1], ':', color='k')
+    ax1.set_xlabel("$t$ [ns]")
+    ax1.set_ylabel("$P$")
+    ax1.tick_params(axis='y')
+    ax1.legend(loc='center left')
+    
+    if xlim != None:
+        ax1.set_xlim(xlim)
+    if ylim != None:
+        ax1.set_ylim(ylim)
+
+    ax2 = ax1.twinx()
+    if Nt == 1:
+        wd = kwargs['wd']
+        drive_coupling = wd/(2*pi)*drive_nonosc(times, H_args)
+        ax2.set_ylabel('$\Omega$, $g$ [GHz]')
+    elif Nt == 2:
+        drive_coupling = drive_nonosc(times, H_args)
+        ax2.set_ylabel('$\Omega$, $g$ [a.u.]')
+    ax2.plot(times, drive_coupling, color='g', label='Drive, coupling')
+    ax2.tick_params(axis='y')
+    ax2.legend(loc='center right')
+
+    fig = plt.gcf()
+    
+    wsb = kwargs['wsb']
+    if sb == 'red':
+        if Nt == 1:
+            plt.title("Single-tone red sideband transitions at $\\nu_d$ = {} GHz ($\\nu_{{sb}}$ = {} MHz)".format(
+                      round(wd/2/pi, 3), int(round(1000*wsb/2/pi))))
+        elif Nt == 2:
+            plt.title("Double-tone red sideband transitions ($\\nu_{{sb}}$ = {} MHz)".format(
+                      int(round(1000*wsb/2/pi))))
+    elif sb == 'blue':
+        if Nt == 1:
+            plt.title("Single-tone blue sideband transitions at $\\nu_d$ = {} GHz ($\\nu_{{sb}}$ = {} MHz)".format(
+                      round(wd/2/pi, 3), int(round(1000*wsb/2/pi))))
+        elif Nt == 2:
+            plt.title("Double-tone blue sideband transitions ($\\nu_{{sb}}$ = {} MHz)".format(
+                      int(round(1000*wsb/2/pi))))
+    plt.show()
+    
+    return fig

@@ -69,6 +69,9 @@ def sample_single_tone(Nq, wq, wc, wd, smooth, Q, t0, t1, t2, t3, tg, psi0, Np_p
     fig, ax1 = plt.subplots(figsize=[15,3])
     ax1.plot(times, expect[0], color='b', label='Qubit')
     ax1.plot(times, expect[1], color='r', label='Cavity')
+    ax1.plot([times[0], times[-1]], [1, 1], ':', color='k')
+    ax1.plot([times[0], times[-1]], [1/2, 1/2], ':', color='k')
+    ax1.plot([times[0], times[-1]], [0, 0], ':', color='k')
     ax1.set_xlabel("$t$ [ns]")
     ax1.set_ylabel("$n$")
     ax1.tick_params(axis='y')
@@ -98,10 +101,13 @@ def sample_double_tone(Nq, wq, wc, shift, dw, sb, smooth, Q, t0, t1, t2, t3, tg,
 
     Omegaq = 0.025 *2 *2*pi  # amplitude of qubit-friendly drive tone
     Omegac = 0.317 *2 *2*pi  # amplitude of cavity-friendly drive tone
-    wdq = wq + shift - dw  # frequency of qubit-friendly drive tone
-    wdc = wc + shift + dw  # frequency of cavity-friendly drive tone
-    Stark_shift = ( Omegaq**2/(2*(wq-wdq)) + Omegaq**2/(2*(wq+wdq)) + 
-                        Omegac**2/(2*(wq-wdc)) + Omegac**2/(2*(wq+wdc)) )
+    
+    if sb == 'red':
+        wdq =  wq + shift - dw
+        wdc =  wc - dw
+    elif sb == 'blue':
+        wdq =  wq + shift + dw
+        wdc =  wc - dw
 
     Np = 100*int(t3)     # number of discrete time steps for which to store the output
     
@@ -163,3 +169,35 @@ def sample_double_tone(Nq, wq, wc, shift, dw, sb, smooth, Q, t0, t1, t2, t3, tg,
     ax2.legend(loc='center right')
 
     plt.show()
+    
+    fig, ax1 = plt.subplots(figsize=[15,3])
+    if sb == 'red':
+        ax1.plot(times, e0-g1, color='r', label='$P(e0) - P(g1)$')
+    if sb == 'blue':
+        ax1.plot(times, e1-g0, color='b', label='$P(e1) - P(g0)$')
+    ax1.plot([times[0], times[-1]], [1, 1], ':', color='k')
+    ax1.plot([times[0], times[-1]], [1/2, 1/2], ':', color='k')
+    ax1.plot([times[0], times[-1]], [0, 0], ':', color='k')
+    ax1.plot([times[0], times[-1]], [-1/2, -1/2], ':', color='k')
+    ax1.plot([times[0], times[-1]], [-1, -1], ':', color='k')
+    ax1.set_xlabel("$t$ [ns]")
+    ax1.set_ylabel("$P$")
+    ax1.tick_params(axis='y')
+    ax1.legend(loc='center left')
+
+    # ax1.set_xlim([40, 50])
+
+    ax2 = ax1.twinx()
+    if Nt == 1:
+        drive_coupling = wd/(2*pi)*drive_nonosc(times, H_args)
+        ax2.set_ylabel('$\Omega$, $g$ [GHz]')
+    elif Nt == 2:
+        drive_coupling = drive_nonosc(times, H_args)
+        ax2.set_ylabel('$\Omega$, $g$ [a.u.]')
+    ax2.plot(times, drive_coupling, color='g', label='Drive, coupling')
+    ax2.tick_params(axis='y')
+    ax2.legend(loc='center right')
+    
+    plt.show()
+    
+    print(min(e0-g1))
