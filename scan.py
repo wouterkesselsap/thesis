@@ -10,8 +10,6 @@ from ipywidgets import widgets
 from IPython.display import display
 
 home = "/home/student/thesis/"
-options = Options()
-options.store_states=True
 
 
 def sample_single_tone(Nq, wq, wc, shift, sb, smooth, Q, t0, t1, t2, t3, tg, psi0, Np_per_batch, options):
@@ -23,19 +21,15 @@ def sample_single_tone(Nq, wq, wc, shift, sb, smooth, Q, t0, t1, t2, t3, tg, psi
     delta = wq - wc    # detuning
     Ec = 0.16 *2*pi    # anharmonicity (charging energy)
     g = 0.2 *2*pi      # coupling between qubit and resonator
-
-    sb = 'red'  # kind of sideband transitions
-    if Nt == 1:
-        Omega = 0.3 *2 *2*pi  # pump drive amplitude
-        shift = 2*1.2974 *2*pi -wq +wc  # ac-Stark shift
-
-        if sb == 'red':
-            if wq > wc:
-                wd = (wq + shift - wc)/2
-            elif wq < wc:
-                wd = (wc - wq - shift)/2
-        elif sb == 'blue':
-                wd = (wq + shift + wc)/2
+    
+    Omega = 0.3 *2 *2*pi  # pump drive amplitude
+    if sb == 'red':
+        if wq > wc:
+            wd = (wq + shift - wc)/2
+        elif wq < wc:
+            wd = (wc - wq - shift)/2
+    elif sb == 'blue':
+        wd = (wq + shift + wc)/2
     
     print(shift/2/pi, wd/2/pi)
         
@@ -86,13 +80,14 @@ def sample_single_tone(Nq, wq, wc, shift, sb, smooth, Q, t0, t1, t2, t3, tg, psi
     """COMBINED PROBABILITIES"""
 
     if sb == 'red':
-        if Nt == 1:
-            fig = sb_combined_probs(times, sb, Nt, H_args, coupling,
-                                    xlim=None, ylim=None, figsize=[15,3], e0=e0, g1=g1, wd=wd, wsb=0)
+        fig = sb_combined_probs(times, sb, Nt, H_args, coupling, e0=e0, g1=g1, wd=wd, wsb=0)
     elif sb == 'blue':
-        if Nt == 1:
-            fig = sb_combined_probs(times, sb, Nt, H_args, coupling,
-                                    xlim=None, ylim=None, figsize=[15,3], e1=e1, g0=g0, wd=wd, wsb=0)
+        fig = sb_combined_probs(times, sb, Nt, H_args, coupling, e1=e1, g0=g0, wd=wd, wsb=0)
+    
+    if sb == 'red':
+        print(min(e0-g1), max(e0-g1))
+    elif sb == 'blue':
+        print(min(e1-g0), max(e1-g0))
 
 
 def sample_double_tone(Nq, wq, wc, shift, dw, sb, smooth, Q, t0, t1, t2, t3, tg, psi0, Np_per_batch, options):
