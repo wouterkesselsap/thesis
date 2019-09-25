@@ -310,7 +310,7 @@ def wigner(rho, obj='all', ind=None, x=np.linspace(-3,3,200), y=np.linspace(-3,3
     return cont
 
 
-def sb_expect(times, expect, sb, Nt, H_args, xlim=None, ylim=None, figsize=[15,3], **kwargs):
+def sb_expect(times, expect, sb, Nt, H_args, coupling, xlim=None, ylim=None, figsize=[15,3], **kwargs):
     fig, ax1 = plt.subplots(figsize=figsize)
     ax1.plot(times, expect[0], color='b', label='Qubit')
     ax1.plot(times, expect[1], color='r', label='Cavity')
@@ -329,9 +329,9 @@ def sb_expect(times, expect, sb, Nt, H_args, xlim=None, ylim=None, figsize=[15,3
 
     if Nt == 1:
         wd = kwargs['wd']
-        drive_coupling = wd/(2*pi)*drive_nonosc(times, H_args)
+        drive_coupling = wd/(2*pi)*coupling
     elif Nt == 2:
-        drive_coupling = drive_nonosc(times, H_args)
+        drive_coupling = coupling
     ax2 = ax1.twinx()
     ax2.plot(times, drive_coupling, color='g', label='Drive, coupling')
     ax2.set_ylabel('$\Omega$ [GHz]')
@@ -360,7 +360,7 @@ def sb_expect(times, expect, sb, Nt, H_args, xlim=None, ylim=None, figsize=[15,3
     return figqc
 
 
-def sb_combined_probs(times, sb, Nt, H_args, xlim=None, ylim=None, figsize=[15,3], **kwargs):
+def sb_combined_probs(times, sb, Nt, H_args, coupling, xlim=None, ylim=None, figsize=[15,3], **kwargs):
     fig, ax1 = plt.subplots(figsize=figsize)
     if sb == 'red':
         e0 = kwargs['e0']
@@ -388,10 +388,10 @@ def sb_combined_probs(times, sb, Nt, H_args, xlim=None, ylim=None, figsize=[15,3
     ax2 = ax1.twinx()
     if Nt == 1:
         wd = kwargs['wd']
-        drive_coupling = wd/(2*pi)*drive_nonosc(times, H_args)
+        drive_coupling = wd/(2*pi)*coupling
         ax2.set_ylabel('$\Omega$, $g$ [GHz]')
     elif Nt == 2:
-        drive_coupling = drive_nonosc(times, H_args)
+        drive_coupling = coupling
         ax2.set_ylabel('$\Omega$, $g$ [a.u.]')
     ax2.plot(times, drive_coupling, color='g', label='Drive, coupling')
     ax2.tick_params(axis='y')

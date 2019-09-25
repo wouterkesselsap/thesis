@@ -120,7 +120,7 @@ def drive(t, args):
     return envelope
 
 
-def drive_qubit(t, args):
+def driveq(t, args):
     "Sideband drive with oscillating term."
     t1 = args['t1']    # start of pulse
     t2 = args['t2']    # end of pulse
@@ -147,7 +147,7 @@ def drive_qubit(t, args):
     return envelope
 
 
-def drive_cavity(t, args):
+def drivec(t, args):
     "Sideband drive with oscillating term."
     t1 = args['t1']    # start of pulse
     t2 = args['t2']    # end of pulse

@@ -51,7 +51,7 @@ def sample_single_tone(Nq, wq, wc, wd, smooth, Q, t0, t1, t2, t3, tg, psi0, Np_p
         
     H = [Hjc, [Hc, drive_nonosc], [Hd, drive]]  # complete Hamiltonian
     
-    progfolder = calculate(H, psi0, e_ops, H_args, options, Nc, Np, Np_per_batch, verbose=False)
+    progfolder = calculate(H, psi0, e_ops, H_args, options, Nc, g, Np, Np_per_batch, verbose=False)
     
     """ SAVE EVOLUTION """
 
@@ -64,7 +64,7 @@ def sample_single_tone(Nq, wq, wc, wd, smooth, Q, t0, t1, t2, t3, tg, psi0, Np_p
     combine_batches(srcfolder, quants=quants, return_data=False)
     end_comb = datetime.now()
 
-    times, states, expect, e0, g1, e1, g0 = load_data(quants, srcfolder)
+    times, states, expect, e0, g1, e1, g0, coupling = load_data(quants, srcfolder)
 
     fig, ax1 = plt.subplots(figsize=[15,3])
     ax1.plot(times, expect[0], color='b', label='Qubit')
@@ -79,7 +79,7 @@ def sample_single_tone(Nq, wq, wc, wd, smooth, Q, t0, t1, t2, t3, tg, psi0, Np_p
 
     # ax1.set_xlim([10, 70])
 
-    drive = wd/(2*pi)*drive_nonosc(times, H_args)
+    drive = wd/(2*pi)*coupling
     ax2 = ax1.twinx()
     ax2.plot(times, drive, color='g', label='Drive, coupling')
     ax2.set_ylabel('$\Omega$, $g$ [GHz]')
@@ -133,7 +133,7 @@ def sample_double_tone(Nq, wq, wc, shift, dw, sb, smooth, Q, t0, t1, t2, t3, tg,
     
     """ CALCULATE! """
 
-    progfolder = calculate(H, psi0, e_ops, H_args, options, Nc, Np, Np_per_batch, verbose=False)
+    progfolder = calculate(H, psi0, e_ops, H_args, options, Nc, g, Np, Np_per_batch, verbose=False)
     
     """ SAVE EVOLUTION TEMPORARILY """
 
@@ -146,7 +146,7 @@ def sample_double_tone(Nq, wq, wc, shift, dw, sb, smooth, Q, t0, t1, t2, t3, tg,
     combine_batches(srcfolder, quants=quants, return_data=False)
     end_comb = datetime.now()
 
-    times, states, expect, e0, g1, e1, g0 = load_data(quants, srcfolder)
+    times, states, expect, e0, g1, e1, g0, coupling = load_data(quants, srcfolder)
     
     fig, ax1 = plt.subplots(figsize=[15,3])
     ax1.plot(times, expect[0], color='b', label='Qubit')
@@ -161,7 +161,7 @@ def sample_double_tone(Nq, wq, wc, shift, dw, sb, smooth, Q, t0, t1, t2, t3, tg,
 
     # ax1.set_xlim([10, 70])
 
-    drive = drive_nonosc(times, H_args)
+    drive = couplingCo
     ax2 = ax1.twinx()
     ax2.plot(times, drive, color='g', label='Drive, coupling')
     ax2.set_ylabel('$\Omega$, $g$ [GHz]')

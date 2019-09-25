@@ -11,9 +11,10 @@ from copy import copy
 from qutip import *
 from process import *
 from supports import *
+from envelopes import drive_nonosc
 
 
-def calculate(H, psi0, e_ops, H_args, options, Nc, Np, Np_per_batch, verbose=True):
+def calculate(H, psi0, e_ops, H_args, options, Nc, g, Np, Np_per_batch, verbose=True):
     "Integrate through time evolution."
     
     t0 = H_args['t0']
@@ -29,7 +30,8 @@ def calculate(H, psi0, e_ops, H_args, options, Nc, Np, Np_per_batch, verbose=Tru
             print(num+1, "/", len(batches), ":", int(np.round(100*(num+1)/len(batches))), "%")
         result = mesolve(H, psi0, tlist, c_ops=[], e_ops=e_ops, args=H_args, options=options)
         e0, g1, e1, g0 = combined_probs(result.states, Nc)
-        saveprog(result, e0, g1, e1, g0, num, folder)
+        coupling = drive_nonosc(tlist, H_args)  # unitless, peaks at 1
+        saveprog(result, e0, g1, e1, g0, coupling, num, folder)
         psi0 = copy(result.states[-1])
         del result, e0, g1, e1, g0
     end_calc = datetime.now()

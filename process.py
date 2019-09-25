@@ -116,7 +116,7 @@ def create_batches(t0, tf, Np, Nppb):
     return batches
 
 
-def saveprog(result, e0, g1, e1, g0, num, folder):
+def saveprog(result, e0, g1, e1, g0, coupling, num, folder):
     name = folder + "/evolution_" + str(num) + ".pkl"
     data = {
         'times': result.times,
@@ -126,6 +126,7 @@ def saveprog(result, e0, g1, e1, g0, num, folder):
         'g0' : g0,
         'g1' : g1,
         'e1' : e1,
+        'coupling' : coupling,
         'num': num
     }
     
@@ -160,7 +161,7 @@ def combine_batches(folder, selection='all', reduction=1, quants='all', return_d
         Can contain 'times', 'states' and 'expect'
     """
     if quants == 'all':
-        quants = ['times', 'states', 'expect', 'g0', 'g1', 'e0', 'e1']
+        quants = ['times', 'states', 'expect', 'g0', 'g1', 'e0', 'e1', 'coupling']
     if isinstance(quants, str):
         quants = [quants]
     
@@ -191,6 +192,14 @@ def combine_batches(folder, selection='all', reduction=1, quants='all', return_d
         pass
     try:
         os.remove(folder + "/e1.pkl")
+    except:
+        pass
+    try:
+        os.remove(folder + "/e1.pkl")
+    except:
+        pass
+    try:
+        os.remove(folder + "/coupling.pkl")
     except:
         pass
     
@@ -399,13 +408,40 @@ def combine_batches(folder, selection='all', reduction=1, quants='all', return_d
     else:
         e1_combined = None
     
+    if 'coupling' in quants:
+        coupling = [None] * filecount
+        for file in glob(condition):
+            infile = open(file, 'rb')
+            data = pickle.load(infile)
+            if data['num'] == 0:				
+                coupling[data['num']] = data['coupling']
+            else:
+                coupling[data['num']] = data['coupling'][1:]
+            infile.close()
+        coupling_combined = np.asarray(list(chain.from_iterable(coupling)))
+        
+        name = folder + "/coupling.pkl"
+        data = {
+            'quantity' : 'coupling',
+            'data'     : coupling_combined,
+        }
+        out_file = open(name, 'wb')
+        pickle.dump(data, out_file)
+        out_file.close()
+        
+        del coupling
+        if not return_data:
+            del coupling_combined
+    else:
+        coupling_combined = None
+    
     if return_data:
-        return times_combined, states_combined, expect_combined, e0_combined, g1_combined, e1_combined, g0_combined
+        return times_combined, states_combined, expect_combined, e0_combined, g1_combined, e1_combined, g0_combined, coupling_combined
 
 
 def load_data(quants, srcfolder):
     if quants == 'all':
-        quants = ['times', 'states', 'expect', 'g0', 'g1', 'e0', 'e1']
+        quants = ['times', 'states', 'expect', 'g0', 'g1', 'e0', 'e1', 'coupling']
     if isinstance(quants, str):
         quants = [quants]
     
@@ -472,4 +508,13 @@ def load_data(quants, srcfolder):
     else:
         g0 = None
     
-    return times, states, expect, e0, g1, e1, g0
+    if 'coupling' in quants:
+        gfile = open(srcfolder + "/coupling.pkl", 'rb')
+        gdata = pickle.load(gfile)
+        coupling = gdata['data']
+        gfile.close()
+        del gdata
+    else:
+        coupling = None
+    
+    return times, states, expect, e0, g1, e1, g0, coupling
