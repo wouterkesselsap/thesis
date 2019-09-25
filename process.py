@@ -25,7 +25,7 @@ def prepare_folder():
     return ID, folder, now
 
 
-def saveparams(Nq, Nc, Nt, wq, wc, Ec, g, sb,
+def saveparams(Nq, Nc, Nt, wq, shift, wc, Ec, g, sb,
                t0, t1, t2, t3, tg, smooth, Q,
                Np, H, psi0, e_ops, options,
                folder, frmt, **kwargs):
@@ -39,7 +39,7 @@ def saveparams(Nq, Nc, Nt, wq, wc, Ec, g, sb,
     
     if 'pkl' in frmt:
         data = {
-            'Nq' : Nq, 'Nc' : Nc, 'Nt' : Nt, 'wq' : wq, 'wc' : wc, 'Ec' : Ec, 'g' : g, 'sb' : sb,
+            'Nq' : Nq, 'Nc' : Nc, 'Nt' : Nt, 'wq' : wq, 'shift' : shift, 'wc' : wc, 'Ec' : Ec, 'g' : g, 'sb' : sb,
             't0' : t0, 't1' : t1, 't2' : t2, 't3' : t3, 'tg' : tg, 'smooth' : smooth, 'Q' : Q,
             'Np' : Np, 'H' : H, 'psi0' : psi0, 'e_ops' : e_ops, 'options' : options        
         }
@@ -59,32 +59,33 @@ def saveparams(Nq, Nc, Nt, wq, wc, Ec, g, sb,
         pklfile.close()
     
     if 'txt' in frmt:
-        data = ["Nq     : {}\n".format(Nq),
-                "Nc     : {}\n".format(Nc),
-                "Nt     : {}\n".format(Nt),
-                "wq     : {}\n".format(wq),
-                "wc     : {}\n".format(wc),
-                "Ec     : {}\n".format(Ec),
-                "g      : {}\n".format(g),
-                "sb     : {}\n".format(sb),
-                "t0     : {}\n".format(t0),
-                "t1     : {}\n".format(t1),
-                "t2     : {}\n".format(t2),
-                "t3     : {}\n".format(t3),
-                "tg     : {}\n".format(tg),
-                "smooth : {}\n".format(smooth),
-                "Q      : {}\n".format(Q),
-                "Np     : {}\n".format(Np)]
+        data = ["Nq     : {}\n (# of qubit levels)".format(Nq),
+                "Nc     : {}\n (# of cavity levels)".format(Nc),
+                "Nt     : {}\n (# of tones in drive)".format(Nt),
+                "wq     : {} = {} GHz (qubit transition frequency)\n".format(wq, wq/2/pi),
+                "shift  : {} = {} GHz (ac-Stark shift of qubit)\n".format(shift, shift/2/pi),
+                "wc     : {} = {} GHz (cavity frequency)\n".format(wc, wc/2/pi),
+                "Ec     : {} = {} GHz (anharmonicity)\n".format(Ec, Ec/2/pi),
+                "g      : {} = {} GHz (coupling strength)\n".format(g, g/2/pi),
+                "sb     : {}\n (sideband transition)".format(sb),
+                "t0     : {} ns (start of simulation)\n".format(t0),
+                "t1     : {} ns (start of drive)\n".format(t1),
+                "t2     : {} ns (end of drive)\n".format(t2),
+                "t3     : {} ns (end of simulation)\n".format(t3),
+                "tg     : {} ns (rise and fall time)\n".format(tg),
+                "smooth : {} (rise and fall with Gaussian)\n".format(smooth),
+                "Q      : {} (# of std's in Gaussian rise and fall)\n".format(Q),
+                "Np     : {} (# of data points)\n".format(Np)]
         
         if Nt == 1:
-            data.append("Omega  : {}\n".format(kwargs['Omega']))
-            data.append("wd     : {}\n".format(kwargs['wd']))
+            data.append("Omega  : {} = {} GHz (drive amplitude)\n".format(kwargs['Omega'], kwargs['Omega']/2/pi))
+            data.append("wd     : {} = {} GHz (drive frequency)\n".format(kwargs['wd'], kwargs['wd']/2/pi))
         elif Nt == 2:
-            data.append("Omegaq : {}\n".format(kwargs['Omegaq']))
-            data.append("wdq    : {}\n".format(kwargs['wdq']))
-            data.append("Omegac : {}\n".format(kwargs['Omegac']))
-            data.append("wdc    : {}\n".format(kwargs['wdc']))
-            data.append("dw     : {}\n".format(kwargs['dw']))
+            data.append("Omegaq : {} = {} GHz (amplitude of qubit-friendly drive tone)\n".format(kwargs['Omegaq'], kwargs['Omegaq']/2/pi))
+            data.append("wdq    : {} = {} GHz (frequency of qubit-friendly drive tone)\n".format(kwargs['wdq'], kwargs['wdq']/2/pi))
+            data.append("Omegac : {} = {} GHz (amplitude of cavity-friendly drive tone)\\n".format(kwargs['Omegac'], kwargs['Omegac']/2/pi))
+            data.append("wdc    : {} = {} GHz (frequency of cavity-friendly drive tone)\\n".format(kwargs['wdc'], kwargs['wdc']/2/pi))
+            data.append("dw     : {} = {} GHz (detuning delta from wc)\n".format(kwargs['dw'], kwargs['dw']/2/pi))
         
         name = folder + "/parameters.txt"
         txtfile = open(name, "w")

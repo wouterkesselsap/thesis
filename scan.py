@@ -17,23 +17,27 @@ options.store_states=True
 def sample_single_tone(Nq, wq, wc, shift, sb, smooth, Q, t0, t1, t2, t3, tg, psi0, Np_per_batch, options):
     from envelopes import drive
     
-    print(wd/2/pi)
-    
     Nc = 10  # number of levels in resonator 1
+    Nt = 1   # number of drive tones
 
-    delta = wq - wc  # detuning
-    Ec = 0.16 *2*pi  # anharmonicity (charging energy)
-    g = 0.2 *2*pi  # drive frequency resonator 1, coupling between qubit and resonator 1
+    delta = wq - wc    # detuning
+    Ec = 0.16 *2*pi    # anharmonicity (charging energy)
+    g = 0.2 *2*pi      # coupling between qubit and resonator
 
-    Omega = 0.3 *2 *2*pi  # pump drive amplitude
+    sb = 'red'  # kind of sideband transitions
+    if Nt == 1:
+        Omega = 0.3 *2 *2*pi  # pump drive amplitude
+        shift = 2*1.2974 *2*pi -wq +wc  # ac-Stark shift
+
+        if sb == 'red':
+            if wq > wc:
+                wd = (wq + shift - wc)/2
+            elif wq < wc:
+                wd = (wc - wq - shift)/2
+        elif sb == 'blue':
+                wd = (wq + shift + wc)/2
     
-    if sb == 'red':
-        if wq > wc:
-            wd = (wq + shift - wc)/2
-        elif wq < wc:
-            wd = (wc - wq - shift)/2
-    elif sb == 'blue':
-            wd = (wq + shift + wc)/2
+    print(shift/2/pi, wd/2/pi)
         
     Np = 100*int(t3)     # number of discrete time steps for which to store the output
     
@@ -59,9 +63,9 @@ def sample_single_tone(Nq, wq, wc, shift, sb, smooth, Q, t0, t1, t2, t3, tg, psi
     
     progfolder = calculate(H, psi0, e_ops, H_args, options, Nc, g, Np, Np_per_batch, verbose=False)
     
-    """ SAVE EVOLUTION """
+    """ SAVE EVOLUTION TEMPORARILY """
 
-    srcfolder = progfolder #"/home/student/thesis/blue"
+    srcfolder =  progfolder
     quants = ['times', 'expect', 'e0', 'g1', 'e1', 'g0', 'coupling']
 
     start_comb = datetime.now()
@@ -69,30 +73,26 @@ def sample_single_tone(Nq, wq, wc, shift, sb, smooth, Q, t0, t1, t2, t3, tg, psi
     ID = getID(srcfolder)
     combine_batches(srcfolder, quants=quants, return_data=False)
     end_comb = datetime.now()
-
+    
     times, states, expect, e0, g1, e1, g0, coupling = load_data(quants, srcfolder)
 
-    fig, ax1 = plt.subplots(figsize=[15,3])
-    ax1.plot(times, expect[0], color='b', label='Qubit')
-    ax1.plot(times, expect[1], color='r', label='Cavity')
-    ax1.plot([times[0], times[-1]], [1, 1], ':', color='k')
-    ax1.plot([times[0], times[-1]], [1/2, 1/2], ':', color='k')
-    ax1.plot([times[0], times[-1]], [0, 0], ':', color='k')
-    ax1.set_xlabel("$t$ [ns]")
-    ax1.set_ylabel("$n$")
-    ax1.tick_params(axis='y')
-    ax1.legend(loc='center left')
+    """ EXPECTATION VALUES """
 
-    # ax1.set_xlim([10, 70])
+    if sb == 'red':
+        figqc = sb_expect(times, expect, sb, Nt, H_args, coupling, xlim=None, ylim=None, figsize=[15,3], wd=wd, wsb=0)
+    elif sb == 'blue':
+        figqc = sb_expect(times, expect, sb, Nt, H_args, coupling, xlim=None, ylim=None, figsize=[15,3], wd=wd, wsb=0)
+    
+    """COMBINED PROBABILITIES"""
 
-    drive = wd/(2*pi)*coupling
-    ax2 = ax1.twinx()
-    ax2.plot(times, drive, color='g', label='Drive, coupling')
-    ax2.set_ylabel('$\Omega$, $g$ [GHz]')
-    ax2.tick_params(axis='y')
-    ax2.legend(loc='center right')
-
-    plt.show()
+    if sb == 'red':
+        if Nt == 1:
+            fig = sb_combined_probs(times, sb, Nt, H_args, coupling,
+                                    xlim=None, ylim=None, figsize=[15,3], e0=e0, g1=g1, wd=wd, wsb=0)
+    elif sb == 'blue':
+        if Nt == 1:
+            fig = sb_combined_probs(times, sb, Nt, H_args, coupling,
+                                    xlim=None, ylim=None, figsize=[15,3], e1=e1, g0=g0, wd=wd, wsb=0)
 
 
 def sample_double_tone(Nq, wq, wc, shift, dw, sb, smooth, Q, t0, t1, t2, t3, tg, psi0, Np_per_batch, options):
