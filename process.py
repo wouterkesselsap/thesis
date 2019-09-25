@@ -62,33 +62,33 @@ def saveparams(Nq, Nc, Nt, wq, shift, wc, Ec, g, sb,
     if 'txt' in frmt:
         data = ["PRESET PARAMETERS\n",
                 "-----------------\n\n"
-                "Nq     : {} (# of qubit levels)\n".format(Nq),
-                "Nc     : {} (# of cavity levels)\n".format(Nc),
-                "Nt     : {} (# of tones in drive)\n".format(Nt),
-                "wq     : {} = {} GHz (qubit transition frequency)\n".format(wq, wq/2/pi),
-                "shift  : {} = {} GHz (ac-Stark shift of qubit)\n".format(shift, shift/2/pi),
-                "wc     : {} = {} GHz (cavity frequency)\n".format(wc, wc/2/pi),
-                "Ec     : {} = {} GHz (anharmonicity)\n".format(Ec, Ec/2/pi),
-                "g      : {} = {} GHz (coupling strength)\n".format(g, g/2/pi),
-                "sb     : {} (sideband transition)\n".format(sb),
-                "t0     : {} ns (start of simulation)\n".format(t0),
-                "t1     : {} ns (start of drive)\n".format(t1),
-                "t2     : {} ns (end of drive)\n".format(t2),
-                "t3     : {} ns (end of simulation)\n".format(t3),
-                "tg     : {} ns (rise and fall time)\n".format(tg),
-                "smooth : {} (rise and fall with Gaussian)\n".format(smooth),
-                "Q      : {} (# of std's in Gaussian rise and fall)\n".format(Q),
-                "Np     : {} (# of data points)\n".format(Np)]
-        
+                "# of qubit levels               Nq     : {}\n".format(Nq),
+                "# of cavity levels              Nc     : {}\n".format(Nc),
+                "# of tones in drive             Nt     : {}\n".format(Nt),
+                "qubit transition frequency      wq     : {} = {} GHz\n".format(wq, wq/2/pi),
+                "qubit's ac-Stark shift          shift  : {} = {} GHz\n".format(shift, shift/2/pi),
+                "cavity frequency                wc     : {} = {} GHz\n".format(wc, wc/2/pi),
+                "anharmonicity                   Ec     : {} = {} GHz\n".format(Ec, Ec/2/pi),
+                "qubit-cavity coupling strength  g      : {} = {} GHz\n".format(g, g/2/pi),
+                "sideband transition             sb     : {}\n".format(sb),
+                "start of simulation             t0     : {} ns\n".format(t0),
+                "start of sideband drive         t1     : {} ns\n".format(t1),
+                "end of sideband drive           t2     : {} ns\n".format(t2),
+                "end of simulation               t3     : {} ns\n".format(t3),
+                "rise and fall time              tg     : {} ns\n".format(tg),
+                "rise and fall with Gaussian     smooth : {}\n".format(smooth),
+                "# of std's in Gaussian          Q      : {}\n".format(Q),
+                "# of data points                Np     : {}\n".format(Np)]
+                
         if Nt == 1:
-            data.append("Omega  : {} = {} GHz (drive amplitude)\n".format(kwargs['Omega'], kwargs['Omega']/2/pi))
-            data.append("wd     : {} = {} GHz (drive frequency)\n".format(kwargs['wd'], kwargs['wd']/2/pi))
+            data.append("sideband drive amplitude        Omega  : {} = {} GHz\n".format(kwargs['Omega'], kwargs['Omega']/2/pi))
+            data.append("sideband drive frequency        wd     : {} = {} GHz\n".format(kwargs['wd'], kwargs['wd']/2/pi))
         elif Nt == 2:
-            data.append("Omegaq : {} = {} GHz (amplitude of qubit-friendly drive tone)\n".format(kwargs['Omegaq'], kwargs['Omegaq']/2/pi))
-            data.append("wdq    : {} = {} GHz (frequency of qubit-friendly drive tone)\n".format(kwargs['wdq'], kwargs['wdq']/2/pi))
-            data.append("Omegac : {} = {} GHz (amplitude of cavity-friendly drive tone)\\n".format(kwargs['Omegac'], kwargs['Omegac']/2/pi))
-            data.append("wdc    : {} = {} GHz (frequency of cavity-friendly drive tone)\\n".format(kwargs['wdc'], kwargs['wdc']/2/pi))
-            data.append("dw     : {} = {} GHz (detuning delta from wc)\n".format(kwargs['dw'], kwargs['dw']/2/pi))
+            data.append("amplitude of qubit-friendly sideband drive tone   Omegaq : {} = {} GHz\n".format(kwargs['Omegaq'], kwargs['Omegaq']/2/pi))
+            data.append("frequency of qubit-friendly sideband drive tone   wdq    : {} = {} GHz\n".format(kwargs['wdq'], kwargs['wdq']/2/pi))
+            data.append("amplitude of cavity-friendly sideband drive tone  Omegac : {} = {} GHz\n".format(kwargs['Omegac'], kwargs['Omegac']/2/pi))
+            data.append("frequency of cavity-friendly sideband drive tone  wdc    : {} = {} GHz\n".format(kwargs['wdc'], kwargs['wdc']/2/pi))
+            data.append("detuning delta from wc                            dw     : {} = {} GHz\n".format(kwargs['dw'], kwargs['dw']/2/pi))
         
         data.append("\nCALCULATED PARAMETERS\n")
         data.append("---------------------\n\n")
