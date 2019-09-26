@@ -99,6 +99,56 @@ def saveparams(Nq, Nc, Nt, wq, shift, wc, Ec, g, sb,
         txtfile.close()
 
 
+def getparams(folder):
+    file = folder + "/parameters.pkl"
+    infile = open(file, 'rb')
+    data = pickle.load(infile)
+    
+    Nq = data['Nq']
+    Nc = data['Nc']
+    Nt = data['Nt']
+    wq = data['wq']
+    shift = data['shift']
+    wc = data['wc']
+    Ec = data['Ec']
+    g = data['g']
+    sb = data['sb']
+    t0 = data['t0']
+    t1 = data['t1']
+    t2 = data['t2']
+    t3 = data['t3']
+    tg = data['tg']
+    smooth = data['smooth']
+    Q = data['Q']
+    Np = data['Np']
+    H = data['H']
+    psi0 = data['psi0']
+    e_ops = data['e_ops']
+    options = data['options']
+    
+    if Nt == 1:
+        Omega = data['Omega']
+        wd = data['wd']
+        Omegaq = None
+        Omegac = None
+        dw = None
+        wdq = None
+        wdc = None
+    elif Nt == 2:
+        Omega = None
+        wd = None
+        Omegaq = data['Omegaq']
+        Omegac = data['Omegac']
+        dw = data['dw']
+        wdq = data['wdq']
+        wdc = data['wdc']
+    
+    infile.close()
+            
+    return Nq, Nc, Nt, wq, shift, wc, Ec, g, sb, t0, t1, t2, t3, tg, smooth, Q, Np, H, psi0, e_ops, options, Omega, wd, Omegaq, Omegac, dw, wdq, wdc
+            
+            
+
 def create_batches(t0, tf, Np, Nppb):
     """Creates a tuple with batches of time points for which to
     sequentially evaluate the LME evolution.
@@ -526,3 +576,29 @@ def load_data(quants, srcfolder):
         coupling = None
     
     return times, states, expect, e0, g1, e1, g0, coupling
+
+
+def getquants(folder):
+    quants = list()
+    condition = folder + "/*.pkl"
+    
+    for file in glob(condition):
+        
+        if ('expect' in file and 'expect' not in quants):
+            quants.append('expect')
+        elif ('states' in file and 'states' not in quants):
+            quants.append('states')
+        elif ('times' in file and 'times' not in quants):
+            quants.append('times')
+        elif ('coupling' in file and 'coupling' not in quants):
+            quants.append('coupling')
+        elif ('g0' in file and 'g0' not in quants):
+            quants.append('g0')
+        elif ('g1' in file and 'g1' not in quants):
+            quants.append('g1')
+        elif ('e0' in file and 'e0' not in quants):
+            quants.append('e0')
+        elif ('e1' in file and 'e1' not in quants):
+            quants.append('e1')
+    
+    return quants
