@@ -12,24 +12,19 @@ from IPython.display import display
 home = "/home/student/thesis/"
 
 
-def sample_single_tone(Nq, wq, wc, shift, sb, smooth, Q, t0, t1, t2, t3, tg, psi0, Np_per_batch, options):
+def sample_single_tone(Nq, wq, wc, Ec, g, Omega, shift, sb, smooth, Q, t0, t1, t2, t3, tg, psi0, Np_per_batch, options):
     from envelopes import drive
     
     Nc = 10  # number of levels in resonator 1
     Nt = 1   # number of drive tones
-
-    delta = wq - wc    # detuning
-    Ec = 0.16 *2*pi    # anharmonicity (charging energy)
-    g = 0.2 *2*pi      # coupling between qubit and resonator
     
-    Omega = 0.3 *2 *2*pi  # pump drive amplitude
     if sb == 'red':
         if wq > wc:
             wd = (wq + shift - wc)/2
         elif wq < wc:
             wd = (wc - wq - shift)/2
     elif sb == 'blue':
-        wd = (wq + shift + wc)/2
+            wd = (wq + shift + wc)/2
     
     print(shift/2/pi, wd/2/pi)
         
@@ -39,7 +34,7 @@ def sample_single_tone(Nq, wq, wc, shift, sb, smooth, Q, t0, t1, t2, t3, tg, psi
     b, a, nq, nc = ops(Nq, Nc)
 
     # Jaynes-Cummings Hamiltonian
-    Hjc = wq*nq + wc*nc - Ec/2*b.dag()*b.dag()*b*b
+    Hjc = wq*nq + wc*nc - Ec/12*(b + b.dag())**4
     Hc = g*(a*b + a*b.dag() + b*a.dag() + a.dag()*b.dag())
 
     # Sideband transitions
@@ -90,18 +85,13 @@ def sample_single_tone(Nq, wq, wc, shift, sb, smooth, Q, t0, t1, t2, t3, tg, psi
         print(min(e1-g0), max(e1-g0))
 
 
-def sample_double_tone(Nq, wq, wc, shift, dw, sb, smooth, Q, t0, t1, t2, t3, tg, psi0, Np_per_batch, options):
+def sample_double_tone(Nq, wq, wc, Ec, g, Omegaq, Omegac, shift, dw, sb, smooth, Q, t0, t1, t2, t3, tg, psi0, Np_per_batch, options):
     print(shift/2/pi)
     
     Nc = 10  # number of levels in resonator 1
     Nt = 2   # number of drive tones
 
-    delta = wq - wc    # detuning
-    Ec = 0.16 *2*pi    # anharmonicity (charging energy)
-    g = 0.2 *2*pi      # coupling between qubit and resonator
-    
-    Omegaq = 0.025 *2 *2*pi  # amplitude of qubit-friendly drive tone
-    Omegac = 0.317 *2 *2*pi  # amplitude of cavity-friendly drive tone
+    delta = wq - wc    # detuning    
     
     if sb == 'red':
         wdq =  wq + shift - dw
@@ -116,7 +106,7 @@ def sample_double_tone(Nq, wq, wc, shift, dw, sb, smooth, Q, t0, t1, t2, t3, tg,
     b, a, nq, nc = ops(Nq, Nc)
 
     # Jaynes-Cummings Hamiltonian
-    Hjc = wq*nq + wc*nc - Ec/2*b.dag()*b.dag()*b*b
+    Hjc = wq*nq + wc*nc - Ec/12*(b + b.dag())**2
     Hc = g*(a*b + a*b.dag() + b*a.dag() + a.dag()*b.dag())
 
     # Sideband transitions
