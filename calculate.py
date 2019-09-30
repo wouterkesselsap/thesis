@@ -237,6 +237,7 @@ def sideband_freq(x, times, rm_micromotion=False, method='savgol', **kwargs):
     
     supports = supports[1:-1]  # remove first and last element
     t_supports = t_supports[1:-1]  # remove first and last element
+    print(t_supports)
     
     if len(supports) < 2:
         print("WARNING: not enough sideband oscillations to determinde frequency,")
@@ -246,11 +247,15 @@ def sideband_freq(x, times, rm_micromotion=False, method='savgol', **kwargs):
         print("WARNING: not enough sideband oscillations to accurately determinde frequency,")
         print("         increase the simulation time for a more accurate result")
         dts = np.diff(t_supports)
+        print(dts)
         Tsb = 2*np.mean(dts)  # sideband transition period [ns]
+        print(Tsb)
         wsb = 1/Tsb  # sideband transition frequency [GHz]
         return wsb*2*pi
     else:
         dts = np.diff(t_supports)
-        Tsb = 2*sum(dts)/len(dts)  # sideband transition period [ns]
+        print(dts)
+        Tsb = 2*np.mean(dts)  # sideband transition period [ns]
+        print(Tsb)
         wsb = 1/Tsb  # sideband transition frequency [GHz]
         return wsb*2*pi

@@ -1,3 +1,4 @@
+import time
 import numpy as np
 import matplotlib.pyplot as plt
 from plots import *
@@ -14,6 +15,9 @@ home = "/home/student/thesis/"
 
 def sample_single_tone(Nq, wq, wc, Ec, g, Omega, shift, sb, smooth, Q, t0, t1, t2, t3, tg, psi0, Np_per_batch, options, parallel):
     from envelopes import drive
+    
+    i = shift[0]
+    shift = shift[1]
     
     Nc = 10  # number of levels in resonator 1
     Nt = 1   # number of drive tones
@@ -63,16 +67,18 @@ def sample_single_tone(Nq, wq, wc, Ec, g, Omega, shift, sb, smooth, Q, t0, t1, t
     
     times, states, expect, e0, g1, e1, g0, coupling = load_data(quants, srcfolder)
     
+    time.sleep(i*3)
+    
     print(" ")
     print("shift = {}, wd = {}".format(shift/2/pi, wd/2/pi))
     if sb == 'red':
-        print("min = {}, max = {}".format(min(e0-g1), max(e0-g1)))
+        print("min = {}, max = {}".format(round(min(e0-g1), 4), round(max(e0-g1), 4)))
         expect_title = "shift = {}".format(shift/2/pi)
-        cp_title = "shift = {}, min = {}, max = {}".format(shift/2/pi, min(e0-g1), max(e0-g1))
+        cp_title = "shift = {}, min = {}, max = {}".format(shift/2/pi, round(min(e0-g1), 4), round(max(e0-g1), 4))
     elif sb == 'blue':
-        print("min = {}, max = {}".format(min(e1-g0), max(e1-g0)))
+        print("min = {}, max = {}".format(round(min(e1-g0), 4), round(max(e1-g0), 4)))
         expect_title = "shift = {}".format(shift/2/pi)
-        cp_title = "shift = {}, min = {}, max = {}".format(shift/2/pi, min(e1-g0), max(e1-g0))
+        cp_title = "shift = {}, min = {}, max = {}".format(shift/2/pi, round(min(e1-g0), 4), round(max(e1-g0), 4))
     
     """ EXPECTATION VALUES """
 
@@ -145,13 +151,13 @@ def sample_double_tone(Nq, wq, wc, Ec, g, Omegaq, Omegac, shift, dw, sb, smooth,
     print(" ")
     print("shift = {}".format(shift/2/pi))
     if sb == 'red':
-        print("min = {}, max = {}".format(min(e0-g1), max(e0-g1)))
+        print("min = {}, max = {}".format(round(min(e0-g1), 4), round(max(e0-g1), 4)))
         expect_title = "shift = {}".format(shift/2/pi)
-        cp_title = "shift = {}, min = {}, max = {}".format(shift/2/pi, min(e0-g1), max(e0-g1))
+        cp_title = "shift = {}, min = {}, max = {}".format(shift/2/pi, round(min(e0-g1), 4), round(max(e0-g1), 4))
     elif sb == 'blue':
-        print("min = {}, max = {}".format(min(e1-g0), max(e1-g0)))
+        print("min = {}, max = {}".format(round(min(e1-g0), 4), round(max(e1-g0), 4)))
         expect_title = "shift = {}".format(shift/2/pi)
-        cp_title = "shift = {}, min = {}, max = {}".format(shift/2/pi, min(e1-g0), max(e1-g0))
+        cp_title = "shift = {}, min = {}, max = {}".format(shift/2/pi, round(min(e1-g0), 4), round(max(e1-g0), 4))
         
     """ EXPECTATION VALUES """
 

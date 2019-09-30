@@ -314,9 +314,26 @@ def sb_expect(times, expect, sb, Nt, H_args, coupling, xlim=None, ylim=None, fig
     fig, ax1 = plt.subplots(figsize=figsize)
     ax1.plot(times, expect[0], color='b', label='Qubit')
     ax1.plot(times, expect[1], color='r', label='Cavity')
-    ax1.plot([times[0], times[-1]], [1, 1], ':', color='k')
     ax1.plot([times[0], times[-1]], [1/2, 1/2], ':', color='k')
     ax1.plot([times[0], times[-1]], [0, 0], ':', color='k')
+    if max(max(expect[0]), max(expect[1])) > 1:
+        ax1.plot([times[0], times[-1]], [1, 1], ':', color='k')
+    if max(max(expect[0]), max(expect[1])) > 1.5:
+        ax1.plot([times[0], times[-1]], [1.5, 1.5], ':', color='k')
+    if max(max(expect[0]), max(expect[1])) > 2:
+        ax1.plot([times[0], times[-1]], [2, 2], ':', color='k')
+    if max(max(expect[0]), max(expect[1])) > 2.5:
+        ax1.plot([times[0], times[-1]], [2.5, 2.5], ':', color='k')
+    if max(max(expect[0]), max(expect[1])) > 3:
+        ax1.plot([times[0], times[-1]], [3, 3], ':', color='k')
+    if max(max(expect[0]), max(expect[1])) > 3.5:
+        ax1.plot([times[0], times[-1]], [3.5, 3.5], ':', color='k')
+    if max(max(expect[0]), max(expect[1])) > 4:
+        ax1.plot([times[0], times[-1]], [4, 4], ':', color='k')
+    if max(max(expect[0]), max(expect[1])) > 4.5:
+        ax1.plot([times[0], times[-1]], [4.5, 4.5], ':', color='k')
+    if max(max(expect[0]), max(expect[1])) > 5:
+        ax1.plot([times[0], times[-1]], [5, 5], ':', color='k')
     ax1.set_xlabel("$t$ [ns]")
     ax1.set_ylabel("$n$")
     ax1.tick_params(axis='y')
