@@ -97,6 +97,9 @@ def sample_single_tone(Nq, wq, wc, Ec, g, Omega, shift, sb, smooth, Q, t0, t1, t
 
 def sample_double_tone(Nq, wq, wc, Ec, g, Omegaq, Omegac, shift, dw, sb, smooth, Q, t0, t1, t2, t3, tg, psi0, Np_per_batch, options, parallel):
     
+    i = shift[0]
+    shift = shift[1]
+    
     Nc = 10  # number of levels in resonator 1
     Nt = 2   # number of drive tones
 
@@ -147,6 +150,8 @@ def sample_double_tone(Nq, wq, wc, Ec, g, Omegaq, Omegac, shift, dw, sb, smooth,
     end_comb = datetime.now()
     
     times, states, expect, e0, g1, e1, g0, coupling = load_data(quants, srcfolder)
+    
+    time.sleep(i*3)
     
     print(" ")
     print("shift = {}".format(shift/2/pi))
