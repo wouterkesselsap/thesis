@@ -27,6 +27,6 @@ detuning delta from wc                            dw     : 3.141592653589793 = 0
 CALCULATED PARAMETERS
 ---------------------
 
-sideband transition frequency   wsb    : 0.030629150033182194 = 0.004874780630484236 ± 0.03787235160417578 GHz
-sideband transition coupling    gsb    : 0.015314575016591097 = 0.002437390315242118 ± 0.01893617580208789 GHzsideband transition frequency   wsb    : 0.030629150033182194 = 0.004874780630484236 GHz
+sideband transition frequency   wsb    : 0.030629150033182194 = 0.004874780630484236 GHz
+sideband transition coupling    gsb    : 0.015314575016591097 = 0.002437390315242118 GHzsideband transition frequency   wsb    : 0.030629150033182194 = 0.004874780630484236 GHz
 sideband transition coupling    gsb    : 0.015314575016591097 = 0.002437390315242118 GHz
