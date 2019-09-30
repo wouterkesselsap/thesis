@@ -155,6 +155,11 @@ def cluster(x, t, out='extremum'):
         'extremum' : return maximum or minimum
     """
     
+    if isinstance(x, np.ndarray):
+        x = x.tolist()
+    if isinstance(t, np.ndarray):
+        t = t.tolist()
+    
     # Determine clusters
     xmin = min(x)
     xmax = max(x)
@@ -237,7 +242,17 @@ def sideband_freq(x, times, rm_micromotion=False, method='savgol', **kwargs):
     
     supports = supports[1:-1]  # remove first and last element
     t_supports = t_supports[1:-1]  # remove first and last element
-    print(t_supports)
+    
+    # Remove supports due to oscillations in filtered signal close to signal mean
+    news = list()
+    newt = list()
+    for s in supports:
+        if not ( abs(s - np.mean(supports)) < abs(s - max(supports)) and
+                 abs(s - np.mean(supports)) < abs(s - min(supports)) ):
+            news.append(s)
+            newt.append(t_supports[supports.index(s)])
+    supports = copy(news)
+    t_supports = copy(newt)
     
     if len(supports) < 2:
         print("WARNING: not enough sideband oscillations to determinde frequency,")
@@ -247,15 +262,11 @@ def sideband_freq(x, times, rm_micromotion=False, method='savgol', **kwargs):
         print("WARNING: not enough sideband oscillations to accurately determinde frequency,")
         print("         increase the simulation time for a more accurate result")
         dts = np.diff(t_supports)
-        print(dts)
         Tsb = 2*np.mean(dts)  # sideband transition period [ns]
-        print(Tsb)
         wsb = 1/Tsb  # sideband transition frequency [GHz]
         return wsb*2*pi
     else:
         dts = np.diff(t_supports)
-        print(dts)
         Tsb = 2*np.mean(dts)  # sideband transition period [ns]
-        print(Tsb)
         wsb = 1/Tsb  # sideband transition frequency [GHz]
         return wsb*2*pi
