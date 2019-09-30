@@ -342,21 +342,25 @@ def sb_expect(times, expect, sb, Nt, H_args, coupling, xlim=None, ylim=None, fig
 
     figqc = plt.gcf()
     
-    wsb = kwargs['wsb']
-    if sb == 'red':
-        if Nt == 1:
-            plt.title("Single-tone red sideband transitions at $\\nu_d$ = {} GHz ($\\nu_{{sb}}$ = {} MHz)".format(
-                      round(wd/2/pi, 3), int(round(1000*wsb/2/pi))))
-        elif Nt == 2:
-            plt.title("Double-tone red sideband transitions ($\\nu_{{sb}}$ = {} MHz)".format(
-                      int(round(1000*wsb/2/pi))))
-    elif sb == 'blue':
-        if Nt == 1:
-            plt.title("Single-tone blue sideband transitions at $\\nu_d$ = {} GHz ($\\nu_{{sb}}$ = {} MHz)".format(
-                      round(wd/2/pi, 3), int(round(1000*wsb/2/pi))))
-        elif Nt == 2:
-            plt.title("Double-tone blue sideband transitions ($\\nu_{{sb}}$ = {} MHz)".format(
-                      int(round(1000*wsb/2/pi))))
+    if "title" in kwargs:
+        plt.title(kwargs['title'])
+    else:
+        wsb = kwargs['wsb']
+        if sb == 'red':
+            if Nt == 1:
+                plt.title("Single-tone red sideband transitions at $\\nu_d$ = {} GHz ($\\nu_{{sb}}$ = {} MHz)".format(
+                          round(wd/2/pi, 3), int(round(1000*wsb/2/pi))))
+            elif Nt == 2:
+                plt.title("Double-tone red sideband transitions ($\\nu_{{sb}}$ = {} MHz)".format(
+                          int(round(1000*wsb/2/pi))))
+        elif sb == 'blue':
+            if Nt == 1:
+                plt.title("Single-tone blue sideband transitions at $\\nu_d$ = {} GHz ($\\nu_{{sb}}$ = {} MHz)".format(
+                          round(wd/2/pi, 3), int(round(1000*wsb/2/pi))))
+            elif Nt == 2:
+                plt.title("Double-tone blue sideband transitions ($\\nu_{{sb}}$ = {} MHz)".format(
+                          int(round(1000*wsb/2/pi))))
+    plt.show()
     
     return figqc
 
@@ -400,21 +404,24 @@ def sb_combined_probs(times, sb, Nt, H_args, coupling, xlim=None, ylim=None, fig
 
     fig = plt.gcf()
     
-    wsb = kwargs['wsb']
-    if sb == 'red':
-        if Nt == 1:
-            plt.title("Single-tone red sideband transitions at $\\nu_d$ = {} GHz ($\\nu_{{sb}}$ = {} MHz)".format(
-                      round(wd/2/pi, 3), int(round(1000*wsb/2/pi))))
-        elif Nt == 2:
-            plt.title("Double-tone red sideband transitions ($\\nu_{{sb}}$ = {} MHz)".format(
-                      int(round(1000*wsb/2/pi))))
-    elif sb == 'blue':
-        if Nt == 1:
-            plt.title("Single-tone blue sideband transitions at $\\nu_d$ = {} GHz ($\\nu_{{sb}}$ = {} MHz)".format(
-                      round(wd/2/pi, 3), int(round(1000*wsb/2/pi))))
-        elif Nt == 2:
-            plt.title("Double-tone blue sideband transitions ($\\nu_{{sb}}$ = {} MHz)".format(
-                      int(round(1000*wsb/2/pi))))
+    if "title" in kwargs:
+        plt.title(kwargs["title"])
+    else:
+        wsb = kwargs['wsb']
+        if sb == 'red':
+            if Nt == 1:
+                plt.title("Single-tone red sideband transitions at $\\nu_d$ = {} GHz ($\\nu_{{sb}}$ = {} MHz)".format(
+                          round(wd/2/pi, 3), int(round(1000*wsb/2/pi))))
+            elif Nt == 2:
+                plt.title("Double-tone red sideband transitions ($\\nu_{{sb}}$ = {} MHz)".format(
+                          int(round(1000*wsb/2/pi))))
+        elif sb == 'blue':
+            if Nt == 1:
+                plt.title("Single-tone blue sideband transitions at $\\nu_d$ = {} GHz ($\\nu_{{sb}}$ = {} MHz)".format(
+                          round(wd/2/pi, 3), int(round(1000*wsb/2/pi))))
+            elif Nt == 2:
+                plt.title("Double-tone blue sideband transitions ($\\nu_{{sb}}$ = {} MHz)".format(
+                          int(round(1000*wsb/2/pi))))
     plt.show()
     
     return fig

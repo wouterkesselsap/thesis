@@ -3,6 +3,8 @@ import shutil
 import pickle
 import time
 import numpy as np
+from string import ascii_lowercase as alc
+from random import choice
 from math import ceil
 from glob import glob
 from datetime import datetime
@@ -11,15 +13,15 @@ from operator import itemgetter
 from supports import *
 
 
-def prepare_folder():
-    # Remove existing progress folder
-    for folder in glob("/home/student/thesis/prog_*"):
-        shutil.rmtree(folder)
+def prepare_folder(parallel=False):
+    if not parallel:
+        for folder in glob("/home/student/thesis/prog_*"):
+            shutil.rmtree(folder)  # Remove existing progress folders
 
     # Make new progress folder
     now = datetime.now()
     ID = now.strftime("%y%m%d_%H%M%S")
-    folder = "/home/student/thesis/prog_" + ID
+    folder = "/home/student/thesis/prog_" + ''.join(choice(alc) for i in range(10))
     os.makedirs(folder)
     saveID(ID, folder)
     

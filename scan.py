@@ -12,7 +12,7 @@ from IPython.display import display
 home = "/home/student/thesis/"
 
 
-def sample_single_tone(Nq, wq, wc, Ec, g, Omega, shift, sb, smooth, Q, t0, t1, t2, t3, tg, psi0, Np_per_batch, options):
+def sample_single_tone(Nq, wq, wc, Ec, g, Omega, shift, sb, smooth, Q, t0, t1, t2, t3, tg, psi0, Np_per_batch, options, parallel):
     from envelopes import drive
     
     Nc = 10  # number of levels in resonator 1
@@ -25,8 +25,6 @@ def sample_single_tone(Nq, wq, wc, Ec, g, Omega, shift, sb, smooth, Q, t0, t1, t
             wd = (wc - wq - shift)/2
     elif sb == 'blue':
             wd = (wq + shift + wc)/2
-    
-    print(shift/2/pi, wd/2/pi)
         
     Np = 100*int(t3)     # number of discrete time steps for which to store the output
     
@@ -50,7 +48,7 @@ def sample_single_tone(Nq, wq, wc, Ec, g, Omega, shift, sb, smooth, Q, t0, t1, t
         
     H = [Hjc, [Hc, drive_nonosc], [Hd, drive]]  # complete Hamiltonian
     
-    progfolder = calculate(H, psi0, e_ops, H_args, options, Nc, g, Np, Np_per_batch, verbose=False)
+    progfolder = calculate(H, psi0, e_ops, H_args, options, Nc, g, Np, Np_per_batch, parallel, verbose=False)
     
     """ SAVE EVOLUTION TEMPORARILY """
 
@@ -64,29 +62,34 @@ def sample_single_tone(Nq, wq, wc, Ec, g, Omega, shift, sb, smooth, Q, t0, t1, t
     end_comb = datetime.now()
     
     times, states, expect, e0, g1, e1, g0, coupling = load_data(quants, srcfolder)
-
+    
+    print(" ")
+    print("shift = {}, wd = {}".format(shift/2/pi, wd/2/pi))
+    if sb == 'red':
+        print("min = {}, max = {}".format(min(e0-g1), max(e0-g1)))
+        expect_title = "shift = {}".format(shift/2/pi)
+        cp_title = "shift = {}, min = {}, max = {}".format(shift/2/pi, min(e0-g1), max(e0-g1))
+    elif sb == 'blue':
+        print("min = {}, max = {}".format(min(e1-g0), max(e1-g0)))
+        expect_title = "shift = {}".format(shift/2/pi)
+        cp_title = "shift = {}, min = {}, max = {}".format(shift/2/pi, min(e1-g0), max(e1-g0))
+    
     """ EXPECTATION VALUES """
 
     if sb == 'red':
-        figqc = sb_expect(times, expect, sb, Nt, H_args, coupling, xlim=None, ylim=None, figsize=[15,3], wd=wd, wsb=0)
+        figqc = sb_expect(times, expect, sb, Nt, H_args, coupling, xlim=None, ylim=None, figsize=[15,3], wd=wd, wsb=0, title=expect_title)
     elif sb == 'blue':
-        figqc = sb_expect(times, expect, sb, Nt, H_args, coupling, xlim=None, ylim=None, figsize=[15,3], wd=wd, wsb=0)
+        figqc = sb_expect(times, expect, sb, Nt, H_args, coupling, xlim=None, ylim=None, figsize=[15,3], wd=wd, wsb=0, title=expect_title)
     
     """COMBINED PROBABILITIES"""
 
     if sb == 'red':
-        fig = sb_combined_probs(times, sb, Nt, H_args, coupling, e0=e0, g1=g1, wd=wd, wsb=0)
+        fig = sb_combined_probs(times, sb, Nt, H_args, coupling, e0=e0, g1=g1, wd=wd, wsb=0, title=cp_title)
     elif sb == 'blue':
-        fig = sb_combined_probs(times, sb, Nt, H_args, coupling, e1=e1, g0=g0, wd=wd, wsb=0)
-    
-    if sb == 'red':
-        print(min(e0-g1), max(e0-g1))
-    elif sb == 'blue':
-        print(min(e1-g0), max(e1-g0))
+        fig = sb_combined_probs(times, sb, Nt, H_args, coupling, e1=e1, g0=g0, wd=wd, wsb=0, title=cp_title)
 
 
-def sample_double_tone(Nq, wq, wc, Ec, g, Omegaq, Omegac, shift, dw, sb, smooth, Q, t0, t1, t2, t3, tg, psi0, Np_per_batch, options):
-    print(shift/2/pi)
+def sample_double_tone(Nq, wq, wc, Ec, g, Omegaq, Omegac, shift, dw, sb, smooth, Q, t0, t1, t2, t3, tg, psi0, Np_per_batch, options, parallel):
     
     Nc = 10  # number of levels in resonator 1
     Nt = 2   # number of drive tones
@@ -124,7 +127,7 @@ def sample_double_tone(Nq, wq, wc, Ec, g, Omegaq, Omegac, shift, dw, sb, smooth,
     
     """ CALCULATE! """
 
-    progfolder = calculate(H, psi0, e_ops, H_args, options, Nc, g, Np, Np_per_batch, verbose=False)
+    progfolder = calculate(H, psi0, e_ops, H_args, options, Nc, g, Np, Np_per_batch, parallel, verbose=False)
     
     """ SAVE EVOLUTION TEMPORARILY """
     
@@ -138,24 +141,30 @@ def sample_double_tone(Nq, wq, wc, Ec, g, Omegaq, Omegac, shift, dw, sb, smooth,
     end_comb = datetime.now()
     
     times, states, expect, e0, g1, e1, g0, coupling = load_data(quants, srcfolder)
+    
+    print(" ")
+    print("shift = {}".format(shift/2/pi))
+    if sb == 'red':
+        print("min = {}, max = {}".format(min(e0-g1), max(e0-g1)))
+        expect_title = "shift = {}".format(shift/2/pi)
+        cp_title = "shift = {}, min = {}, max = {}".format(shift/2/pi, min(e0-g1), max(e0-g1))
+    elif sb == 'blue':
+        print("min = {}, max = {}".format(min(e1-g0), max(e1-g0)))
+        expect_title = "shift = {}".format(shift/2/pi)
+        cp_title = "shift = {}, min = {}, max = {}".format(shift/2/pi, min(e1-g0), max(e1-g0))
         
     """ EXPECTATION VALUES """
 
     if sb == 'red':
-        figqc = sb_expect(times, expect, sb, Nt, H_args, coupling, xlim=None, ylim=None, figsize=[15,3], wsb=0)
+        figqc = sb_expect(times, expect, sb, Nt, H_args, coupling, xlim=None, ylim=None, figsize=[15,3], wsb=0, title=expect_title)
     elif sb == 'blue':
-        figqc = sb_expect(times, expect, sb, Nt, H_args, coupling, xlim=None, ylim=None, figsize=[15,3], wsb=0)
+        figqc = sb_expect(times, expect, sb, Nt, H_args, coupling, xlim=None, ylim=None, figsize=[15,3], wsb=0, title=expect_title)
     
     """COMBINED PROBABILITIES"""
 
     if sb == 'red':
         fig = sb_combined_probs(times, sb, Nt, H_args, coupling,
-                                xlim=None, ylim=None, figsize=[15,3], e0=e0, g1=g1, wsb=0)
+                                xlim=None, ylim=None, figsize=[15,3], e0=e0, g1=g1, wsb=0, title=cp_title)
     elif sb == 'blue':
         fig = sb_combined_probs(times, sb, Nt, H_args, coupling,
-                                xlim=None, ylim=None, figsize=[15,3], e1=e1, g0=g0, wsb=0)
-    
-    if sb == 'red':
-        print(min(e0-g1), max(e0-g1))
-    elif sb == 'blue':
-        print(min(e1-g0), max(e1-g0))
+                                xlim=None, ylim=None, figsize=[15,3], e1=e1, g0=g0, wsb=0, title=cp_title)

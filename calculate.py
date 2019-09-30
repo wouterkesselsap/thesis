@@ -14,7 +14,7 @@ from supports import *
 from envelopes import drive_nonosc
 
 
-def calculate(H, psi0, e_ops, H_args, options, Nc, g, Np, Np_per_batch, verbose=True):
+def calculate(H, psi0, e_ops, H_args, options, Nc, g, Np, Np_per_batch, parallel, verbose=True):
     "Integrate through time evolution."
     
     t0 = H_args['t0']
@@ -22,7 +22,7 @@ def calculate(H, psi0, e_ops, H_args, options, Nc, g, Np, Np_per_batch, verbose=
     
     batches = create_batches(t0, t3, Np, Np_per_batch)
 
-    ID, folder, now = prepare_folder()
+    ID, folder, now = prepare_folder(parallel)
 
     # Calculate!
     for num, tlist in enumerate(batches):
