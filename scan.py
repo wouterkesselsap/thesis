@@ -93,6 +93,11 @@ def sample_single_tone(Nq, wq, wc, Ec, g, Omega, shift, sb, smooth, Q, t0, t1, t
         fig = sb_combined_probs(times, sb, Nt, H_args, coupling, e0=e0, g1=g1, wd=wd, wsb=0, title=cp_title)
     elif sb == 'blue':
         fig = sb_combined_probs(times, sb, Nt, H_args, coupling, e1=e1, g0=g0, wd=wd, wsb=0, title=cp_title)
+    
+#     figqc.savefig(srcfolder + "/figqc.png", bbox_inches='tight')
+#     fig.savefig(srcfolder + "/fig.png", bbox_inches='tight')
+    
+    return figqc, fig
 
 
 def sample_double_tone(Nq, wq, wc, Ec, g, Omegaq, Omegac, shift, dw, sb, smooth, Q, t0, t1, t2, t3, tg, psi0, Np_per_batch, options, parallel):
@@ -179,3 +184,8 @@ def sample_double_tone(Nq, wq, wc, Ec, g, Omegaq, Omegac, shift, dw, sb, smooth,
     elif sb == 'blue':
         fig = sb_combined_probs(times, sb, Nt, H_args, coupling,
                                 xlim=None, ylim=None, figsize=[15,3], e1=e1, g0=g0, wsb=0, title=cp_title)
+    
+#     figqc.savefig(srcfolder + "/figqc.png", bbox_inches='tight', dpi=500)
+#     fig.savefig(srcfolder + "/fig.png", bbox_inches='tight', dpi=500)
+    
+    return figqc, fig
