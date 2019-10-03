@@ -28,4 +28,5 @@ CALCULATED PARAMETERS
 ---------------------
 
 sideband transition frequency   wsb    : 0.030592363635570368 = 0.004868925893465771 GHz
+sideband transition coupling    gsb    : 0.015296181817785184 = 0.0024344629467328853 GHzsideband transition frequency   wsb    : 0.030592363635570368 = 0.004868925893465771 GHz
 sideband transition coupling    gsb    : 0.015296181817785184 = 0.0024344629467328853 GHz
