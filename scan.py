@@ -13,7 +13,7 @@ from IPython.display import display
 home = "/home/student/thesis/"
 
 
-def sample_single_tone(Nq, wq, wc, Ec, g, Omega, shift, sb, smooth, Q, t0, t1, t2, t3, tg, psi0, Np_per_batch, options, parallel):
+def sample_single_tone(Nq, wq, wc, Ec, g, Omega, shift, sb, smooth, Q, t0, t1, t2, t3, tg, psi0, Np_per_batch, H, options, parallel):
     from envelopes import drive
     
     i = shift[0]
@@ -35,13 +35,6 @@ def sample_single_tone(Nq, wq, wc, Ec, g, Omega, shift, sb, smooth, Q, t0, t1, t
     # Operators
     b, a, nq, nc = ops(Nq, Nc)
 
-    # Jaynes-Cummings Hamiltonian
-    Hjc = wq*nq + wc*nc - Ec/12*(b + b.dag())**4
-    Hc = g*(a*b + a*b.dag() + b*a.dag() + a.dag()*b.dag())
-
-    # Sideband transitions
-    Hd = Omega*(b + b.dag())
-
     # Hamiltonian arguments
     H_args = {'t0' : t0, 't1' : t1, 't2' : t2,
               't3' : t3, 'tg' : tg, 'Q'  : Q,
@@ -50,8 +43,6 @@ def sample_single_tone(Nq, wq, wc, Ec, g, Omega, shift, sb, smooth, Q, t0, t1, t
     # Expectation operators
     e_ops = [nq, nc]
         
-    H = [Hjc, [Hc, drive_nonosc], [Hd, drive]]  # complete Hamiltonian
-    
     progfolder = calculate(H, psi0, e_ops, H_args, options, Nc, g, Np, Np_per_batch, parallel, verbose=False)
     
     """ SAVE EVOLUTION TEMPORARILY """
@@ -100,7 +91,7 @@ def sample_single_tone(Nq, wq, wc, Ec, g, Omega, shift, sb, smooth, Q, t0, t1, t
     return figqc, fig
 
 
-def sample_double_tone(Nq, wq, wc, Ec, g, Omegaq, Omegac, shift, dw, sb, smooth, Q, t0, t1, t2, t3, tg, psi0, Np_per_batch, options, parallel):
+def sample_double_tone(Nq, wq, wc, Ec, g, Omegaq, Omegac, shift, dw, sb, smooth, Q, t0, t1, t2, t3, tg, psi0, Np_per_batch, H, options, parallel):
     
     i = shift[0]
     shift = shift[1]
@@ -122,23 +113,13 @@ def sample_double_tone(Nq, wq, wc, Ec, g, Omegaq, Omegac, shift, dw, sb, smooth,
     # Operators
     b, a, nq, nc = ops(Nq, Nc)
 
-    # Jaynes-Cummings Hamiltonian
-    Hjc = wq*nq + wc*nc - Ec/12*(b + b.dag())**2
-    Hc = g*(a*b + a*b.dag() + b*a.dag() + a.dag()*b.dag())
-
-    # Sideband transitions
-    Hdq = Omegaq*(b + b.dag())
-    Hdc = Omegac*(b + b.dag())
-
     # Hamiltonian arguments
     H_args = {'t0' : t0, 't1' : t1, 't2' : t2, 't3' : t3, 'tg' : tg,
               'Q'  : Q, 'smooth' : smooth, 'Nt' : Nt, 'wdq' : wdq, 'wdc' : wdc}
 
     # Expectation operators
     e_ops = [nq, nc]
-    
-    H = [Hjc, [Hc, drive_nonosc], [Hdq, driveq], [Hdc, drivec]]  # complete Hamiltonian
-    
+        
     """ CALCULATE! """
 
     progfolder = calculate(H, psi0, e_ops, H_args, options, Nc, g, Np, Np_per_batch, parallel, verbose=False)
