@@ -1,0 +1,28 @@
+PRESET PARAMETERS
+-----------------
+
+# of qubit levels               Nq     : 2
+# of cavity levels              Nc     : 10
+# of tones in drive             Nt     : 1
+qubit transition frequency      wq     : 25.132741228718345 = 4.0 GHz
+qubit's ac-Stark shift          shift  : -0.08230972752405258 = -0.0131 GHz
+cavity frequency                wc     : 40.840704496667314 = 6.500000000000001 GHz
+anharmonicity                   Ec     : 1.0053096491487339 = 0.16 GHz
+qubit-cavity coupling strength  g      : 1.2566370614359172 = 0.2 GHz
+sideband transition             sb     : red
+start of simulation             t0     : 0 ns
+start of sideband drive         t1     : 0 ns
+end of sideband drive           t2     : 2500 ns
+end of simulation               t3     : 2500 ns
+rise and fall time              tg     : 10 ns
+rise and fall with Gaussian     smooth : True
+# of std's in Gaussian          Q      : 3
+# of data points                Np     : 250000
+sideband drive amplitude        Omega  : 1.2566370614359172 = 0.2 GHz
+sideband drive frequency        wd     : 7.895136497736511 = 1.2565500000000003 GHz
+
+CALCULATED PARAMETERS
+---------------------
+
+sideband transition frequency   wsb    : 0.02927901812912802 = 0.0046599004641279425 GHz
+sideband transition coupling    gsb    : 0.01463950906456401 = 0.0023299502320639712 GHz
