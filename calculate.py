@@ -255,15 +255,13 @@ def sideband_freq(x, times, rm_micromotion=False, method='savgol', tg=10, **kwar
     
     supports = copy(news)
     t_supports = copy(newt)
-    if max(t_supports) > max(times)-tg:
+    if max(t_supports) > max(times)-tg:  # if last cluster within Gaussian fall
         supports = supports[1:-1]  # remove first and last element
         t_supports = t_supports[1:-1]  # remove first and last element
     else:
-        supports = supports[1:]  # remove first and last element
-        t_supports = t_supports[1:]  # remove first and last element
-    plt.figure()
-    plt.plot(t_supports, supports, 'o')
-    plt.show()
+        supports = supports[1:]  # remove first element
+        t_supports = t_supports[1:]  # remove first element
+    
     if len(supports) < 2:
         print("WARNING: not enough sideband oscillations to determinde frequency,")
         print("         increase the simulation time")
