@@ -24,5 +24,5 @@ sideband drive frequency        wd     : 7.895136497736511 = 1.2565500000000003 
 CALCULATED PARAMETERS
 ---------------------
 
-sideband transition frequency   wsb    : 0.02927901812912802 = 0.0046599004641279425 GHz
-sideband transition coupling    gsb    : 0.01463950906456401 = 0.0023299502320639712 GHz
+sideband transition frequency   wsb    : 0.002943731868347541 = 0.0004685094779846516 GHz
+sideband transition coupling    gsb    : 0.0014718659341737704 = 0.0002342547389923258 GHz
