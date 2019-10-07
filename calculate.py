@@ -221,7 +221,7 @@ def cluster(x, t, out='extremum'):
     return xlocs, tlocs
 
 
-def sideband_freq(x, times, rm_micromotion=False, method='savgol', **kwargs):
+def sideband_freq(x, times, rm_micromotion=False, method='savgol', tg=10, **kwargs):
     """Determine the sideband transition frequency [GHz] based on
     expectation values.
     If the micromotion is not already removed from the signal, rm_micromotion
@@ -240,20 +240,30 @@ def sideband_freq(x, times, rm_micromotion=False, method='savgol', **kwargs):
     t_supports, supports = zip(*supports_zipped)
     supports, t_supports = cluster(supports, t_supports)
     
-    supports = supports[1:-1]  # remove first and last element
-    t_supports = t_supports[1:-1]  # remove first and last element
-    
-    # Remove supports due to oscillations in filtered signal close to signal mean
+    # Remove supports due to remaining oscillations in filtered signal close to signal mean
     news = list()
     newt = list()
     for s in supports:
-        if not ( abs(s - np.mean(supports)) < abs(s - max(supports)) and
-                 abs(s - np.mean(supports)) < abs(s - min(supports)) ):
+        d_to_max = abs(s - max(supports))
+        d_to_min = abs(s - min(supports))
+        d_to_mid = abs(s - min(supports) - (max(supports)-min(supports))/2)
+        if ( d_to_mid < d_to_max and d_to_mid < d_to_min ):
+            pass
+        else:
             news.append(s)
             newt.append(t_supports[supports.index(s)])
+    
     supports = copy(news)
     t_supports = copy(newt)
-    
+    if max(t_supports) > max(times)-tg:
+        supports = supports[1:-1]  # remove first and last element
+        t_supports = t_supports[1:-1]  # remove first and last element
+    else:
+        supports = supports[1:]  # remove first and last element
+        t_supports = t_supports[1:]  # remove first and last element
+    plt.figure()
+    plt.plot(t_supports, supports, 'o')
+    plt.show()
     if len(supports) < 2:
         print("WARNING: not enough sideband oscillations to determinde frequency,")
         print("         increase the simulation time")
