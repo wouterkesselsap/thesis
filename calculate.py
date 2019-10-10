@@ -221,7 +221,7 @@ def cluster(x, t, out='extremum'):
     return xlocs, tlocs
 
 
-def sideband_freq(x, times, rm_micromotion=False, method='savgol', tg=10, **kwargs):
+def sideband_freq(x, times, rm_micromotion=False, method='savgol', tg=10, rtol=0.5, **kwargs):
     """Determine the sideband transition frequency [GHz] based on
     expectation values.
     If the micromotion is not already removed from the signal, rm_micromotion
@@ -247,7 +247,7 @@ def sideband_freq(x, times, rm_micromotion=False, method='savgol', tg=10, **kwar
         d_to_max = abs(s - max(supports))
         d_to_min = abs(s - min(supports))
         d_to_mid = abs(s - min(supports) - (max(supports)-min(supports))/2)
-        if ( d_to_mid < d_to_max and d_to_mid < d_to_min ):
+        if ( d_to_mid < rtol*d_to_max and d_to_mid < rtol*d_to_min ):
             pass
         else:
             news.append(s)
