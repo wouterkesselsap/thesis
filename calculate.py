@@ -14,8 +14,39 @@ from supports import *
 from envelopes import drive_nonosc
 
 
-def calculate(H, psi0, e_ops, H_args, options, Nc, g, Np, Np_per_batch, parallel, verbose=True):
-    "Integrate through time evolution."
+def calculate(H, psi0, e_ops, H_args, options, Nc, Np, Np_per_batch, parallel, verbose=True):
+    """
+    Integrate through time evolution using qutip's Lindblad master equation solver.
+    
+    Input
+    -----
+    H : list
+        Full Hamiltonian. Time-dependent terms must be given as
+        [qutip.Qobj, callback function].
+    psi0 : qutip.Qobj class object
+        Initial state
+    e_ops : list of qutip.Qubj class objects
+        Operators for which to evaluate the expectation value
+    H_args : dict
+        Parameters for time-dependent Hamiltonians and collapse operators
+    options : qutip.Options class object
+        Options for the solver
+    Nc : int
+        Number of cavity levels
+    Np : int
+        Number of points for which to store the data
+    Np_per_batch : int, float
+        Number of points per batch
+    parallel : bool
+        Whether multiple simulations are run in parallel
+    verbose : bool
+        Print progress
+    
+    Returns
+    -------
+    folder : str
+        Folder name in which the evolution is stored
+    """
     
     t0 = H_args['t0']
     t3 = H_args['t3']
@@ -42,7 +73,29 @@ def calculate(H, psi0, e_ops, H_args, options, Nc, g, Np, Np_per_batch, parallel
 
 
 def combined_probs(states, Nc):
-    """Calculates |e,0> - |g,1> and |e,1> - |g,0>."""
+    """
+    Calculates |e,0> - |g,1> and |e,1> - |g,0> through time
+    from given quantum states. Assumes |qubit, cavity>.
+    
+    Input
+    -----
+    states : list of qutip.Qobj class objects
+        Full quantum states
+    Nc : int
+        Number of cavity levels
+    
+    Returns
+    -------
+    e0 : np.array
+        Probabilities of |e,0>
+    g1 : np.array
+        Probabilities of |g,1>
+    e1 : np.array
+        Probabilities of |e,1>
+    g0 : np.array
+        Probabilities of |g,0>
+    """
+    
     inds = ((1,0), (0,1), (1,1), (0,0))
     probs = list()
     [probs.append(list()) for i in range(len(inds))]
@@ -59,6 +112,33 @@ def combined_probs(states, Nc):
 
 
 def extrema(x, times):
+    """
+    Determines all extrema in a given sequence with corresponding time values.
+    First and last element of x are always returned.
+    
+    Input
+    -----
+    x : array-like
+        Values from which to determine the extrema
+    times : array-like
+        Corresponding time values
+    
+    Returns
+    -------
+    maxima : list
+        All maxima from x
+    t_maxima : list
+        Corresponding values from times for maxima
+    n_maxima : list
+        Indeces of maxima in x
+    minima : list
+        All minima from x
+    t_minima : list
+        Corresponding values from times for minima
+    n_minima : list
+        Indeces of minima in x
+    """
+    
     maxima = list()
     t_maxima = list()
     n_maxima = list()
@@ -103,18 +183,36 @@ def extrema(x, times):
     return maxima, t_maxima, n_maxima, minima, t_minima, n_minima
 
 
-def remove_micromotion(x, times, method, window_length=1001, order=2, **kwargs):
-    """Remove micromotion from input signal. by determining all local maxima
-    and minima, and subsequently draw the output in the middle of the
-    region defined by these local maxima and minima.
-    
-    Method is either
-    - 'bisect' : determines all local maxima
-      and minima, and subsequently draw the output on the bisection
-      of two subsequent extrema; or
-    - 'savgol' : Savitzky-Golay filter; or
-    - 'lowpass' : cuts off Fourier spectrum after some value
+def remove_micromotion(x, times, method='savgol', window_length=1001, order=2, **kwargs):
     """
+    Removes micromotion from input signal x by a specified method.
+    
+    Input
+    -----
+    x : array-like
+        Signal to remove the micromotion from
+    times : array-like
+        Corresponding time values of signal
+    method : str
+        Method to use to remove micromotion. The options are:
+        - 'bisect' : determines all local maxima and minima,
+          and subsequently draws the output on the bisection
+          of two subsequent extrema; or
+        - 'savgol' : Savitzky-Golay filter; or
+        - 'lowpass' : cuts off Fourier spectrum after some value
+    window_length : int
+        Window length in case of Savitzky-Golay filter
+    order : int
+        Polynomial order in case of Savitzky-Golay filter
+    
+    Returns
+    -------
+    xnew : list, np.array
+        New signal
+    times : list, np.array
+        Corresponding time values
+    """
+    
     if method == 'bisect':
         xnew = list()
         tnew = list()
@@ -148,11 +246,27 @@ def remove_micromotion(x, times, method, window_length=1001, order=2, **kwargs):
 
 
 def cluster(x, t, out='extremum'):
-    """Determine clusters in data and return a single point per cluster.
+    """
+    Determines clusters of subsequent maxima or minima in the data
+    and return a single point per cluster.
     
+    Input
+    -----
+    x : array-like
+        Values of maxima and minima
+    t : array-like
+        Corresponding time values
     out : str
-        'centroid' : return cluster centroid
+        Location of output points. Options are:
+        'centroid' : return cluster centroid, or
         'extremum' : return maximum or minimum
+    
+    Returns
+    -------
+    xlocs : list
+        Cluster locations
+    tlocs : list
+        Corresponding time values
     """
     
     if isinstance(x, np.ndarray):
@@ -222,10 +336,35 @@ def cluster(x, t, out='extremum'):
 
 
 def sideband_freq(x, times, rm_micromotion=False, method='savgol', tg=10, rtol=0.5, **kwargs):
-    """Determine the sideband transition frequency [GHz] based on
+    """
+    Determines the sideband transition frequency in [GHz] based on
     expectation values.
     If the micromotion is not already removed from the signal, rm_micromotion
-    should be set to True."""
+    should be set to True.
+    
+    Input
+    -----
+    x : array-like
+        Signal to determine the sideband transition frequency from
+    times : array-like
+        Corresponing time values
+    rm_micromotion : bool
+        Remove micromotion from x
+    method : str
+        Method to use for removal of the micromotion. Consult the
+        remove_micromotion function for the possible parameters
+    tg : float
+        Time of Gaussian rise and fall
+    rtol : float
+        Ratio between distance to mean and distance to extrema to tolerate.
+        All points closer to the mean than rtol times the distance to the
+        global extrema are removed
+    
+    Returns
+    -------
+    wsb*2*pi : float
+        Sideband transition frequency [rad/s]
+    """
     
     if rm_micromotion:
         x, times = remove_micromotion(x, times, method)

@@ -43,7 +43,7 @@ def sample_single_tone(Nq, wq, wc, Ec, g, Omega, shift, sb, smooth, Q, t0, t1, t
     # Expectation operators
     e_ops = [nq, nc]
         
-    progfolder = calculate(H, psi0, e_ops, H_args, options, Nc, g, Np, Np_per_batch, parallel, verbose=False)
+    progfolder = calculate(H, psi0, e_ops, H_args, options, Nc, Np, Np_per_batch, parallel, verbose=False)
     
     """ SAVE EVOLUTION TEMPORARILY """
 
@@ -122,7 +122,7 @@ def sample_double_tone(Nq, wq, wc, Ec, g, Omegaq, Omegac, shift, dw, sb, smooth,
         
     """ CALCULATE! """
 
-    progfolder = calculate(H, psi0, e_ops, H_args, options, Nc, g, Np, Np_per_batch, parallel, verbose=False)
+    progfolder = calculate(H, psi0, e_ops, H_args, options, Nc, Np, Np_per_batch, parallel, verbose=False)
     
     """ SAVE EVOLUTION TEMPORARILY """
     
