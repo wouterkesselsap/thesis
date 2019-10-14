@@ -7,6 +7,7 @@ from supports import *
 
 
 def pump_strength(args):
+    "Gaussian-shaped pump drive for a pi-rotation of the qubit."
     t0 = args['t0']
     t1 = args['t1']
     Q  = args['Q']  # number of std's in Gaussian rise and fall
@@ -14,9 +15,7 @@ def pump_strength(args):
     std = tau/(2*Q)  # standard deviation
     time = lambda t : t/(std*sqrt(2))  # t' to pass to error function
     
-    """
-    TODO: include qubit decay rate kq
-    """
+    # TODO: include qubit decay rate kq
     
     integral = sqrt(2*pi)*std*erf(time(tau)/2)
     Omega = pi/integral
@@ -40,7 +39,7 @@ def pump(t, args):
 
 
 def pumpdrive(t, args):
-    """Gaussian envelope and rotating wave."""
+    """Gaussian envelope."""
     t0 = args['t0']  # start of pulse
     t1 = args['t1']  # end of pulse
     t6 = args['t6']  # end of cycle
@@ -54,42 +53,6 @@ def pumpdrive(t, args):
     
     pulse = exp(-(t-mu)**2/(2*std**2))*confine
     envelope = pulse*np.cos(wd*t)
-    return envelope
-
-
-def pumpdrive_b(t, args):
-    """Gaussian envelope and rotating wave."""
-    t0 = args['t0']  # start of pulse
-    t1 = args['t1']  # end of pulse
-    t6 = args['t6']  # end of cycle
-    Q  = args['Q']   # number of std's in Gaussian rise and fall
-    wd = args['wd']  # drive frequency
-    
-    t = t%t6  # repeat cycle
-    mu = (t1-t0)/2  # pulse center in time domain
-    std = (t1-t0)/(2*Q)  # standard deviation
-    confine = np.heaviside((t-t0), 0) - np.heaviside((t-t1), 0)  # entire pulse
-    
-    pulse = exp(-(t-mu)**2/(2*std**2))*confine
-    envelope = pulse*np.exp(1j*wd*t)
-    return envelope
-
-
-def pumpdrive_bdag(t, args):
-    """Gaussian envelope and rotating wave."""
-    t0 = args['t0']  # start of pulse
-    t1 = args['t1']  # end of pulse
-    t6 = args['t6']  # end of cycle
-    Q  = args['Q']   # number of std's in Gaussian rise and fall
-    wd = args['wd']  # drive frequency
-    
-    t = t%t6  # repeat cycle
-    mu = (t1-t0)/2  # pulse center in time domain
-    std = (t1-t0)/(2*Q)  # standard deviation
-    confine = np.heaviside((t-t0), 0) - np.heaviside((t-t1), 0)  # entire pulse
-    
-    pulse = exp(-(t-mu)**2/(2*std**2))*confine
-    envelope = pulse*np.exp(-1j*wd*t)
     return envelope
 
 
@@ -121,7 +84,7 @@ def drive(t, args):
 
 
 def driveq(t, args):
-    "Sideband drive with oscillating term."
+    "Qubit-friendly sideband drive with oscillating term."
     t1 = args['t1']    # start of pulse
     t2 = args['t2']    # end of pulse
     tg = args['tg']    # time of Gaussian rise and fall
@@ -148,7 +111,7 @@ def driveq(t, args):
 
 
 def drivec(t, args):
-    "Sideband drive with oscillating term."
+    "Cavity-friendly sideband drive with oscillating term."
     t1 = args['t1']    # start of pulse
     t2 = args['t2']    # end of pulse
     tg = args['tg']    # time of Gaussian rise and fall
@@ -175,7 +138,7 @@ def drivec(t, args):
     
     
 def drive_nonosc(t, args):
-    "Sideband drive without oscillating term."
+    "Sideband drive without oscillating terms."
     t1 = args['t1']    # start of pulse
     t2 = args['t2']    # end of pulse
     tg = args['tg']    # time of Gaussian rise and fall
