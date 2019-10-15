@@ -311,6 +311,38 @@ def wigner(rho, obj='all', ind=None, x=np.linspace(-3,3,200), y=np.linspace(-3,3
 
 
 def sb_expect(times, expect, sb, Nt, H_args, coupling, xlim=None, ylim=None, figsize=[15,3], incl_wsb=True, **kwargs):
+    """
+    Plots qubit's and cavity's expected occupation number from simulation
+    for sideband transitions.
+    
+    Input
+    -----
+    times : array-like
+        Time values of the simulation
+    expect : list of array-likes
+        Expectation values, assumes [qubit, cavity]
+    sb : str
+        Type of sideband transitions, either 'red' or 'blue'
+    Nt : int
+        Number of drive tones
+    H_args : dict
+        Parameters for time-dependent Hamiltonians and collapse operators
+    coupling : array-like
+        Coupling strength of the drive tone(s) over time
+    xlim : list, tuple
+        Range of horizontal axis
+    ylim : list, tuple
+        Range of vertical axis
+    figsize : list, tuple
+        Size of figure
+    incl_wsb : bool
+        Print sideband transition frequency in figure title
+    
+    Returns
+    -------
+    figqc : matplotlib.figure.Figure class object
+        Figure
+    """
     fig, ax1 = plt.subplots(figsize=figsize)
     ax1.plot(times, expect[0], color='b', label='Qubit')
     ax1.plot(times, expect[1], color='r', label='Cavity')
@@ -401,6 +433,34 @@ def sb_expect(times, expect, sb, Nt, H_args, coupling, xlim=None, ylim=None, fig
 
 
 def sb_combined_probs(times, sb, Nt, H_args, coupling, xlim=None, ylim=None, figsize=[15,3], **kwargs):
+    """
+    Plots |e0>-|g1> in case of red sideband transitions (specified by sb input),
+    or |e1>-|g0> in case of blue sideband transitions.
+    
+    Input
+    -----
+    times : array-like
+        Time values of the simulation
+    sb : str
+        Type of sideband transitions, either 'red' or 'blue'
+    Nt : int
+        Number of drive tones
+    H_args : dict
+        Parameters for time-dependent Hamiltonians and collapse operators
+    coupling : array-like
+        Coupling strength of the drive tone(s) over time
+    xlim : list, tuple
+        Range of horizontal axis
+    ylim : list, tuple
+        Range of vertical axis
+    figsize : list, tuple
+        Size of figure
+    
+    Returns
+    -------
+    fig : matplotlib.figure.Figure class object
+        Figure
+    """
     fig, ax1 = plt.subplots(figsize=figsize)
     if sb == 'red':
         e0 = kwargs['e0']
