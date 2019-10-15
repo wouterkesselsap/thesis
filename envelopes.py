@@ -39,7 +39,7 @@ def pump(t, args):
 
 
 def pumpdrive(t, args):
-    """Gaussian envelope."""
+    """Gaussian envelope with oscillating term."""
     t0 = args['t0']  # start of pulse
     t1 = args['t1']  # end of pulse
     t6 = args['t6']  # end of cycle
@@ -61,7 +61,8 @@ def drive(t, args):
     t1 = args['t1']    # start of pulse
     t2 = args['t2']    # end of pulse
     tg = args['tg']    # time of Gaussian rise and fall
-    smooth = args['smooth']  # whether or not to rise and fall with gaussian
+    gauss = args['gauss']  # whether or not to rise and fall with gaussian
+    smooth = args['smooth']  # wether to start gaussian at zero or with a small jump
     Q  = args['Q']     # number of std's in Gaussian rise and fall
     wd = args['wd']  # drive frequency
     
@@ -69,13 +70,16 @@ def drive(t, args):
     
     # Rise and fall with Gaussian
     std = tg/Q  # standard deviation of Gaussian
-    gauss = lambda mu : exp(-(t-mu)**2/(2*std**2))  # Gaussian
+    gaussian = lambda mu : exp(-(t-mu)**2/(2*std**2))  # Gaussian
     
-    if smooth:
+    if gauss:
         block = np.heaviside((t-(t1+tg)), 0) - np.heaviside((t-(t2-tg)), 0)
-        rise = gauss(t1+tg) * (1-np.heaviside((t-(t1+tg)), 0))
-        fall = gauss(t2-tg) * (np.heaviside((t-(t2-tg)), 0))
+        rise = gaussian(t1+tg) * (1-np.heaviside((t-(t1+tg)), 0))
+        fall = gaussian(t2-tg) * (np.heaviside((t-(t2-tg)), 0))
         pulse = (rise + block + fall)*confine
+        if smooth:
+            jump = gaussian(t1+tg) * (1-np.heaviside((t1-(t1+tg)), 0))
+            pulse = (pulse-jump)/(1-jump)
     else:
         pulse = confine
     
@@ -88,7 +92,8 @@ def driveq(t, args):
     t1 = args['t1']    # start of pulse
     t2 = args['t2']    # end of pulse
     tg = args['tg']    # time of Gaussian rise and fall
-    smooth = args['smooth']  # whether or not to rise and fall with gaussian
+    gauss = args['gauss']  # whether or not to rise and fall with gaussian
+    smooth = args['smooth']  # wether to start gaussian at zero or with a small jump
     Q  = args['Q']     # number of std's in Gaussian rise and fall
     wd = args['wdq']  # drive frequency
     
@@ -96,13 +101,16 @@ def driveq(t, args):
     
     # Rise and fall with Gaussian
     std = tg/Q  # standard deviation of Gaussian
-    gauss = lambda mu : exp(-(t-mu)**2/(2*std**2))  # Gaussian
+    gaussian = lambda mu : exp(-(t-mu)**2/(2*std**2))  # Gaussian
     
-    if smooth:
+    if gauss:
         block = np.heaviside((t-(t1+tg)), 0) - np.heaviside((t-(t2-tg)), 0)
-        rise = gauss(t1+tg) * (1-np.heaviside((t-(t1+tg)), 0))
-        fall = gauss(t2-tg) * (np.heaviside((t-(t2-tg)), 0))
+        rise = gaussian(t1+tg) * (1-np.heaviside((t-(t1+tg)), 0))
+        fall = gaussian(t2-tg) * (np.heaviside((t-(t2-tg)), 0))
         pulse = (rise + block + fall)*confine
+        if smooth:
+            jump = gaussian(t1+tg) * (1-np.heaviside((t1-(t1+tg)), 0))
+            pulse = (pulse-jump)/(1-jump)
     else:
         pulse = confine
     
@@ -115,7 +123,8 @@ def drivec(t, args):
     t1 = args['t1']    # start of pulse
     t2 = args['t2']    # end of pulse
     tg = args['tg']    # time of Gaussian rise and fall
-    smooth = args['smooth']  # whether or not to rise and fall with gaussian
+    gauss = args['gauss']  # whether or not to rise and fall with gaussian
+    smooth = args['smooth']  # wether to start gaussian at zero or with a small jump
     Q  = args['Q']     # number of std's in Gaussian rise and fall
     wd = args['wdc']  # drive frequency
     
@@ -123,13 +132,16 @@ def drivec(t, args):
     
     # Rise and fall with Gaussian
     std = tg/Q  # standard deviation of Gaussian
-    gauss = lambda mu : exp(-(t-mu)**2/(2*std**2))  # Gaussian
+    gaussian = lambda mu : exp(-(t-mu)**2/(2*std**2))  # Gaussian
     
-    if smooth:
+    if gauss:
         block = np.heaviside((t-(t1+tg)), 0) - np.heaviside((t-(t2-tg)), 0)
-        rise = gauss(t1+tg) * (1-np.heaviside((t-(t1+tg)), 0))
-        fall = gauss(t2-tg) * (np.heaviside((t-(t2-tg)), 0))
+        rise = gaussian(t1+tg) * (1-np.heaviside((t-(t1+tg)), 0))
+        fall = gaussian(t2-tg) * (np.heaviside((t-(t2-tg)), 0))
         pulse = (rise + block + fall)*confine
+        if smooth:
+            jump = gaussian(t1+tg) * (1-np.heaviside((t1-(t1+tg)), 0))
+            pulse = (pulse-jump)/(1-jump)
     else:
         pulse = confine
     
@@ -142,20 +154,24 @@ def drive_nonosc(t, args):
     t1 = args['t1']    # start of pulse
     t2 = args['t2']    # end of pulse
     tg = args['tg']    # time of Gaussian rise and fall
-    smooth = args['smooth']  # whether or not to rise and fall with gaussian
+    gauss = args['gauss']  # whether or not to rise and fall with gaussian
+    smooth = args['smooth']  # wether to start gaussian at zero or with a small jump
     Q  = args['Q']     # number of std's in Gaussian rise and fall
     
     confine = np.heaviside((t-t1), 0) - np.heaviside((t-t2), 0)  # entire pulse
     
     # Rise and fall with Gaussian
     std = tg/Q  # standard deviation of Gaussian
-    gauss = lambda mu : exp(-(t-mu)**2/(2*std**2))  # Gaussian
+    gaussian = lambda mu : exp(-(t-mu)**2/(2*std**2))  # Gaussian
     
-    if smooth:
+    if gauss:
         block = np.heaviside((t-(t1+tg)), 0) - np.heaviside((t-(t2-tg)), 0)
-        rise = gauss(t1+tg) * (1-np.heaviside((t-(t1+tg)), 0))
-        fall = gauss(t2-tg) * (np.heaviside((t-(t2-tg)), 0))
+        rise = gaussian(t1+tg) * (1-np.heaviside((t-(t1+tg)), 0))
+        fall = gaussian(t2-tg) * (np.heaviside((t-(t2-tg)), 0))
         pulse = (rise + block + fall)*confine
+        if smooth:
+            jump = gaussian(t1+tg) * (1-np.heaviside((t1-(t1+tg)), 0))
+            pulse = (pulse-jump)/(1-jump)
     else:
         pulse = confine
     
@@ -168,20 +184,24 @@ def square1(t, args):
     t6 = args['t6']  # end of cycle
     tg = args['tg']  # time of Gaussian rise and fall
     Q  = args['Q']   # number of std's in Gaussian rise and fall
-    smooth = args['smooth']  # rise and fall with Gaussian or not
+    gauss = args['gauss']  # rise and fall with Gaussian or not
+    smooth = args['smooth']  # wether to start gaussian at zero or with a small jump
     
     t = t%t6  # repeat cycle
     confine = np.heaviside((t-t2), 0) - np.heaviside((t-t3), 0)  # entire pulse
     
     # Rise and fall with Gaussian
     std = tg/Q  # standard deviation of Gaussian
-    gauss = lambda mu : exp(-(t-mu)**2/(2*std**2))  # Gaussian
+    gaussian = lambda mu : exp(-(t-mu)**2/(2*std**2))  # Gaussian
     
-    if smooth:
+    if gauss:
         block = np.heaviside((t-(t2+tg)), 0) - np.heaviside((t-(t3-tg)), 0)
-        rise = gauss(t2+tg) * (1-np.heaviside((t-(t2+tg)), 0))
-        fall = gauss(t3-tg) * (np.heaviside((t-(t3-tg)), 0))
+        rise = gaussian(t2+tg) * (1-np.heaviside((t-(t2+tg)), 0))
+        fall = gaussian(t3-tg) * (np.heaviside((t-(t3-tg)), 0))
         pulse = (rise + block + fall)*confine
+        if smooth:
+            jump = gaussian(t2+tg) * (1-np.heaviside((t2-(t2+tg)), 0))
+            pulse = (pulse-jump)/(1-jump)
     else:
         pulse = confine
     
@@ -195,20 +215,24 @@ def square2(t, args):
     tg = args['tg']  # time of Gaussian rise and fall
     g2 = args['g2']  # pulse strength
     Q  = args['Q']   # number of std's in Gaussian rise and fall
-    smooth = args['smooth']  # rise and fall with Gaussian or not
+    gauss = args['gauss']  # rise and fall with Gaussian or not
+    smooth = args['smooth']  # wether to start gaussian at zero or with a small jump
     
     t = t%t6  # repeat cycle
     confine = np.heaviside((t-t4), 0) - np.heaviside((t-t5), 0)  # entire pulse
     
     # Rise and fall with Gaussian
     std = tg/Q  # standard deviation of Gaussian
-    gauss = lambda mu : exp(-(t-mu)**2/(2*std**2))  # Gaussian
+    gaussian = lambda mu : exp(-(t-mu)**2/(2*std**2))  # Gaussian
     
-    if smooth:
+    if gauss:
         block = np.heaviside((t-(t4+tg)), 0) - np.heaviside((t-(t5-tg)), 0)
-        rise = gauss(t4+tg) * (1-np.heaviside((t-(t4+tg)), 0))
-        fall = gauss(t5-tg) * (np.heaviside((t-(t5-tg)), 0))
+        rise = gaussian(t4+tg) * (1-np.heaviside((t-(t4+tg)), 0))
+        fall = gaussian(t5-tg) * (np.heaviside((t-(t5-tg)), 0))
         pulse = (rise + block + fall)*confine
+        if smooth:
+            jump = gaussian(t4+tg) * (1-np.heaviside((t4-(t4+tg)), 0))
+            pulse = (pulse-jump)/(1-jump)
     else:
         pulse = confine
     
