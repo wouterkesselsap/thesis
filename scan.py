@@ -14,6 +14,24 @@ home = "/home/student/thesis/"
 
 
 def sample_single_tone(Nq, wq, wc, Ec, g, Omega, shift, sb, smooth, Q, t0, t1, t2, t3, tg, psi0, Np_per_batch, H, options, parallel):
+    """
+    Performs a single-tone sideband transition simulation
+    with the given input parameters. Plots the expectation
+    values of the qubit & cavity, and the combined probability
+    |e0>-|g1> in the case of red sideband transitions, or
+    |e1>-|g0> in the case of blue sideband transitions.
+    
+    Input
+    -----
+    The input parameters are equal to the names in 2p_sideband.ipynb.
+    
+    Returns
+    -------
+    figqc : matplotlib.pyplot.Figure class object
+        Figure with expected qubit and cavity occupation number
+    fig : matplot.pyplot.Figure class object
+        Figure with combined probabilities
+    """
     from envelopes import drive
     
     i = shift[0]
@@ -92,7 +110,24 @@ def sample_single_tone(Nq, wq, wc, Ec, g, Omega, shift, sb, smooth, Q, t0, t1, t
 
 
 def sample_double_tone(Nq, wq, wc, Ec, g, Omegaq, Omegac, shift, dw, sb, smooth, Q, t0, t1, t2, t3, tg, psi0, Np_per_batch, H, options, parallel):
+    """
+    Performs a double-tone sideband transition simulation
+    with the given input parameters. Plots the expectation
+    values of the qubit & cavity, and the combined probability
+    |e0>-|g1> in the case of red sideband transitions, or
+    |e1>-|g0> in the case of blue sideband transitions.
     
+    Input
+    -----
+    The input parameters are equal to the names in 2p_sideband.ipynb.
+    
+    Returns
+    -------
+    figqc : matplotlib.pyplot.Figure class object
+        Figure with expected qubit and cavity occupation number
+    fig : matplot.pyplot.Figure class object
+        Figure with combined probabilities
+    """
     i = shift[0]
     shift = shift[1]
     
