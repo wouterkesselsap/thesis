@@ -14,13 +14,33 @@ from supports import *
 
 
 def prepare_folder(parallel=False):
+    """
+    Prepare the temporary folder where the data will be saved to.
+    The folder is distinguished from other progress folders by a
+    string of ten randomly chosen lower case characters. An ID is
+    created for the simulation by a time stamp to second precision.
+    
+    Input
+    -----
+    parallel : bool
+        Whether simulations are run in parallel
+    
+    Returns
+    -------
+    ID : str
+        Simulation ID, time stamp
+    folder : str
+        Path to folder
+    now : datetime.datetime class object
+        Time stamp
+    """
     if not parallel:
         for folder in glob("/home/student/thesis/prog_*"):
             shutil.rmtree(folder)  # Remove existing progress folders
 
     # Make new progress folder
     now = datetime.now()
-    ID = now.strftime("%y%m%d_%H%M%S")
+    ID = now.strftime("%y%m%d_%H%M%S") 
     folder = "/home/student/thesis/prog_" + ''.join(choice(alc) for i in range(10))
     os.makedirs(folder)
     saveID(ID, folder)
@@ -32,10 +52,18 @@ def saveparams(Nq, Nc, Nt, wq, shift, wc, Ec, g, sb,
                t0, t1, t2, t3, tg, smooth, Q,
                Np, H, psi0, e_ops, options,
                folder, frmt, **kwargs):
-    """Save all parameters to file.
+    """
+    Saves all parameters to a file. A pickle file can be chosen
+    for easy later use of the parameters. A text file can be chosen
+    as format for visual readout.
     
-    frmt : str, or list of str
-        Can be "txt" and "pkl"
+    Input
+    -----
+    folder : str
+        Path to folder
+    frmt : str, list of str
+        File type to save the parameters to.
+        Can be "txt" and "pkl".
     """
     if isinstance(frmt, str):
         frmt = [frmt]
@@ -102,6 +130,14 @@ def saveparams(Nq, Nc, Nt, wq, shift, wc, Ec, g, sb,
 
 
 def getparams(folder):
+    """
+    Extract all used parameters from a specified simulation.
+    
+    Input
+    -----
+    folder : str
+        Path to the desired simulation folder
+    """
     file = folder + "/parameters.pkl"
     infile = open(file, 'rb')
     data = pickle.load(infile)
@@ -152,12 +188,27 @@ def getparams(folder):
             
 
 def create_batches(t0, tf, Np, Nppb):
-    """Creates a tuple with batches of time points for which to
-    sequentially evaluate the LME evolution.
-    t0 : start time
-    tf : final time
-    Np : total number of equidistant time points
-    Nppb : number of time points per batch
+    """
+    Creates a list with batches of time points for which to
+    sequentially evaluate the LME evolution. This way, long evolutions
+    can be split up into smaller evolutions, in order to avoid saturation
+    of RAM.
+    
+    Input
+    -----
+    t0 : int, float
+        Simulation start time
+    tf : int, float
+        Simulation final time
+    Np : int
+        Total number of equidistant time points
+    Nppb : int, float
+        Number of time points per batch
+    
+    Returns
+    -------
+    batches : list
+        Batches with time values
     """
     tlist = np.linspace(t0, tf, Np)
     Nppb = ceil(Nppb)
@@ -177,6 +228,23 @@ def create_batches(t0, tf, Np, Nppb):
 
 
 def saveprog(result, e0, g1, e1, g0, coupling, num, folder):
+    """
+    Save the evolution of a batch to a pickle file. Every single step
+    in the evolution can be retrieved this way.
+    
+    Input
+    -----
+    result : qutip.solver.Result class object
+        Result of the solver
+    e0 : array-like
+        Probabilities of |e0> over time.
+    g1 : array-like
+        Probabilities of |g1> over time.
+    e1 : array-like
+        Probabilities of |e0> over time.
+    g0 : array-like
+        Probabilities of |g1> over time.
+    """
     name = folder + "/evolution_" + str(num) + ".pkl"
     data = {
         'times': result.times,
@@ -196,6 +264,16 @@ def saveprog(result, e0, g1, e1, g0, coupling, num, folder):
 
 
 def saveID(ID, folder):
+    """
+    Save the simulation ID to a pickle file in the folder.
+    
+    Input
+    -----
+    ID : str
+        Simulation ID, time stamp
+    folder : str
+        Path to simulation folder
+    """
     name = folder + "/ID.pkl"
     outfile = open(name, 'wb')
     pickle.dump(ID, outfile)
@@ -203,6 +281,19 @@ def saveID(ID, folder):
 
 
 def getID(folder):
+    """
+    Extract simulation ID from its folder.
+    
+    Input
+    -----
+    folder : str
+        Path to simulation folder
+    
+    Returns
+    -------
+    ID : str
+        Simulation ID, time stamp
+    """
     file = folder + "/ID.pkl"
     infile = open(file, 'rb')
     ID = pickle.load(infile)
@@ -210,15 +301,40 @@ def getID(folder):
     return ID
 
 
-def combine_batches(folder, selection='all', reduction=1, quants='all', return_data=True):
+def combine_batches(folder, quants='all', return_data=True):
     """
+    Combine the specified quantities from all batches into a separate file.
+    
+    Input
+    -----
     folder : str
-    selection : tuple (T1, T2)
-        Range of time for which to save the data
-    reduction : int
-        1/fraction of data points to save
-    quants : list of str
-        Can contain 'times', 'states' and 'expect'
+        Path to the simulation folder
+    quants : str, list of str
+        Specific quantities to extract from batches and combine into a file.
+        Can contain 'times', 'states', 'expect', 'g0', 'g1', 'e0', 'e1', and 'coupling'.
+        Default is 'all' which selects all of these.
+    return_data : bool
+        Return the data at the end of this function.
+        If set to False, all quantities are returned as NoneType.
+    
+    Returns
+    -------
+    times_combined : np.array
+        All time values
+    states_combined : list of qutip.Qobj
+        All quantum states through time
+    expect_combined : list of list
+        All expected occupation numbers
+    e0_combined : np.array
+        All probabilities of |e0>
+    g1_combined : np.array
+        All probabilities of |g1>
+    e1_combined : np.array
+        All probabilities of |e1>
+    g0_combined : np.array
+        All probabilities of |g0>
+    coupling_combined : np.array
+        Coupling strength of the drive tone(s) through time
     """
     if quants == 'all':
         quants = ['times', 'states', 'expect', 'g0', 'g1', 'e0', 'e1', 'coupling']
@@ -271,11 +387,7 @@ def combine_batches(folder, selection='all', reduction=1, quants='all', return_d
         for file in glob(condition):
             infile = open(file, 'rb')
             data = pickle.load(infile)
-            if data['num'] == 0:
-#                     sill = data['times']
-#                     if ( min(sill) <= selection[0] and max(sill) >= selection[0] ):
-#                         # batch contains lower bound
-				
+            if data['num'] == 0:				
                 times[data['num']] = data['times']
             else:
                 times[data['num']] = data['times'][1:]
@@ -500,6 +612,36 @@ def combine_batches(folder, selection='all', reduction=1, quants='all', return_d
 
 
 def load_data(quants, srcfolder):
+    """
+    Extract the full evolution of specified saved quantities of a simulation.
+    All quantities not specified in quants are returned as NoneType.
+    
+    quants : str, list of str
+        Specific quantities to extract from batches and combine into a file.
+        Can contain 'times', 'states', 'expect', 'g0', 'g1', 'e0', 'e1', and 'coupling'.
+        Default is 'all' which selects all of these.
+    srcfolder : str
+        Path to the simulation folder
+        
+    Returns
+    -------
+    times : np.array
+        All time values
+    states : list of qutip.Qobj
+        All quantum states through time
+    expect : list of list
+        All expected occupation numbers
+    e0 : np.array
+        All probabilities of |e0>
+    g1 : np.array
+        All probabilities of |g1>
+    e1 : np.array
+        All probabilities of |e1>
+    g0 : np.array
+        All probabilities of |g0>
+    coupling : np.array
+        Coupling strength of the drive tone(s) through time
+    """
     if quants == 'all':
         quants = ['times', 'states', 'expect', 'g0', 'g1', 'e0', 'e1', 'coupling']
     if isinstance(quants, str):
@@ -581,6 +723,20 @@ def load_data(quants, srcfolder):
 
 
 def getquants(folder):
+    """
+    Returns the names of all quantities that are combined from
+    different batches.
+    
+    Input
+    -----
+    folder : str
+        Path to simulation folder
+        
+    Returns
+    -------
+    quants : list of str
+        Names of quantities
+    """
     quants = list()
     condition = folder + "/*.pkl"
     
