@@ -49,7 +49,7 @@ def prepare_folder(parallel=False):
 
 
 def saveparams(Nq, Nc, Nt, wq, shift, wc, Ec, g, sb,
-               t0, t1, t2, t3, tg, smooth, Q,
+               t0, t1, t2, t3, tg, gauss, smooth, Q,
                Np, H, psi0, e_ops, options,
                folder, frmt, **kwargs):
     """
@@ -71,7 +71,7 @@ def saveparams(Nq, Nc, Nt, wq, shift, wc, Ec, g, sb,
     if 'pkl' in frmt:
         data = {
             'Nq' : Nq, 'Nc' : Nc, 'Nt' : Nt, 'wq' : wq, 'shift' : shift, 'wc' : wc, 'Ec' : Ec, 'g' : g, 'sb' : sb,
-            't0' : t0, 't1' : t1, 't2' : t2, 't3' : t3, 'tg' : tg, 'smooth' : smooth, 'Q' : Q,
+            't0' : t0, 't1' : t1, 't2' : t2, 't3' : t3, 'tg' : tg, 'gauss' : gauss, 'smooth' : smooth, 'Q' : Q,
             'Np' : Np, 'H' : H, 'psi0' : psi0, 'e_ops' : e_ops, 'options' : options        
         }
         if Nt == 1:
@@ -106,7 +106,8 @@ def saveparams(Nq, Nc, Nt, wq, shift, wc, Ec, g, sb,
                 "end of sideband drive           t2     : {} ns\n".format(t2),
                 "end of simulation               t3     : {} ns\n".format(t3),
                 "rise and fall time              tg     : {} ns\n".format(tg),
-                "rise and fall with Gaussian     smooth : {}\n".format(smooth),
+                "rise and fall with Gaussian     gauss  : {}\n".format(gauss),
+                "Gaussian starting at zero       smooth : {}\n".format(smooth),
                 "# of std's in Gaussian          Q      : {}\n".format(Q),
                 "# of data points                Np     : {}\n".format(Np)]
                 
@@ -156,6 +157,7 @@ def getparams(folder):
     t2 = data['t2']
     t3 = data['t3']
     tg = data['tg']
+    gauss = data['gauss']
     smooth = data['smooth']
     Q = data['Q']
     Np = data['Np']
@@ -183,9 +185,8 @@ def getparams(folder):
     
     infile.close()
             
-    return Nq, Nc, Nt, wq, shift, wc, Ec, g, sb, t0, t1, t2, t3, tg, smooth, Q, Np, H, psi0, e_ops, options, Omega, wd, Omegaq, Omegac, dw, wdq, wdc
-            
-            
+    return Nq, Nc, Nt, wq, shift, wc, Ec, g, sb, t0, t1, t2, t3, tg, gauss, smooth, Q, Np, H, psi0, e_ops, options, Omega, wd, Omegaq, Omegac, dw, wdq, wdc
+
 
 def create_batches(t0, tf, Np, Nppb):
     """

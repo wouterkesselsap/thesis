@@ -78,7 +78,7 @@ def drive(t, args):
         fall = gaussian(t2-tg) * (np.heaviside((t-(t2-tg)), 0))
         pulse = (rise + block + fall)*confine
         if smooth:
-            jump = gaussian(t1+tg) * (1-np.heaviside((t1-(t1+tg)), 0))
+            jump = (exp(-(t1-(t1+tg))**2/(2*std**2))) * (1-np.heaviside((t1-(t1+tg)), 0))
             pulse = (pulse-jump)/(1-jump)
     else:
         pulse = confine
@@ -109,7 +109,7 @@ def driveq(t, args):
         fall = gaussian(t2-tg) * (np.heaviside((t-(t2-tg)), 0))
         pulse = (rise + block + fall)*confine
         if smooth:
-            jump = gaussian(t1+tg) * (1-np.heaviside((t1-(t1+tg)), 0))
+            jump = exp(-(t1-(t1+tg))**2/(2*std**2)) * (1-np.heaviside((t1-(t1+tg)), 0))
             pulse = (pulse-jump)/(1-jump)
     else:
         pulse = confine
@@ -140,7 +140,7 @@ def drivec(t, args):
         fall = gaussian(t2-tg) * (np.heaviside((t-(t2-tg)), 0))
         pulse = (rise + block + fall)*confine
         if smooth:
-            jump = gaussian(t1+tg) * (1-np.heaviside((t1-(t1+tg)), 0))
+            jump = exp(-(t1-(t1+tg))**2/(2*std**2)) * (1-np.heaviside((t1-(t1+tg)), 0))
             pulse = (pulse-jump)/(1-jump)
     else:
         pulse = confine
@@ -170,7 +170,7 @@ def drive_nonosc(t, args):
         fall = gaussian(t2-tg) * (np.heaviside((t-(t2-tg)), 0))
         pulse = (rise + block + fall)*confine
         if smooth:
-            jump = gaussian(t1+tg) * (1-np.heaviside((t1-(t1+tg)), 0))
+            jump = (exp(-(t1-(t1+tg))**2/(2*std**2))) * (1-np.heaviside((t1-(t1+tg)), 0))
             pulse = (pulse-jump)/(1-jump)
     else:
         pulse = confine
@@ -200,7 +200,7 @@ def square1(t, args):
         fall = gaussian(t3-tg) * (np.heaviside((t-(t3-tg)), 0))
         pulse = (rise + block + fall)*confine
         if smooth:
-            jump = gaussian(t2+tg) * (1-np.heaviside((t2-(t2+tg)), 0))
+            jump = exp(-(t2-(t2+tg))**2/(2*std**2)) * (1-np.heaviside((t2-(t2+tg)), 0))
             pulse = (pulse-jump)/(1-jump)
     else:
         pulse = confine
@@ -231,7 +231,7 @@ def square2(t, args):
         fall = gaussian(t5-tg) * (np.heaviside((t-(t5-tg)), 0))
         pulse = (rise + block + fall)*confine
         if smooth:
-            jump = gaussian(t4+tg) * (1-np.heaviside((t4-(t4+tg)), 0))
+            jump = exp(-(t4-(t4+tg))**2/(2*std**2)) * (1-np.heaviside((t4-(t4+tg)), 0))
             pulse = (pulse-jump)/(1-jump)
     else:
         pulse = confine
