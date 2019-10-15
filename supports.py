@@ -41,28 +41,28 @@ def ops(*args):
         return a0, n0
     
     elif len(args) == 2:
-        a0 = destroy(args[0])
+        a0 = tensory(destroy(args[0]), qeye(args[1]))
         n0 = a0.dag()*a0
-        a1 = destroy(args[1])
+        a1 = tensor(qeye(args[0]), destroy(args[1]))
         n1 = a1.dag()*a1
         return a0, a1, n0, n1
     
     elif len(args) == 3:
-        a0 = destroy(args[0])
+        a0 = tensor(destroy(args[0]), qeye(args[1]), qeye(args[2]))
         n0 = a0.dag()*a0
-        a1 = destroy(args[1])
+        a1 = tensor(qeye(args[0]), destroy(args[1]), qeye(args[2]))
         n1 = a1.dag()*a1
-        a2 = destroy(args[2])
+        a2 = tensor(qeye(args[0]), qeye(args[1]), destroy(args[2]))
         n2 = a2.dag()*a2
         return a0, a1, a2, n0, n1, n2
     
     elif len(args) == 4:
-        a0 = destroy(args[0])
+        a0 = tensor(destroy(args[0]), qeye(args[1]), qeye(args[2]), qeye(args[3]))
         n0 = a0.dag()*a0
-        a1 = destroy(args[1])
+        a1 = tensor(qeye(args[0]), destroy(args[1]), qeye(args[2]), qeye(args[3]))
         n1 = a1.dag()*a1
-        a2 = destroy(args[2])
+        a2 = tensor(qeye(args[0]), qeye(args[1]), destroy(args[2]), qeye(args[3]))
         n2 = a2.dag()*a2
-        a3 = destroy(args[3])
+        a3 = tensor(qeye(args[0]), qeye(args[1]), qeye(args[2]), destroy(args[3]))
         n3 = a3.dag()*a3
         return a0, a1, a2, a3, n0, n1, n2, n3
