@@ -328,7 +328,7 @@ def sb_expect(times, expect, sb, Nt, H_args, coupling, xlim=None, ylim=None, fig
     H_args : dict
         Parameters for time-dependent Hamiltonians and collapse operators
     coupling : array-like
-        Coupling strength of the drive tone(s) over time
+        Normalized coupling strength of the drive tone(s) over time
     xlim : list, tuple
         Range of horizontal axis
     ylim : list, tuple
@@ -401,9 +401,8 @@ def sb_expect(times, expect, sb, Nt, H_args, coupling, xlim=None, ylim=None, fig
         ax2.set_ylabel('$\Omega$, $g$ [GHz]')
     elif Nt == 2:
         drive_coupling = coupling
-        ax2.set_ylabel('$\Omega$, $g$ [a.u.]')
+        ax2.set_ylabel('$\Omega/\Omega_{max}$, $g/g\{max}$ [-]')
     ax2.plot(times, drive_coupling, color='g', label='Drive, coupling')
-    ax2.set_ylabel('$\Omega$ [GHz]')
     ax2.set_ylim([0, 1.1*max(drive_coupling)])
     ax2.tick_params(axis='y')
     ax2.legend(loc='center right')
@@ -449,7 +448,7 @@ def sb_combined_probs(times, sb, Nt, H_args, coupling, xlim=None, ylim=None, fig
     H_args : dict
         Parameters for time-dependent Hamiltonians and collapse operators
     coupling : array-like
-        Coupling strength of the drive tone(s) over time
+        Normalized coupling strength of the drive tone(s) over time
     xlim : list, tuple
         Range of horizontal axis
     ylim : list, tuple

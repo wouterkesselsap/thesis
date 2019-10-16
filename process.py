@@ -157,8 +157,12 @@ def getparams(folder):
     t2 = data['t2']
     t3 = data['t3']
     tg = data['tg']
-    gauss = data['gauss']
-    smooth = data['smooth']
+    try:
+        gauss = data['gauss']
+        smooth = data['smooth']
+    except:
+        gauss = data['smooth']
+        smooth = False
     Q = data['Q']
     Np = data['Np']
     H = data['H']
