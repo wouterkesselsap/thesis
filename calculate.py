@@ -51,17 +51,20 @@ def calculate(H, psi0, e_ops, H_args, options, Nc, Np, Np_per_batch, parallel, v
     t0 = H_args['t0']
     t3 = H_args['t3']
     
+    if verbose:
+        update_progress(0/len(batches))
+    
     batches = create_batches(t0, t3, Np, Np_per_batch)
 
     ID, folder, now = prepare_folder(parallel)
-
+    
     # Calculate!
     for num, tlist in enumerate(batches):
-        if verbose:
-            print(num+1, "/", len(batches), ":", int(np.round(100*(num+1)/len(batches))), "%")
         result = mesolve(H, psi0, tlist, c_ops=[], e_ops=e_ops, args=H_args, options=options)
         e0, g1, e1, g0 = combined_probs(result.states, Nc)
         coupling = drive_nonosc(tlist, H_args)  # unitless, peaks at 1
+        if verbose:
+            update_progress((num+1)/len(batches))
         saveprog(result, e0, g1, e1, g0, coupling, num, folder)
         psi0 = copy(result.states[-1])
         del result, e0, g1, e1, g0

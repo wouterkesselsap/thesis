@@ -1,4 +1,6 @@
 import numpy as np
+import time, sys
+from IPython.display import clear_output
 from qutip import *
 
 
@@ -66,3 +68,28 @@ def ops(*args):
         a3 = tensor(qeye(args[0]), qeye(args[1]), qeye(args[2]), destroy(args[3]))
         n3 = a3.dag()*a3
         return a0, a1, a2, a3, n0, n1, n2, n3
+
+
+def update_progress(progress):
+    bar_length = 50
+    if isinstance(progress, int):
+        progress = float(progress)
+    if not isinstance(progress, float):
+        progress = 0
+    if progress < 0:
+        progress = 0
+    if progress >= 1:
+        progress = 1
+    block = int(round(bar_length * progress))
+    clear_output(wait = True)
+    print("Progress: [{0}] {1:.1f}%".format( "#" * block + " " * (bar_length - block), progress * 100))
+
+
+def testbar():
+    number_of_elements = 1000
+
+    for i in range(number_of_elements):
+        time.sleep(0.01) #Replace this with a real computation
+        update_progress(i / number_of_elements)
+
+    update_progress(1)
