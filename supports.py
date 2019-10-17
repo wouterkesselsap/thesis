@@ -70,26 +70,21 @@ def ops(*args):
         return a0, a1, a2, a3, n0, n1, n2, n3
 
 
-def update_progress(progress):
-    bar_length = 50
-    if isinstance(progress, int):
-        progress = float(progress)
-    if not isinstance(progress, float):
-        progress = 0
-    if progress < 0:
-        progress = 0
-    if progress >= 1:
-        progress = 1
-    block = int(round(bar_length * progress))
+def update_progress(prog, length=50):
+    """
+    Displays progress bar.
+    
+    prog : float
+        Fraction of total calculation completed.
+    """
+    if isinstance(prog, int):
+        prog = float(prog)
+    if not isinstance(prog, float):
+        prog = 0
+    if prog < 0:
+        prog = 0
+    if prog >= 1:
+        prog = 1
+    block = int(round(length * prog))
     clear_output(wait = True)
-    print("Progress: [{0}] {1:.1f}%".format( "#" * block + " " * (bar_length - block), progress * 100))
-
-
-def testbar():
-    number_of_elements = 1000
-
-    for i in range(number_of_elements):
-        time.sleep(0.01) #Replace this with a real computation
-        update_progress(i / number_of_elements)
-
-    update_progress(1)
+    print("Progress: [{0}] {1:.1f}%".format( "█" * block + " " * (length - block), prog * 100))
