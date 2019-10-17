@@ -52,10 +52,10 @@ def calculate(H, psi0, e_ops, H_args, options, Nc, Np, Np_per_batch, parallel, v
     t3 = H_args['t3']
     
     if verbose:
-        update_progress(0/len(batches))
+        update_progress(0)
     
     batches = create_batches(t0, t3, Np, Np_per_batch)
-
+    
     ID, folder, now = prepare_folder(parallel)
     
     # Calculate!
