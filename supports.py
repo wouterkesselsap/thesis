@@ -43,7 +43,7 @@ def ops(*args):
         return a0, n0
     
     elif len(args) == 2:
-        a0 = tensory(destroy(args[0]), qeye(args[1]))
+        a0 = tensor(destroy(args[0]), qeye(args[1]))
         n0 = a0.dag()*a0
         a1 = tensor(qeye(args[0]), destroy(args[1]))
         n1 = a1.dag()*a1

@@ -13,7 +13,7 @@ from IPython.display import display
 home = "/home/student/thesis/"
 
 
-def sample_single_tone(Nq, wq, wc, Ec, g, Omega, shift, sb, smooth, Q, t0, t1, t2, t3, tg, psi0, Np_per_batch, H, options, parallel):
+def sample_single_tone(Nq, wq, wc, Ec, g, Omega, shift, sb, gauss, smooth, Q, t0, t1, t2, t3, tg, psi0, Np_per_batch, H, options, parallel):
     """
     Performs a single-tone sideband transition simulation
     with the given input parameters. Plots the expectation
@@ -56,7 +56,7 @@ def sample_single_tone(Nq, wq, wc, Ec, g, Omega, shift, sb, smooth, Q, t0, t1, t
     # Hamiltonian arguments
     H_args = {'t0' : t0, 't1' : t1, 't2' : t2,
               't3' : t3, 'tg' : tg, 'Q'  : Q,
-              'smooth' : smooth, 'wd' : wd}
+              'gauss' : gauss, 'smooth' : smooth, 'wd' : wd}
 
     # Expectation operators
     e_ops = [nq, nc]
@@ -92,16 +92,16 @@ def sample_single_tone(Nq, wq, wc, Ec, g, Omega, shift, sb, smooth, Q, t0, t1, t
     """ EXPECTATION VALUES """
 
     if sb == 'red':
-        figqc = sb_expect(times, expect, sb, Nt, H_args, coupling, xlim=None, ylim=None, figsize=[15,3], wd=wd, wsb=0, title=expect_title)
+        figqc = sb_expect(times, expect, sb, Nt, H_args, coupling, xlim=None, ylim=None, figsize=[15,3], wd=wd, wsb=0, title=expect_title, Omega=Omega)
     elif sb == 'blue':
-        figqc = sb_expect(times, expect, sb, Nt, H_args, coupling, xlim=None, ylim=None, figsize=[15,3], wd=wd, wsb=0, title=expect_title)
+        figqc = sb_expect(times, expect, sb, Nt, H_args, coupling, xlim=None, ylim=None, figsize=[15,3], wd=wd, wsb=0, title=expect_title, Omega=Omega)
     
     """COMBINED PROBABILITIES"""
 
     if sb == 'red':
-        fig = sb_combined_probs(times, sb, Nt, H_args, coupling, e0=e0, g1=g1, wd=wd, wsb=0, title=cp_title)
+        fig = sb_combined_probs(times, sb, Nt, H_args, coupling, e0=e0, g1=g1, wd=wd, wsb=0, title=cp_title, Omega=Omega)
     elif sb == 'blue':
-        fig = sb_combined_probs(times, sb, Nt, H_args, coupling, e1=e1, g0=g0, wd=wd, wsb=0, title=cp_title)
+        fig = sb_combined_probs(times, sb, Nt, H_args, coupling, e1=e1, g0=g0, wd=wd, wsb=0, title=cp_title, Omega=Omega)
     
 #     figqc.savefig(srcfolder + "/figqc.png", bbox_inches='tight')
 #     fig.savefig(srcfolder + "/fig.png", bbox_inches='tight')
@@ -109,7 +109,7 @@ def sample_single_tone(Nq, wq, wc, Ec, g, Omega, shift, sb, smooth, Q, t0, t1, t
     return figqc, fig
 
 
-def sample_double_tone(Nq, wq, wc, Ec, g, Omegaq, Omegac, shift, dw, sb, smooth, Q, t0, t1, t2, t3, tg, psi0, Np_per_batch, H, options, parallel):
+def sample_double_tone(Nq, wq, wc, Ec, g, Omegaq, Omegac, shift, dw, sb, gauss, smooth, Q, t0, t1, t2, t3, tg, psi0, Np_per_batch, H, options, parallel):
     """
     Performs a double-tone sideband transition simulation
     with the given input parameters. Plots the expectation
@@ -150,7 +150,7 @@ def sample_double_tone(Nq, wq, wc, Ec, g, Omegaq, Omegac, shift, dw, sb, smooth,
 
     # Hamiltonian arguments
     H_args = {'t0' : t0, 't1' : t1, 't2' : t2, 't3' : t3, 'tg' : tg,
-              'Q'  : Q, 'smooth' : smooth, 'Nt' : Nt, 'wdq' : wdq, 'wdc' : wdc}
+              'Q'  : Q, 'gauss' : gauss, 'smooth' : smooth, 'Nt' : Nt, 'wdq' : wdq, 'wdc' : wdc}
 
     # Expectation operators
     e_ops = [nq, nc]
@@ -188,18 +188,18 @@ def sample_double_tone(Nq, wq, wc, Ec, g, Omegaq, Omegac, shift, dw, sb, smooth,
     """ EXPECTATION VALUES """
 
     if sb == 'red':
-        figqc = sb_expect(times, expect, sb, Nt, H_args, coupling, xlim=None, ylim=None, figsize=[15,3], wsb=0, title=expect_title)
+        figqc = sb_expect(times, expect, sb, Nt, H_args, coupling, xlim=None, ylim=None, figsize=[15,3], wsb=0, title=expect_title, Omegaq=Omegaq, Omegac=Omegac)
     elif sb == 'blue':
-        figqc = sb_expect(times, expect, sb, Nt, H_args, coupling, xlim=None, ylim=None, figsize=[15,3], wsb=0, title=expect_title)
+        figqc = sb_expect(times, expect, sb, Nt, H_args, coupling, xlim=None, ylim=None, figsize=[15,3], wsb=0, title=expect_title, Omegaq=Omegaq, Omegac=Omegac)
     
     """COMBINED PROBABILITIES"""
 
     if sb == 'red':
         fig = sb_combined_probs(times, sb, Nt, H_args, coupling,
-                                xlim=None, ylim=None, figsize=[15,3], e0=e0, g1=g1, wsb=0, title=cp_title)
+                                xlim=None, ylim=None, figsize=[15,3], e0=e0, g1=g1, wsb=0, title=cp_title, Omegaq=Omegaq, Omegac=Omegac)
     elif sb == 'blue':
         fig = sb_combined_probs(times, sb, Nt, H_args, coupling,
-                                xlim=None, ylim=None, figsize=[15,3], e1=e1, g0=g0, wsb=0, title=cp_title)
+                                xlim=None, ylim=None, figsize=[15,3], e1=e1, g0=g0, wsb=0, title=cp_title, Omegaq=Omegaq, Omegac=Omegac)
     
 #     figqc.savefig(srcfolder + "/figqc.png", bbox_inches='tight', dpi=500)
 #     fig.savefig(srcfolder + "/fig.png", bbox_inches='tight', dpi=500)
