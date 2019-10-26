@@ -207,6 +207,57 @@ def sample_double_tone(Nq, wq, wc, Ec, g, Omegaq, Omegac, shift, dw, sb, gauss, 
     return figqc, fig
 
 
+def qfs_single_tone(Nq, wq, Ec, wp, H_args, psi0, Np_per_batch, H, options, parallel):
+    gauss = H_args['gauss']
+    smooth = H_args['smooth']
+    Q = H_args['Q']
+    t0 = H_args['t0']
+    t1 = H_args['t1']
+    t2 = H_args['t2']
+    t3 = H_args['t3']
+    tg = H_args['tg']
+    wd = H_args['wd']
+    
+    i = wp[0]
+    wp = wp[1]
+    H_args['wp'] = wp
+    Nt = 1   # number of drive tones
+    Np = 100*int(t3)     # number of discrete time steps for which to store the output
+    
+    b, nq = ops(Nq)
+    e_ops = [nq]
+        
+    """ CALCULATE! """
+
+    progfolder = calculate_1q0c(H, psi0, e_ops, H_args, options, Np, Np_per_batch, parallel, verbose=False)
+    
+    """ SAVE EVOLUTION TEMPORARILY """
+    
+    srcfolder =  progfolder
+    quants = ['times', 'expect', 'coupling']
+
+    start_comb = datetime.now()
+    new_folder_name = copy(srcfolder)
+    ID = getID(srcfolder)
+    combine_batches(srcfolder, quants=quants, return_data=False)
+    end_comb = datetime.now()
+    
+    times, states, expect, e0, g1, e1, g0, coupling = load_data(quants, srcfolder)
+    
+    time.sleep(i*3)
+    
+    print("\nshift  =", (wp-wq)/2/pi)
+    print("wp     =", wp/2/pi)
+    print("max    =", max(expect[0]))
+    
+    plt.figure(figsize=[15,3])
+    plt.plot(times, expect[0])
+    fig = plt.gcf()
+    plt.show()
+    
+    return fig
+
+
 def qfs(Nq, wq, Ec, wp, H_args, psi0, Np_per_batch, H, options, parallel):
     gauss = H_args['gauss']
     smooth = H_args['smooth']
@@ -222,7 +273,7 @@ def qfs(Nq, wq, Ec, wp, H_args, psi0, Np_per_batch, H, options, parallel):
     i = wp[0]
     wp = wp[1]
     H_args['wp'] = wp
-    Nt = 1   # number of drive tones
+    Nt = 2   # number of drive tones
     Np = 100*int(t3)     # number of discrete time steps for which to store the output
     
     b, nq = ops(Nq)
