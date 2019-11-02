@@ -78,7 +78,11 @@ def sbsample(Nq, wq, wc, Ec, g, shift, sb, Nt, H, H_args, psi0, Np_per_batch, op
     combine_batches(srcfolder, quants=quants, return_data=False)
     times, states, expect, e0, g1, e1, g0, coupling = load_data(quants, srcfolder)
     
-    time.sleep(i*3)
+    if i < 10:
+        num = "0" + str(i)
+    elif i >= 10:
+        num = str(i)
+    
     print(" ")
     
     if Nt == 1:
@@ -122,110 +126,9 @@ def sbsample(Nq, wq, wc, Ec, g, shift, sb, Nt, H, H_args, psi0, Np_per_batch, op
             fig = sb_combined_probs(times, sb, Nt, H_args, coupling,
                                     xlim=None, ylim=None, figsize=[15,3], e1=e1, g0=g0, wsb=0,
                                     title=cp_title, Omegaq=Omegaq, Omegac=Omegac)
-    
+    fig.savefig("/home/student/thesis/fig{}_{}.png".format(num, shift/2/pi))
+    figqc.savefig("/home/student/thesis/figqc{}_{}.png".format(num, shift/2/pi))
     return figqc, fig
-
-
-def qfs_single_tone(Nq, wq, Ec, wp, H_args, psi0, Np_per_batch, H, options, parallel):
-    gauss = H_args['gauss']
-    smooth = H_args['smooth']
-    Q = H_args['Q']
-    t0 = H_args['t0']
-    t1 = H_args['t1']
-    t2 = H_args['t2']
-    t3 = H_args['t3']
-    tg = H_args['tg']
-    wd = H_args['wd']
-    
-    i = wp[0]
-    wp = wp[1]
-    H_args['wp'] = wp
-    Nt = 1   # number of drive tones
-    Np = 100*int(t3)     # number of discrete time steps for which to store the output
-    
-    b, nq = ops(Nq)
-    e_ops = [nq]
-        
-    """ CALCULATE! """
-
-    progfolder = calculate_1q0c(H, psi0, e_ops, H_args, options, Np, Np_per_batch, parallel, verbose=False)
-    
-    """ SAVE EVOLUTION TEMPORARILY """
-    
-    srcfolder =  progfolder
-    quants = ['times', 'expect', 'coupling']
-
-    start_comb = datetime.now()
-    new_folder_name = copy(srcfolder)
-    ID = getID(srcfolder)
-    combine_batches(srcfolder, quants=quants, return_data=False)
-    end_comb = datetime.now()
-    
-    times, states, expect, e0, g1, e1, g0, coupling = load_data(quants, srcfolder)
-    
-    time.sleep(i*3)
-    
-    print("\nshift  =", (wp-wq)/2/pi)
-    print("wp     =", wp/2/pi)
-    print("max    =", max(expect[0]))
-    
-    plt.figure(figsize=[15,3])
-    plt.plot(times, expect[0])
-    fig = plt.gcf()
-    plt.show()
-    
-    return fig
-
-
-def qfs_double_tone(Nq, wq, Ec, wp, Nt, H, H_args, psi0, Np_per_batch, options, parallel):
-    gauss = H_args['gauss']
-    smooth = H_args['smooth']
-    Q = H_args['Q']
-    t0 = H_args['t0']
-    t1 = H_args['t1']
-    t2 = H_args['t2']
-    t3 = H_args['t3']
-    tg = H_args['tg']
-    wdq = H_args['wdq']
-    wdc = H_args['wdc']
-    
-    i = wp[0]
-    wp = wp[1]
-    H_args['wp'] = wp
-    Nt = 2   # number of drive tones
-    Np = 100*int(t3)     # number of discrete time steps for which to store the output
-    
-    b, nq = ops(Nq)
-    e_ops = [nq]
-        
-    """ CALCULATE! """
-
-    progfolder = calculate_1q0c(H, psi0, e_ops, H_args, options, Np, Np_per_batch, parallel, verbose=False)
-    
-    """ SAVE EVOLUTION TEMPORARILY """
-    
-    srcfolder =  progfolder
-    quants = ['times', 'expect', 'coupling']
-
-    start_comb = datetime.now()
-    new_folder_name = copy(srcfolder)
-    ID = getID(srcfolder)
-    combine_batches(srcfolder, quants=quants, return_data=False)
-    end_comb = datetime.now()
-    
-    times, states, expect, e0, g1, e1, g0, coupling = load_data(quants, srcfolder)
-    
-    time.sleep(i*3)
-    
-    print("\nshift  =", (wp-wq)/2/pi)
-    print("max    =", max(expect[0]))
-    
-    plt.figure(figsize=[15,3])
-    plt.plot(times, expect[0])
-    fig = plt.gcf()
-    plt.show()
-    
-    return fig
 
 
 def qfs(Nq, wq, Ec, wp, H, H_args, psi0, Np_per_batch, options, parallel):
@@ -241,7 +144,11 @@ def qfs(Nq, wq, Ec, wp, H, H_args, psi0, Np_per_batch, options, parallel):
     combine_batches(srcfolder, quants=quants, return_data=False)
     times, states, expect, e0, g1, e1, g0, coupling = load_data(quants, srcfolder)
     
-    time.sleep(i*3)
+    if i < 10:
+        num = "0" + str(i)
+    elif i >= 10:
+        num = str(i)
+    
     print("\nshift  =", (wp-wq)/2/pi)
     print("wp     =", wp/2/pi)
     print("max    =", max(expect[0]))
@@ -249,10 +156,11 @@ def qfs(Nq, wq, Ec, wp, H, H_args, psi0, Np_per_batch, options, parallel):
     plt.figure(figsize=[15,3])
     plt.plot(times, expect[0], c='k')
     plt.title("shift {}, wp {}, max {}".format(np.round((wp-wq)/2/pi,4), np.round(wp/2/pi,4), np.round(max(expect[0]),4)))
-    fig = plt.gcf()
-    plt.show()
+    #fig = plt.gcf()
+    plt.savefig("/home/student/thesis/fig{}_{}.png".format(num, (wp-wq)/2/pi))
+    #fig.show()
     
-    return fig
+    #return fig
 
 
 def cfs(Nq, Nc, wc, Ec, wp, H, H_args, psi0, Np_per_batch, options, parallel):
