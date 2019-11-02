@@ -156,12 +156,8 @@ def qfs(Nq, wq, Ec, wp, H, H_args, psi0, Np_per_batch, options, parallel):
     plt.figure(figsize=[15,3])
     plt.plot(times, expect[0], c='k')
     plt.title("shift {}, wp {}, max {}".format(np.round((wp-wq)/2/pi,4), np.round(wp/2/pi,4), np.round(max(expect[0]),4)))
-    #fig = plt.gcf()
     plt.savefig("/home/student/thesis/fig{}_{}.png".format(num, (wp-wq)/2/pi))
-    #fig.show()
     
-    #return fig
-
 
 def cfs(Nq, Nc, wc, Ec, wp, H, H_args, psi0, Np_per_batch, options, parallel):
     i = wp[0]
@@ -176,7 +172,11 @@ def cfs(Nq, Nc, wc, Ec, wp, H, H_args, psi0, Np_per_batch, options, parallel):
     combine_batches(srcfolder, quants=quants, return_data=False)
     times, states, expect, e0, g1, e1, g0, coupling = load_data(quants, srcfolder)
     
-    time.sleep(i*3)
+    if i < 10:
+        num = "0" + str(i)
+    elif i >= 10:
+        num = str(i)
+    
     print("wp     =", wp/2/pi)
     print("max    =", max(expect[1]))
     
@@ -184,7 +184,6 @@ def cfs(Nq, Nc, wc, Ec, wp, H, H_args, psi0, Np_per_batch, options, parallel):
     plt.plot(times, expect[0], c='b')
     plt.plot(times, expect[1], c='r')
     plt.title("shift {}, wp {}, max {}".format(np.round((wp-wc)/2/pi,4), np.round(wp/2/pi,4), np.round(max(expect[1]),6)))
-    fig = plt.gcf()
-    plt.show()
+    plt.savefig("/home/student/thesis/fig{}_{}.png".format(num, (wp-wc)/2/pi))
     
     return fig
