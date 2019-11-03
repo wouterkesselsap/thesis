@@ -49,6 +49,7 @@ def calculate(H, psi0, e_ops, H_args, options, Nc, Np, Np_per_batch, home, paral
     folder : str
         Folder name in which the evolution is stored
     """
+    N_devices = len(psi0.dims[0])
     
     t0 = H_args['t0']
     t3 = H_args['t3']
@@ -63,71 +64,26 @@ def calculate(H, psi0, e_ops, H_args, options, Nc, Np, Np_per_batch, home, paral
     # Calculate!
     for num, tlist in enumerate(batches):
         result = mesolve(H, psi0, tlist, c_ops=[], e_ops=e_ops, args=H_args, options=options)
-        e0, g1, e1, g0 = combined_probs(result.states, Nc)
+        
+        if N_devices == 2:
+            e0, g1, e1, g0 = combined_probs(result.states, Nc)
+       
         coupling = drive_nonosc(tlist, H_args)  # unitless, peaks at 1
+        
         if verbose:
             update_progress((num+1)/len(batches))
-        saveprog(result, e0, g1, e1, g0, coupling, num, folder)
+        
+        if N_devices == 1:
+            saveprog(result, None, None, None, None, coupling, num, folder)
+        elif N_devices == 2:
+            saveprog(result, e0, g1, e1, g0, coupling, num, folder)
+        
         psi0 = copy(result.states[-1])
-        del result, e0, g1, e1, g0, coupling
-    end_calc = datetime.now()
-    if verbose:
-        print("Evolution completed in {} s".format((end_calc - now).total_seconds()))
-    
-    return folder
-
-
-def calculate_1q0c(H, psi0, e_ops, H_args, options, Np, Np_per_batch, home, parallel, verbose=True):
-    """
-    Integrate through time evolution using qutip's Lindblad master equation solver.
-    
-    Input
-    -----
-    H : list
-        Full Hamiltonian. Time-dependent terms must be given as
-        [qutip.Qobj, callback function].
-    psi0 : qutip.Qobj class object
-        Initial state
-    e_ops : list of qutip.Qubj class objects
-        Operators for which to evaluate the expectation value
-    H_args : dict
-        Parameters for time-dependent Hamiltonians and collapse operators
-    options : qutip.Options class object
-        Options for the solver
-    Np : int
-        Number of points for which to store the data
-    Np_per_batch : int, float
-        Number of points per batch
-    parallel : bool
-        Whether multiple simulations are run in parallel
-    verbose : bool
-        Print progress
-    
-    Returns
-    -------
-    folder : str
-        Folder name in which the evolution is stored
-    """
-    
-    t0 = H_args['t0']
-    t3 = H_args['t3']
-    
-    if verbose:
-        update_progress(0)
-    
-    batches = create_batches(t0, t3, Np, Np_per_batch)
-    
-    ID, folder, now = prepare_folder(home, parallel)
-    
-    # Calculate!
-    for num, tlist in enumerate(batches):
-        result = mesolve(H, psi0, tlist, c_ops=[], e_ops=e_ops, args=H_args, options=options)
-        coupling = drive_nonosc(tlist, H_args)  # unitless, peaks at 1
-        if verbose:
-            update_progress((num+1)/len(batches))
-        saveprog(result, None, None, None, None, coupling, num, folder)
-        psi0 = copy(result.states[-1])
+        
         del result, coupling
+        if N_devices == 2:
+            del e0, g1, e1, g0
+        
     end_calc = datetime.now()
     if verbose:
         print("Evolution completed in {} s".format((end_calc - now).total_seconds()))

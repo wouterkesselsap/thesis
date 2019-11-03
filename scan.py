@@ -129,15 +129,14 @@ def sbsample(Nq, wq, wc, Ec, g, shift, sb, Nt, H, H_args, psi0, Np_per_batch, op
     return figqc, fig
 
 
-def qfs(Nq, wq, Ec, wp, H, H_args, psi0, Np_per_batch, options, home, parallel):
+def qfs(Nq, wq, Ec, wp, H, H_args, psi0, Nc, Np, Np_per_batch, options, home, parallel):
     i = wp[0]
     wp = wp[1]
     H_args['wp'] = wp
-    Np = 100*int(H_args['t3'])     # number of discrete time steps for which to store the output
     b, nq = ops(Nq)
     e_ops = [nq]
         
-    srcfolder = calculate_1q0c(H, psi0, e_ops, H_args, options, Np, Np_per_batch, home, parallel, verbose=False)
+    srcfolder = calculate(H, psi0, e_ops, H_args, options, Nc, Np, Np_per_batch, home, parallel, verbose=False)
     quants = ['times', 'expect']
     combine_batches(srcfolder, quants=quants, return_data=False)
     times, states, expect, e0, g1, e1, g0, coupling = load_data(quants, srcfolder)
@@ -183,5 +182,3 @@ def cfs(Nq, Nc, wc, Ec, wp, H, H_args, psi0, Np_per_batch, options, home, parall
     plt.plot(times, expect[1], c='r')
     plt.title("shift {}, wp {}, max {}".format(np.round((wp-wc)/2/pi,4), np.round(wp/2/pi,4), np.round(max(expect[1]),6)))
     plt.savefig(home + "temp/fig{}_{}.png".format(num, (wp-wc)/2/pi))
-    
-    return fig
