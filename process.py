@@ -13,7 +13,7 @@ from operator import itemgetter
 from supports import *
 
 
-def prepare_folder(parallel=False):
+def prepare_folder(home, parallel=False):
     """
     Prepare the temporary folder where the data will be saved to.
     The folder is distinguished from other progress folders by a
@@ -22,6 +22,8 @@ def prepare_folder(parallel=False):
     
     Input
     -----
+    home : str
+        Path to home folder of source code
     parallel : bool
         Whether simulations are run in parallel
     
@@ -34,14 +36,15 @@ def prepare_folder(parallel=False):
     now : datetime.datetime class object
         Time stamp
     """
+    tempfolder = home + "temp/"
     if not parallel:
-        for folder in glob("/home/student/thesis/prog_*"):
+        for folder in glob(tempfolder + "prog_*"):
             shutil.rmtree(folder)  # Remove existing progress folders
 
     # Make new progress folder
     now = datetime.now()
     ID = now.strftime("%y%m%d_%H%M%S") 
-    folder = "/home/student/thesis/prog_" + ''.join(choice(alc) for i in range(10))
+    folder = tempfolder + "prog_" + ''.join(choice(alc) for i in range(10))
     os.makedirs(folder)
     saveID(ID, folder)
     

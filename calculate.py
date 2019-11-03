@@ -14,7 +14,7 @@ from supports import *
 from envelopes import drive_nonosc
 
 
-def calculate(H, psi0, e_ops, H_args, options, Nc, Np, Np_per_batch, parallel, verbose=True):
+def calculate(H, psi0, e_ops, H_args, options, Nc, Np, Np_per_batch, home, parallel, verbose=True):
     """
     Integrate through time evolution using qutip's Lindblad master equation solver.
     
@@ -37,6 +37,8 @@ def calculate(H, psi0, e_ops, H_args, options, Nc, Np, Np_per_batch, parallel, v
         Number of points for which to store the data
     Np_per_batch : int, float
         Number of points per batch
+    home : str
+        Path to folder with source code
     parallel : bool
         Whether multiple simulations are run in parallel
     verbose : bool
@@ -56,7 +58,7 @@ def calculate(H, psi0, e_ops, H_args, options, Nc, Np, Np_per_batch, parallel, v
     
     batches = create_batches(t0, t3, Np, Np_per_batch)
     
-    ID, folder, now = prepare_folder(parallel)
+    ID, folder, now = prepare_folder(home, parallel)
     
     # Calculate!
     for num, tlist in enumerate(batches):
@@ -75,7 +77,7 @@ def calculate(H, psi0, e_ops, H_args, options, Nc, Np, Np_per_batch, parallel, v
     return folder
 
 
-def calculate_1q0c(H, psi0, e_ops, H_args, options, Np, Np_per_batch, parallel, verbose=True):
+def calculate_1q0c(H, psi0, e_ops, H_args, options, Np, Np_per_batch, home, parallel, verbose=True):
     """
     Integrate through time evolution using qutip's Lindblad master equation solver.
     
@@ -115,7 +117,7 @@ def calculate_1q0c(H, psi0, e_ops, H_args, options, Np, Np_per_batch, parallel, 
     
     batches = create_batches(t0, t3, Np, Np_per_batch)
     
-    ID, folder, now = prepare_folder(parallel)
+    ID, folder, now = prepare_folder(home, parallel)
     
     # Calculate!
     for num, tlist in enumerate(batches):

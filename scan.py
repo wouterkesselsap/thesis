@@ -10,10 +10,8 @@ from qutip import *
 from ipywidgets import widgets
 from IPython.display import display
 
-home = "/home/student/thesis/"
 
-
-def sbsample(Nq, wq, wc, Ec, g, shift, sb, Nt, H, H_args, psi0, Np_per_batch, options, parallel, *args):
+def sbsample(Nq, wq, wc, Ec, g, shift, sb, Nt, H, H_args, psi0, Np_per_batch, options, home, parallel, *args):
     """
     Performs a single- or double-tone sideband transition simulation
     with the given input parameters. Plots the expectation
@@ -71,7 +69,7 @@ def sbsample(Nq, wq, wc, Ec, g, shift, sb, Nt, H, H_args, psi0, Np_per_batch, op
         H_args['wdc'] = wdc
     e_ops = [nq, nc]
         
-    srcfolder = calculate(H, psi0, e_ops, H_args, options, Nc, Np, Np_per_batch, parallel, verbose=False)
+    srcfolder = calculate(H, psi0, e_ops, H_args, options, Nc, Np, Np_per_batch, home, parallel, verbose=False)
     
     quants = ['times', 'expect', 'e0', 'g1', 'e1', 'g0', 'coupling']
     ID = getID(srcfolder)
@@ -126,12 +124,12 @@ def sbsample(Nq, wq, wc, Ec, g, shift, sb, Nt, H, H_args, psi0, Np_per_batch, op
             fig = sb_combined_probs(times, sb, Nt, H_args, coupling,
                                     xlim=None, ylim=None, figsize=[15,3], e1=e1, g0=g0, wsb=0,
                                     title=cp_title, Omegaq=Omegaq, Omegac=Omegac)
-    fig.savefig("/home/student/thesis/fig{}_{}.png".format(num, shift/2/pi))
-    figqc.savefig("/home/student/thesis/figqc{}_{}.png".format(num, shift/2/pi))
+    fig.savefig(home + "temp/fig{}_{}.png".format(num, shift/2/pi))
+    figqc.savefig(home + "temp/figqc{}_{}.png".format(num, shift/2/pi))
     return figqc, fig
 
 
-def qfs(Nq, wq, Ec, wp, H, H_args, psi0, Np_per_batch, options, parallel):
+def qfs(Nq, wq, Ec, wp, H, H_args, psi0, Np_per_batch, options, home, parallel):
     i = wp[0]
     wp = wp[1]
     H_args['wp'] = wp
@@ -139,7 +137,7 @@ def qfs(Nq, wq, Ec, wp, H, H_args, psi0, Np_per_batch, options, parallel):
     b, nq = ops(Nq)
     e_ops = [nq]
         
-    srcfolder = calculate_1q0c(H, psi0, e_ops, H_args, options, Np, Np_per_batch, parallel, verbose=False)
+    srcfolder = calculate_1q0c(H, psi0, e_ops, H_args, options, Np, Np_per_batch, home, parallel, verbose=False)
     quants = ['times', 'expect']
     combine_batches(srcfolder, quants=quants, return_data=False)
     times, states, expect, e0, g1, e1, g0, coupling = load_data(quants, srcfolder)
@@ -156,10 +154,10 @@ def qfs(Nq, wq, Ec, wp, H, H_args, psi0, Np_per_batch, options, parallel):
     plt.figure(figsize=[15,3])
     plt.plot(times, expect[0], c='k')
     plt.title("shift {}, wp {}, max {}".format(np.round((wp-wq)/2/pi,4), np.round(wp/2/pi,4), np.round(max(expect[0]),4)))
-    plt.savefig("/home/student/thesis/fig{}_{}.png".format(num, (wp-wq)/2/pi))
+    plt.savefig(home + "temp/fig{}_{}.png".format(num, (wp-wq)/2/pi))
     
 
-def cfs(Nq, Nc, wc, Ec, wp, H, H_args, psi0, Np_per_batch, options, parallel):
+def cfs(Nq, Nc, wc, Ec, wp, H, H_args, psi0, Np_per_batch, options, home, parallel):
     i = wp[0]
     wp = wp[1]
     H_args['wp'] = wp
@@ -167,7 +165,7 @@ def cfs(Nq, Nc, wc, Ec, wp, H, H_args, psi0, Np_per_batch, options, parallel):
     b, a, nq, nc = ops(Nq, Nc)  # Operators
     e_ops = [nq, nc]
     
-    srcfolder = calculate(H, psi0, e_ops, H_args, options, Nc, Np, Np_per_batch, parallel, verbose=False)
+    srcfolder = calculate(H, psi0, e_ops, H_args, options, Nc, Np, Np_per_batch, home, parallel, verbose=False)
     quants = ['times', 'expect']
     combine_batches(srcfolder, quants=quants, return_data=False)
     times, states, expect, e0, g1, e1, g0, coupling = load_data(quants, srcfolder)
@@ -184,6 +182,6 @@ def cfs(Nq, Nc, wc, Ec, wp, H, H_args, psi0, Np_per_batch, options, parallel):
     plt.plot(times, expect[0], c='b')
     plt.plot(times, expect[1], c='r')
     plt.title("shift {}, wp {}, max {}".format(np.round((wp-wc)/2/pi,4), np.round(wp/2/pi,4), np.round(max(expect[1]),6)))
-    plt.savefig("/home/student/thesis/fig{}_{}.png".format(num, (wp-wc)/2/pi))
+    plt.savefig(home + "temp/fig{}_{}.png".format(num, (wp-wc)/2/pi))
     
     return fig
