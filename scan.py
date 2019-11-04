@@ -11,7 +11,8 @@ from ipywidgets import widgets
 from IPython.display import display
 
 
-def sbsample(Nq, wq, wc, Ec, g, shift, sb, Nt, H, H_args, psi0, Np_per_batch, options, home, parallel, *args):
+def sbsample(Nq, wq, wc, Ec, g, shift, sb, Nt, H, H_args, psi0, Np_per_batch,
+             options, home, parallel, *args):
     """
     Performs a single- or double-tone sideband transition simulation
     with the given input parameters. Plots the expectation
@@ -60,7 +61,7 @@ def sbsample(Nq, wq, wc, Ec, g, shift, sb, Nt, H, H_args, psi0, Np_per_batch, op
             wdq =  wq + shift + dw
             wdc =  wc - dw
     
-    Np = 100*int(H_args['t3'])     # number of discrete time steps for which to store the output
+    Np = 100*int(H_args['t3'])  # number of discrete time steps for which to store the output
     b, a, nq, nc = ops(Nq, Nc)  # Operators
     if Nt == 1:
         H_args['wd'] = wd
@@ -69,7 +70,8 @@ def sbsample(Nq, wq, wc, Ec, g, shift, sb, Nt, H, H_args, psi0, Np_per_batch, op
         H_args['wdc'] = wdc
     e_ops = [nq, nc]
         
-    srcfolder = calculate(H, psi0, e_ops, H_args, options, Nc, Np, Np_per_batch, home, parallel, verbose=False)
+    srcfolder = calculate(H, psi0, e_ops, H_args, options, Nc, Np, Np_per_batch,
+                          home, parallel, verbose=False)
     
     quants = ['times', 'expect', 'e0', 'g1', 'e1', 'g0', 'coupling']
     ID = getID(srcfolder)
@@ -136,7 +138,8 @@ def qfs(Nq, wq, Ec, wp, H, H_args, psi0, Nc, Np, Np_per_batch, options, home, pa
     b, nq = ops(Nq)
     e_ops = [nq]
         
-    srcfolder = calculate(H, psi0, e_ops, H_args, options, Nc, Np, Np_per_batch, home, parallel, verbose=False)
+    srcfolder = calculate(H, psi0, e_ops, H_args, options, Nc, Np, Np_per_batch,
+                          home, parallel, verbose=False)
     quants = ['times', 'expect']
     combine_batches(srcfolder, quants=quants, return_data=False)
     times, states, expect, e0, g1, e1, g0, coupling = load_data(quants, srcfolder)
@@ -164,7 +167,8 @@ def cfs(Nq, Nc, wc, Ec, wp, H, H_args, psi0, Np_per_batch, options, home, parall
     b, a, nq, nc = ops(Nq, Nc)  # Operators
     e_ops = [nq, nc]
     
-    srcfolder = calculate(H, psi0, e_ops, H_args, options, Nc, Np, Np_per_batch, home, parallel, verbose=False)
+    srcfolder = calculate(H, psi0, e_ops, H_args, options, Nc, Np, Np_per_batch,
+                          home, parallel, verbose=False)
     quants = ['times', 'expect']
     combine_batches(srcfolder, quants=quants, return_data=False)
     times, states, expect, e0, g1, e1, g0, coupling = load_data(quants, srcfolder)

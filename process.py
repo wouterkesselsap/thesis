@@ -73,9 +73,10 @@ def saveparams(Nq, Nc, Nt, wq, shift, wc, Ec, g, sb,
     
     if 'pkl' in frmt:
         data = {
-            'Nq' : Nq, 'Nc' : Nc, 'Nt' : Nt, 'wq' : wq, 'shift' : shift, 'wc' : wc, 'Ec' : Ec, 'g' : g, 'sb' : sb,
-            't0' : t0, 't1' : t1, 't2' : t2, 't3' : t3, 'tg' : tg, 'gauss' : gauss, 'smooth' : smooth, 'Q' : Q,
-            'Np' : Np, 'H' : H, 'psi0' : psi0, 'e_ops' : e_ops, 'options' : options        
+            'Nq' : Nq, 'Nc' : Nc, 'Nt' : Nt, 'wq' : wq, 'shift' : shift, 'wc' : wc,
+            'Ec' : Ec, 'g' : g, 'sb' : sb, 't0' : t0, 't1' : t1, 't2' : t2, 't3' : t3,
+            'tg' : tg, 'gauss' : gauss, 'smooth' : smooth, 'Q' : Q, 'Np' : Np,
+            'H' : H, 'psi0' : psi0, 'e_ops' : e_ops, 'options' : options        
         }
         if Nt == 1:
             data['Omega'] = kwargs['Omega']
