@@ -52,8 +52,8 @@ def prepare_folder(home, parallel=False):
 
 
 def saveparams(Nq, Nc, Nt, wq, shift, wc, Ec, g, sb,
-               t0, t1, t2, t3, tg, gauss, smooth, Q,
-               Np, H, psi0, e_ops, options,
+               t0, t1, t2, t3, tg, tc, gauss, smooth, Q,
+               convergent, Np, H, psi0, e_ops, options,
                folder, frmt, **kwargs):
     """
     Saves all parameters to a file. A pickle file can be chosen
@@ -75,8 +75,9 @@ def saveparams(Nq, Nc, Nt, wq, shift, wc, Ec, g, sb,
         data = {
             'Nq' : Nq, 'Nc' : Nc, 'Nt' : Nt, 'wq' : wq, 'shift' : shift, 'wc' : wc,
             'Ec' : Ec, 'g' : g, 'sb' : sb, 't0' : t0, 't1' : t1, 't2' : t2, 't3' : t3,
-            'tg' : tg, 'gauss' : gauss, 'smooth' : smooth, 'Q' : Q, 'Np' : Np,
-            'H' : H, 'psi0' : psi0, 'e_ops' : e_ops, 'options' : options        
+            'tg' : tg, 'tc' : tc, 'gauss' : gauss, 'smooth' : smooth, 'Q' : Q, 
+            'convergent' : convergent, 'Np' : Np, 'H' : H, 'psi0' : psi0,
+            'e_ops' : e_ops, 'options' : options        
         }
         if Nt == 1:
             data['Omega'] = kwargs['Omega']
@@ -114,6 +115,10 @@ def saveparams(Nq, Nc, Nt, wq, shift, wc, Ec, g, sb,
                 "Gaussian starting at zero       smooth : {}\n".format(smooth),
                 "# of std's in Gaussian          Q      : {}\n".format(Q),
                 "# of data points                Np     : {}\n".format(Np)]
+        
+        if convergent:
+            data.append("convergent method               conv   : {}\n".format(convergent))
+            data.append("timestep for convergent method  tc     : {} ns\n".format(tc))
                 
         if Nt == 1:
             data.append("sideband drive amplitude        Omega  : {} = {} GHz\n".format(kwargs['Omega'], kwargs['Omega']/2/pi))
@@ -162,6 +167,12 @@ def getparams(folder):
     t3 = data['t3']
     tg = data['tg']
     try:
+        tc = data['tc']
+        convergent = data['convergent']
+    except:
+        tc = 0
+        convergent = False
+    try:
         gauss = data['gauss']
         smooth = data['smooth']
     except:
@@ -193,7 +204,7 @@ def getparams(folder):
     
     infile.close()
             
-    return Nq, Nc, Nt, wq, shift, wc, Ec, g, sb, t0, t1, t2, t3, tg, gauss, smooth, Q, Np, H, psi0, e_ops, options, Omega, wd, Omegaq, Omegac, dw, wdq, wdc
+    return Nq, Nc, Nt, wq, shift, wc, Ec, g, sb, t0, t1, t2, t3, tg, tc, gauss, smooth, Q, convergent, Np, H, psi0, e_ops, options, Omega, wd, Omegaq, Omegac, dw, wdq, wdc
 
 
 def create_batches(t0, tf, Np, Nppb):
