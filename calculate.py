@@ -30,11 +30,20 @@ class Convresult:
     def append_time(self, t):
         self.times.append(t)
     
+    def extend_time(self, t):
+        self.times.extend(t)
+    
     def append_state(self, state):
         self.states.append(state)
     
+    def extend_state(self, state):
+        self.states.extend(state)
+    
     def append_expect(self, i, val):
         self.expect[i].append(val)
+    
+    def extend_expect(self, i, val):
+        self.expect[i].extend(val)
 
 
 def calculate(H, psi0, e_ops, H_args, options, Nc, Np, Np_per_batch, home,
