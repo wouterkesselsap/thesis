@@ -87,4 +87,4 @@ def update_progress(prog, length=50):
         prog = 1
     block = int(round(length * prog))
     clear_output(wait = True)
-    print("Progress: [{0}] {1:.1f}%".format( "█" * block + " " * (length - block), prog * 100))
+    print("Progress: |{0}| {1:.1f}%".format( "█" * block + " " * (length - block), prog * 100))
