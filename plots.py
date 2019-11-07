@@ -394,21 +394,22 @@ def sb_expect(times, expect, sb, Nt, H_args, coupling, xlim=None, ylim=None, fig
     else:
         ax1.set_ylim(ylim)
     
-    ax2 = ax1.twinx()
-    if Nt == 1:
-        Omega = kwargs['Omega']
-        ax2.set_ylabel('$\Omega_d/2$ $/2\pi$ [GHz]')
-        ax2.plot(times, Omega/2/(2*pi)*coupling, color='g', label="Drive")
-        ax2.set_ylim([0, 1.1*max(Omega/2/(2*pi)*coupling)])
-    elif Nt == 2:
-        Omegaq = kwargs['Omegaq']
-        Omegac = kwargs['Omegac']
-        ax2.set_ylabel('$\Omega/2$ $/2/\pi$ [GHz]')
-        ax2.plot(times, Omegac/2/(2*pi)*coupling, color='g', label="Cavity-friendly drive")
-        ax2.plot(times, Omegaq/2/(2*pi)*coupling, color='c', label="Qubit-friendly drive")
-        ax2.set_ylim([0, 1.1*max(Omegac/2/(2*pi)*coupling)])
-    ax2.tick_params(axis='y')
-    ax2.legend(loc='center right')
+    if ('convergent' in H_args.keys() and not H_args['convergent']):
+        ax2 = ax1.twinx()
+        if Nt == 1:
+            Omega = kwargs['Omega']
+            ax2.set_ylabel('$\Omega_d/2$ $/2\pi$ [GHz]')
+            ax2.plot(times, Omega/2/(2*pi)*coupling, color='g', label="Drive")
+            ax2.set_ylim([0, 1.1*max(Omega/2/(2*pi)*coupling)])
+        elif Nt == 2:
+            Omegaq = kwargs['Omegaq']
+            Omegac = kwargs['Omegac']
+            ax2.set_ylabel('$\Omega/2$ $/2/\pi$ [GHz]')
+            ax2.plot(times, Omegac/2/(2*pi)*coupling, color='g', label="Cavity-friendly drive")
+            ax2.plot(times, Omegaq/2/(2*pi)*coupling, color='c', label="Qubit-friendly drive")
+            ax2.set_ylim([0, 1.1*max(Omegac/2/(2*pi)*coupling)])
+        ax2.tick_params(axis='y')
+        ax2.legend(loc='center right')
 
     figqc = plt.gcf()
     
@@ -496,22 +497,23 @@ def sb_combined_probs(times, sb, Nt, H_args, coupling, xlim=None, ylim=None, fig
         ax1.set_ylim([-1, 1])
     else:
         ax1.set_ylim(ylim)
-
-    ax2 = ax1.twinx()
-    if Nt == 1:
-        Omega = kwargs['Omega']
-        ax2.set_ylabel('$\Omega_d/2$ $/2\pi$ [GHz]')
-        ax2.plot(times, Omega/2/(2*pi)*coupling, color='g', label="Drive")
-        ax2.set_ylim([0, 1.1*max(Omega/2/(2*pi)*coupling)])
-    elif Nt == 2:
-        Omegaq = kwargs['Omegaq']
-        Omegac = kwargs['Omegac']
-        ax2.set_ylabel('$\Omega/2$ $/2/\pi$ [GHz]')
-        ax2.plot(times, Omegac/2/(2*pi)*coupling, color='g', label="Cavity-friendly drive")
-        ax2.plot(times, Omegaq/2/(2*pi)*coupling, color='c', label="Qubit-friendly drive")
-        ax2.set_ylim([0, 1.1*max(Omegac/2/(2*pi)*coupling)])
-    ax2.tick_params(axis='y')
-    ax2.legend(loc='center right')
+    
+    if ('convergent' in H_args.keys() and not H_args['convergent']):
+        ax2 = ax1.twinx()
+        if Nt == 1:
+            Omega = kwargs['Omega']
+            ax2.set_ylabel('$\Omega_d/2$ $/2\pi$ [GHz]')
+            ax2.plot(times, Omega/2/(2*pi)*coupling, color='g', label="Drive")
+            ax2.set_ylim([0, 1.1*max(Omega/2/(2*pi)*coupling)])
+        elif Nt == 2:
+            Omegaq = kwargs['Omegaq']
+            Omegac = kwargs['Omegac']
+            ax2.set_ylabel('$\Omega/2$ $/2/\pi$ [GHz]')
+            ax2.plot(times, Omegac/2/(2*pi)*coupling, color='g', label="Cavity-friendly drive")
+            ax2.plot(times, Omegaq/2/(2*pi)*coupling, color='c', label="Qubit-friendly drive")
+            ax2.set_ylim([0, 1.1*max(Omegac/2/(2*pi)*coupling)])
+        ax2.tick_params(axis='y')
+        ax2.legend(loc='center right')
 
     fig = plt.gcf()
     

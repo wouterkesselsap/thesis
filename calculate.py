@@ -14,7 +14,31 @@ from supports import *
 from envelopes import drive_nonosc
 
 
-def calculate(H, psi0, e_ops, H_args, options, Nc, Np, Np_per_batch, home, parallel, verbose=True):
+class Convresult:
+    """
+    Object with same required attributes as qutip.Result class after qutip.mesolve,
+    used when using convergent evolution method.
+    """
+    def __init__(self):
+        self.times = list()
+        self.states = list()
+        self.expect = [list(), list()]
+    
+    def set_times(self, times):
+        self.times = times
+    
+    def append_time(self, t):
+        self.times.append(t)
+    
+    def append_state(self, state):
+        self.states.append(state)
+    
+    def append_expect(self, i, val):
+        self.expect[i].append(val)
+
+
+def calculate(H, psi0, e_ops, H_args, options, Nc, Np, Np_per_batch, home,
+              parallel=False, verbose=True, **kwargs):
     """
     Integrate through time evolution using qutip's Lindblad master equation solver.
     
@@ -50,119 +74,112 @@ def calculate(H, psi0, e_ops, H_args, options, Nc, Np, Np_per_batch, home, paral
         Folder name in which the evolution is stored
     """
     N_devices = len(psi0.dims[0])
-    
     t0 = H_args['t0']
     t3 = H_args['t3']
     
     if verbose:
         update_progress(0)
     
-    batches = create_batches(t0, t3, Np, Np_per_batch)
-    
     ID, folder, now = prepare_folder(home, parallel)
     
-    # Calculate!
-    for num, tlist in enumerate(batches):
+    # Regular evolution
+    if not H_args['convergent']:
+        batches = create_batches(t0, t3, Np, Np_per_batch)
+        
+        for num, tlist in enumerate(batches):
+            result = mesolve(H, psi0, tlist, c_ops=[], e_ops=e_ops, args=H_args, options=options)
+            
+            if N_devices == 2:
+                e0, g1, e1, g0 = combined_probs(result.states, Nc)
+           
+            coupling = drive_nonosc(tlist, H_args)  # unitless, peaks at 1
+            
+            if verbose:
+                update_progress((num+1)/len(batches))
+            
+            if N_devices == 1:
+                saveprog(result, None, None, None, None, coupling, num, folder)
+            elif N_devices == 2:
+                saveprog(result, e0, g1, e1, g0, coupling, num, folder)
+            
+            psi0 = copy(result.states[-1])
+            
+            del result, coupling
+            if N_devices == 2:
+                del e0, g1, e1, g0
+    
+    
+    # Evolution using convergent method
+    elif H_args['convergent']:
+        if N_devices != 2:
+            raise IOError("System must contain exactly one qubit and one cavity")
+        
+        t1 = H_args['t1']
+        t2 = H_args['t2']
+        tg = H_args['tg']
+        tc = t3/Np
+        
+        if (np.round(t3, 3) <= np.round(2*tg, 3) and H_args['gauss']):
+            raise ValueError("Total simulation length must be longer than one " + 
+                             "subsequent Gaussian rise and fall")
+        
+        convresult   = Convresult()
+        e0list       = list()
+        g1list       = list()
+        e1list       = list()
+        g0list       = list()
+        couplinglist = list()
+                
+        # Obtain first data point
+        tlist = np.linspace(t0, 2*tg, 101)
+        H_args['t2'] = 2*tg
+        H_args['t3'] = 2*tg
         result = mesolve(H, psi0, tlist, c_ops=[], e_ops=e_ops, args=H_args, options=options)
+        e0, g1, e1, g0 = combined_probs(result.states, Nc)
         
-        if N_devices == 2:
+        convresult.append_state(result.states[-1])
+        convresult.append_expect(0, result.expect[0][-1])
+        convresult.append_expect(1, result.expect[0][-1])
+        e0list.append(e0[-1])
+        e1list.append(e1[-1])
+        g0list.append(g0[-1])
+        g1list.append(g1[-1])
+        
+        tstart = copy(result.times[51])
+        psi0 = copy(result.states[51])
+        
+        times = np.linspace(2*tg, t3, Np)
+        convresult.set_times(times)
+        dt = np.mean(np.diff(times))
+        
+        for i, t in enumerate(times[1:]):
+            refinement = kwargs['refinement']
+            tlist = np.arange(tstart, t+(dt/refinement), dt/refinement)
+            H_args['t2'] = copy(tlist[-1])
+            H_args['t3'] = copy(tlist[-1])
+            result = mesolve(H, psi0, tlist, c_ops=[], e_ops=e_ops, args=H_args, options=options)
             e0, g1, e1, g0 = combined_probs(result.states, Nc)
-       
-        coupling = drive_nonosc(tlist, H_args)  # unitless, peaks at 1
+            
+            convresult.append_state(result.states[-1])
+            convresult.append_expect(0, result.expect[0][-1])
+            convresult.append_expect(1, result.expect[0][-1])
+            e0list.append(e0[-1])
+            e1list.append(e1[-1])
+            g0list.append(g0[-1])
+            g1list.append(g1[-1])
+            
+            tstart += dt
+            psi0 = copy(result.states[refinement])
         
-        if verbose:
-            update_progress((num+1)/len(batches))
+            if verbose:
+                update_progress((i+1)/len(times[1:]))
+            
+            del result, e0, g1, e1, g0
         
-        if N_devices == 1:
-            saveprog(result, None, None, None, None, coupling, num, folder)
-        elif N_devices == 2:
-            saveprog(result, e0, g1, e1, g0, coupling, num, folder)
-        
-        psi0 = copy(result.states[-1])
-        
-        del result, coupling
-        if N_devices == 2:
-            del e0, g1, e1, g0
-        
-    end_calc = datetime.now()
-    if verbose:
-        print("Evolution completed in {} s".format((end_calc - now).total_seconds()))
+        coupling = np.zeros(Np)
+        saveprog(convresult, e0list, g1list, e1list, g0list, coupling, 0, folder)
+            
     
-    return folder
-
-
-def convergent(H, psi0, e_ops, H_args, options, Nc, Np, Np_per_batch, home, parallel, verbose=True):
-    """
-    Integrate through time evolution using qutip's Lindblad master equation solver.
-    Every data point is obtained by removing the coupling between qubit and cavity
-    after evolution.
-    
-    Input
-    -----
-    H : list
-        Full Hamiltonian. Time-dependent terms must be given as
-        [qutip.Qobj, callback function].
-    psi0 : qutip.Qobj class object
-        Initial state
-    e_ops : list of qutip.Qubj class objects
-        Operators for which to evaluate the expectation value
-    H_args : dict
-        Parameters for time-dependent Hamiltonians and collapse operators
-    options : qutip.Options class object
-        Options for the solver
-    Nc : int
-        Number of cavity levels
-    Np : int
-        Number of points for which to store the data
-    Np_per_batch : int, float
-        Number of points per batch
-    home : str
-        Path to folder with source code
-    parallel : bool
-        Whether multiple simulations are run in parallel
-    verbose : bool
-        Print progress
-    
-    Returns
-    -------
-    folder : str
-        Folder name in which the evolution is stored
-    """
-    N_devices = len(psi0.dims[0])
-    
-    t0 = H_args['t0']
-    t3 = H_args['t3']
-    
-    if verbose:
-        update_progress(0)
-    
-    batches = create_batches(t0, t3, Np, Np_per_batch)
-    
-    ID, folder, now = prepare_folder(home, parallel)
-    
-    # Calculate!
-    for num, tlist in enumerate(batches):
-        result = mesolve(H, psi0, tlist, c_ops=[], e_ops=e_ops, args=H_args, options=options)
-        
-        if N_devices == 2:
-            e0, g1, e1, g0 = combined_probs(result.states, Nc)
-       
-        coupling = drive_nonosc(tlist, H_args)  # unitless, peaks at 1
-        
-        if verbose:
-            update_progress((num+1)/len(batches))
-        
-        if N_devices == 1:
-            saveprog(result, None, None, None, None, coupling, num, folder)
-        elif N_devices == 2:
-            saveprog(result, e0, g1, e1, g0, coupling, num, folder)
-        
-        psi0 = copy(result.states[-1])
-        
-        del result, coupling
-        if N_devices == 2:
-            del e0, g1, e1, g0
-        
     end_calc = datetime.now()
     if verbose:
         print("Evolution completed in {} s".format((end_calc - now).total_seconds()))
