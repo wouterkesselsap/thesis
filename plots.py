@@ -343,41 +343,46 @@ def sb_expect(times, expect, sb, Nt, H_args, coupling, xlim=None, ylim=None, fig
     figqc : matplotlib.figure.Figure class object
         Figure
     """
+    if 'alpha' in kwargs:
+        alpha = kwargs['alpha']
+    else:
+        alpha = 1
+    
     fig, ax1 = plt.subplots(figsize=figsize)
-    ax1.plot(times, expect[0], color='b', label='Qubit')
-    ax1.plot(times, expect[1], color='r', label='Cavity')
-    ax1.plot([times[0], times[-1]], [0, 0], ':', color='k')
-    ax1.plot([times[0], times[-1]], [1/2, 1/2], ':', color='k')
+    ax1.plot(times, expect[0], color='b', alpha=alpha, label='Qubit')
+    ax1.plot(times, expect[1], color='r', alpha=alpha, label='Cavity')
+    ax1.axhline(0, ls=':', c='k', lw=1)
+    ax1.axhline(1/2, ls=':', c='k', lw=1)
     highest_line = 0.5
     if max(max(expect[0]), max(expect[1])) > 0.5:
-        ax1.plot([times[0], times[-1]], [1, 1], ':', color='k')
+        ax1.axhline(1, ls=':', c='k', lw=1)
         highest_line = 1
     if max(max(expect[0]), max(expect[1])) > 1:
-        ax1.plot([times[0], times[-1]], [1.5, 1.5], ':', color='k')
+        ax1.axhline(1.5, ls=':', c='k', lw=1)
         highest_line = 1.5
     if max(max(expect[0]), max(expect[1])) > 1.5:
-        ax1.plot([times[0], times[-1]], [2, 2], ':', color='k')
+        ax1.axhline(2, ls=':', c='k', lw=1)
         highest_line = 2
     if max(max(expect[0]), max(expect[1])) > 2:
-        ax1.plot([times[0], times[-1]], [2.5, 2.5], ':', color='k')
+        ax1.axhline(2.5, ls=':', c='k', lw=1)
         highest_line = 2.5
     if max(max(expect[0]), max(expect[1])) > 2.5:
-        ax1.plot([times[0], times[-1]], [3, 3], ':', color='k')
+        ax1.axhline(3, ls=':', c='k', lw=1)
         highest_line = 3
     if max(max(expect[0]), max(expect[1])) > 3:
-        ax1.plot([times[0], times[-1]], [3.5, 3.5], ':', color='k')
+        ax1.axhline(3.5, ls=':', c='k', lw=1)
         highest_line = 3.5
     if max(max(expect[0]), max(expect[1])) > 3.5:
-        ax1.plot([times[0], times[-1]], [4, 4], ':', color='k')
+        ax1.axhline(4, ls=':', c='k', lw=1)
         highest_line = 4
     if max(max(expect[0]), max(expect[1])) > 4:
-        ax1.plot([times[0], times[-1]], [4.5, 4.5], ':', color='k')
+        ax1.axhline(4.5, ls=':', c='k', lw=1)
         highest_line = 4.5
     if max(max(expect[0]), max(expect[1])) > 4.5:
-        ax1.plot([times[0], times[-1]], [5, 5], ':', color='k')
+        ax1.axhline(5, ls=':', c='k', lw=1)
         highest_line = 5
     if max(max(expect[0]), max(expect[1])) > 5:
-        ax1.plot([times[0], times[-1]], [5.5, 5.5], ':', color='k')
+        ax1.axhline(5.5, ls=':', c='k', lw=1)
         highest_line = 5.5
     ax1.set_xlabel("$t$ [ns]")
     ax1.set_ylabel("$n$")
@@ -398,15 +403,15 @@ def sb_expect(times, expect, sb, Nt, H_args, coupling, xlim=None, ylim=None, fig
         ax2 = ax1.twinx()
         if Nt == 1:
             Omega = kwargs['Omega']
-            ax2.set_ylabel('$\Omega_d/2$ $/2\pi$ [GHz]')
-            ax2.plot(times, Omega/2/(2*pi)*coupling, color='g', label="Drive")
+            ax2.set_ylabel('$\epsilon_d/2$ $/2\pi$ [GHz]')
+            ax2.plot(times, Omega/2/(2*pi)*coupling, color='g', alpha=alpha, label="Drive")
             ax2.set_ylim([0, 1.1*max(Omega/2/(2*pi)*coupling)])
         elif Nt == 2:
             Omegaq = kwargs['Omegaq']
             Omegac = kwargs['Omegac']
-            ax2.set_ylabel('$\Omega/2$ $/2/\pi$ [GHz]')
-            ax2.plot(times, Omegac/2/(2*pi)*coupling, color='g', label="Cavity-friendly drive")
-            ax2.plot(times, Omegaq/2/(2*pi)*coupling, color='c', label="Qubit-friendly drive")
+            ax2.set_ylabel('$\epsilon/2$ $/2/\pi$ [GHz]')
+            ax2.plot(times, Omegac/2/(2*pi)*coupling, color='g', alpha=alpha, label="Cavity-friendly drive")
+            ax2.plot(times, Omegaq/2/(2*pi)*coupling, color='c', alpha=alpha, label="Qubit-friendly drive")
             ax2.set_ylim([0, 1.1*max(Omegac/2/(2*pi)*coupling)])
         ax2.tick_params(axis='y')
         ax2.legend(loc='center right')
@@ -435,6 +440,7 @@ def sb_expect(times, expect, sb, Nt, H_args, coupling, xlim=None, ylim=None, fig
             elif Nt == 2:
                 plt.title("Double-tone blue sideband transitions ($\\Omega_{{sb}}/2\\pi$ = {} MHz)".format(
                           round(1000*wsb/2/pi, 1)))
+    plt.tight_layout()
     plt.show()
     
     return figqc
@@ -469,20 +475,25 @@ def sb_combined_probs(times, sb, Nt, H_args, coupling, xlim=None, ylim=None, fig
     fig : matplotlib.figure.Figure class object
         Figure
     """
+    if 'alpha' in kwargs:
+        alpha = kwargs['alpha']
+    else:
+        alpha = 1
+    
     fig, ax1 = plt.subplots(figsize=figsize)
     if sb == 'red':
         e0 = kwargs['e0']
         g1 = kwargs['g1']
-        ax1.plot(times, e0-g1, color='r', label='$P(e0) - P(g1)$')
+        ax1.plot(times, e0-g1, color='r', alpha=alpha, label='$P(e0) - P(g1)$')
     if sb == 'blue':
         e1 = kwargs['e1']
         g0 = kwargs['g0']
-        ax1.plot(times, e1-g0, color='b', label='$P(e1) - P(g0)$')
-    ax1.plot([times[0], times[-1]], [1, 1], ':', color='k')
-    ax1.plot([times[0], times[-1]], [1/2, 1/2], ':', color='k')
-    ax1.plot([times[0], times[-1]], [0, 0], ':', color='k')
-    ax1.plot([times[0], times[-1]], [-1/2, -1/2], ':', color='k')
-    ax1.plot([times[0], times[-1]], [-1, -1], ':', color='k')
+        ax1.plot(times, e1-g0, color='b', alpha=alpha, label='$P(e1) - P(g0)$')
+    ax1.axhline(1, ls=':', c='k', lw=1)
+    ax1.axhline(1/2, ls=':', c='k', lw=1)
+    ax1.axhline(0, ls=':', c='k', lw=1)
+    ax1.axhline(-1/2, ls=':', c='k', lw=1)
+    ax1.axhline(-1, ls=':', c='k', lw=1)
     ax1.set_xlabel("$t$ [ns]")
     ax1.set_ylabel("$P$")
     ax1.tick_params(axis='y')
@@ -502,15 +513,15 @@ def sb_combined_probs(times, sb, Nt, H_args, coupling, xlim=None, ylim=None, fig
         ax2 = ax1.twinx()
         if Nt == 1:
             Omega = kwargs['Omega']
-            ax2.set_ylabel('$\Omega_d/2$ $/2\pi$ [GHz]')
-            ax2.plot(times, Omega/2/(2*pi)*coupling, color='g', label="Drive")
+            ax2.set_ylabel('$\epsilon_d/2$ $/2\pi$ [GHz]')
+            ax2.plot(times, Omega/2/(2*pi)*coupling, color='g', alpha=alpha, label="Drive")
             ax2.set_ylim([0, 1.1*max(Omega/2/(2*pi)*coupling)])
         elif Nt == 2:
             Omegaq = kwargs['Omegaq']
             Omegac = kwargs['Omegac']
-            ax2.set_ylabel('$\Omega/2$ $/2/\pi$ [GHz]')
-            ax2.plot(times, Omegac/2/(2*pi)*coupling, color='g', label="Cavity-friendly drive")
-            ax2.plot(times, Omegaq/2/(2*pi)*coupling, color='c', label="Qubit-friendly drive")
+            ax2.set_ylabel('$\epsilon/2$ $/2/\pi$ [GHz]')
+            ax2.plot(times, Omegac/2/(2*pi)*coupling, color='g', alpha=alpha, label="Cavity-friendly drive")
+            ax2.plot(times, Omegaq/2/(2*pi)*coupling, color='c', alpha=alpha, label="Qubit-friendly drive")
             ax2.set_ylim([0, 1.1*max(Omegac/2/(2*pi)*coupling)])
         ax2.tick_params(axis='y')
         ax2.legend(loc='center right')
@@ -539,6 +550,7 @@ def sb_combined_probs(times, sb, Nt, H_args, coupling, xlim=None, ylim=None, fig
             elif Nt == 2:
                 plt.title("Double-tone blue sideband transitions ($\\Omega_{{sb}}/2\\pi$ = {} MHz)".format(
                           round(1000*wsb/2/pi, 1)))
+    plt.tight_layout()
     plt.show()
     
     return fig
