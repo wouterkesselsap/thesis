@@ -82,6 +82,7 @@ def calculate(H, psi0, e_ops, H_args, options, Nc, Np, Np_per_batch, home,
     folder : str
         Folder name in which the evolution is stored
     """
+    Np = int(np.round(Np))
     N_devices = len(psi0.dims[0])
     t0 = H_args['t0']
     t3 = H_args['t3']
@@ -121,7 +122,8 @@ def calculate(H, psi0, e_ops, H_args, options, Nc, Np, Np_per_batch, home,
     # Evolution using convergent method
     elif H_args['convergent']:
         if N_devices != 2:
-            raise IOError("System must contain exactly one qubit and one cavity")
+            raise IOError("System must contain exactly one qubit and one cavity,\
+                           in order to use the convergent method.")
         
         t1 = H_args['t1']
         t2 = H_args['t2']
@@ -140,7 +142,7 @@ def calculate(H, psi0, e_ops, H_args, options, Nc, Np, Np_per_batch, home,
         couplinglist = list()
                 
         # Obtain first data point
-        tlist = np.linspace(t0, 2*tg, 101)
+        tlist = np.linspace(t0, 2*tg, 2001)
         H_args['t2'] = 2*tg
         H_args['t3'] = 2*tg
         result = mesolve(H, psi0, tlist, c_ops=[], e_ops=e_ops, args=H_args, options=options)
@@ -154,12 +156,14 @@ def calculate(H, psi0, e_ops, H_args, options, Nc, Np, Np_per_batch, home,
         g0list.append(g0[-1])
         g1list.append(g1[-1])
         
-        tstart = copy(result.times[51])
-        psi0 = copy(result.states[51])
+        tstart = copy(result.times[1001])
+        psi0 = copy(result.states[1001])
         
         times = np.linspace(2*tg, t3, Np)
         convresult.set_times(times)
         dt = np.mean(np.diff(times))
+        
+        del result  # to save RAM
         
         for i, t in enumerate(times[1:]):
             refinement = kwargs['refinement']
