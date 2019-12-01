@@ -14,6 +14,7 @@ from qutip.wigner import wigner as wig
 from qutip.visualization import hinton, matrix_histogram, matrix_histogram_complex
 from envelopes import *
 from supports import *
+from plotsettings import plotcolours, alpha
 
 
 
@@ -343,46 +344,42 @@ def sb_expect(times, expect, sb, Nt, H_args, coupling, xlim=None, ylim=None, fig
     figqc : matplotlib.figure.Figure class object
         Figure
     """
-    if 'alpha' in kwargs:
-        alpha = kwargs['alpha']
-    else:
-        alpha = 1
     
     fig, ax1 = plt.subplots(figsize=figsize)
-    ax1.plot(times, expect[0], color='b', alpha=alpha, label='Qubit')
-    ax1.plot(times, expect[1], color='r', alpha=alpha, label='Cavity')
-    ax1.axhline(0, ls=':', c='k', lw=1)
-    ax1.axhline(1/2, ls=':', c='k', lw=1)
+    ax1.plot(times, expect[0], color=plotcolours['qubit'],   alpha=alpha, label='Qubit')
+    ax1.plot(times, expect[1], color=plotcolours['cavity1'], alpha=alpha, label='Cavity')
+    ax1.axhline(0, ls=':', c=plotcolours['hline'], lw=1)
+    ax1.axhline(1/2, ls=':', c=plotcolours['hline'], lw=1)
     highest_line = 0.5
     if max(max(expect[0]), max(expect[1])) > 0.5:
-        ax1.axhline(1, ls=':', c='k', lw=1)
+        ax1.axhline(1, ls=':', c=plotcolours['hline'], lw=1)
         highest_line = 1
     if max(max(expect[0]), max(expect[1])) > 1:
-        ax1.axhline(1.5, ls=':', c='k', lw=1)
+        ax1.axhline(1.5, ls=':', c=plotcolours['hline'], lw=1)
         highest_line = 1.5
     if max(max(expect[0]), max(expect[1])) > 1.5:
-        ax1.axhline(2, ls=':', c='k', lw=1)
+        ax1.axhline(2, ls=':', c=plotcolours['hline'], lw=1)
         highest_line = 2
     if max(max(expect[0]), max(expect[1])) > 2:
-        ax1.axhline(2.5, ls=':', c='k', lw=1)
+        ax1.axhline(2.5, ls=':', c=plotcolours['hline'], lw=1)
         highest_line = 2.5
     if max(max(expect[0]), max(expect[1])) > 2.5:
-        ax1.axhline(3, ls=':', c='k', lw=1)
+        ax1.axhline(3, ls=':', c=plotcolours['hline'], lw=1)
         highest_line = 3
     if max(max(expect[0]), max(expect[1])) > 3:
-        ax1.axhline(3.5, ls=':', c='k', lw=1)
+        ax1.axhline(3.5, ls=':', c=plotcolours['hline'], lw=1)
         highest_line = 3.5
     if max(max(expect[0]), max(expect[1])) > 3.5:
-        ax1.axhline(4, ls=':', c='k', lw=1)
+        ax1.axhline(4, ls=':', c=plotcolours['hline'], lw=1)
         highest_line = 4
     if max(max(expect[0]), max(expect[1])) > 4:
-        ax1.axhline(4.5, ls=':', c='k', lw=1)
+        ax1.axhline(4.5, ls=':', c=plotcolours['hline'], lw=1)
         highest_line = 4.5
     if max(max(expect[0]), max(expect[1])) > 4.5:
-        ax1.axhline(5, ls=':', c='k', lw=1)
+        ax1.axhline(5, ls=':', c=plotcolours['hline'], lw=1)
         highest_line = 5
     if max(max(expect[0]), max(expect[1])) > 5:
-        ax1.axhline(5.5, ls=':', c='k', lw=1)
+        ax1.axhline(5.5, ls=':', c=plotcolours['hline'], lw=1)
         highest_line = 5.5
     ax1.set_xlabel("$t$ [ns]")
     ax1.set_ylabel("$n$")
@@ -404,19 +401,23 @@ def sb_expect(times, expect, sb, Nt, H_args, coupling, xlim=None, ylim=None, fig
         if Nt == 1:
             Omega = kwargs['Omega']
             ax2.set_ylabel('$\epsilon_d/2$ $/2\pi$ [GHz]')
-            ax2.plot(times, Omega/2/(2*pi)*coupling, color='g', alpha=alpha, label="Drive")
+            ax2.plot(times, Omega/2/(2*pi)*coupling, color=plotcolours['drive'], 
+                     alpha=alpha, label="Drive")
             ax2.set_ylim([0, 1.1*max(Omega/2/(2*pi)*coupling)])
         elif Nt == 2:
             Omegaq = kwargs['Omegaq']
             Omegac = kwargs['Omegac']
             ax2.set_ylabel('$\epsilon/2$ $/2/\pi$ [GHz]')
-            ax2.plot(times, Omegac/2/(2*pi)*coupling, color='g', alpha=alpha, label="Cavity-friendly drive")
-            ax2.plot(times, Omegaq/2/(2*pi)*coupling, color='c', alpha=alpha, label="Qubit-friendly drive")
+            ax2.plot(times, Omegac/2/(2*pi)*coupling, color=plotcolours['driveq'],
+                     alpha=alpha, label="Cavity-friendly drive")
+            ax2.plot(times, Omegaq/2/(2*pi)*coupling, color=plotcolours['drivec'],
+                     alpha=alpha, label="Qubit-friendly drive")
             ax2.set_ylim([0, 1.1*max(Omegac/2/(2*pi)*coupling)])
         ax2.tick_params(axis='y')
         ax2.legend(loc='center right')
 
     figqc = plt.gcf()
+    axqc  = plt.gca()
     
     if "title" in kwargs:
         plt.title(kwargs['title'])
@@ -443,7 +444,7 @@ def sb_expect(times, expect, sb, Nt, H_args, coupling, xlim=None, ylim=None, fig
     plt.tight_layout()
     plt.show()
     
-    return figqc
+    return figqc, axqc
 
 
 def sb_combined_probs(times, sb, Nt, H_args, coupling, xlim=None, ylim=None, figsize=[15,3], **kwargs):
@@ -475,25 +476,21 @@ def sb_combined_probs(times, sb, Nt, H_args, coupling, xlim=None, ylim=None, fig
     fig : matplotlib.figure.Figure class object
         Figure
     """
-    if 'alpha' in kwargs:
-        alpha = kwargs['alpha']
-    else:
-        alpha = 1
     
     fig, ax1 = plt.subplots(figsize=figsize)
     if sb == 'red':
         e0 = kwargs['e0']
         g1 = kwargs['g1']
-        ax1.plot(times, e0-g1, color='r', alpha=alpha, label='$P(e0) - P(g1)$')
+        ax1.plot(times, e0-g1, color=plotcolours['sbred'], alpha=alpha, label='$P(e0) - P(g1)$')
     if sb == 'blue':
         e1 = kwargs['e1']
         g0 = kwargs['g0']
-        ax1.plot(times, e1-g0, color='b', alpha=alpha, label='$P(e1) - P(g0)$')
-    ax1.axhline(1, ls=':', c='k', lw=1)
-    ax1.axhline(1/2, ls=':', c='k', lw=1)
-    ax1.axhline(0, ls=':', c='k', lw=1)
-    ax1.axhline(-1/2, ls=':', c='k', lw=1)
-    ax1.axhline(-1, ls=':', c='k', lw=1)
+        ax1.plot(times, e1-g0, color=plotcolours['sbblue'], alpha=alpha, label='$P(e1) - P(g0)$')
+    ax1.axhline(1, ls=':', c=plotcolours['hline'], lw=1)
+    ax1.axhline(1/2, ls=':', c=plotcolours['hline'], lw=1)
+    ax1.axhline(0, ls=':', c=plotcolours['hline'], lw=1)
+    ax1.axhline(-1/2, ls=':', c=plotcolours['hline'], lw=1)
+    ax1.axhline(-1, ls=':', c=plotcolours['hline'], lw=1)
     ax1.set_xlabel("$t$ [ns]")
     ax1.set_ylabel("$P$")
     ax1.tick_params(axis='y')
@@ -514,19 +511,23 @@ def sb_combined_probs(times, sb, Nt, H_args, coupling, xlim=None, ylim=None, fig
         if Nt == 1:
             Omega = kwargs['Omega']
             ax2.set_ylabel('$\epsilon_d/2$ $/2\pi$ [GHz]')
-            ax2.plot(times, Omega/2/(2*pi)*coupling, color='g', alpha=alpha, label="Drive")
+            ax2.plot(times, Omega/2/(2*pi)*coupling, color=plotcolours['drive'],
+                     alpha=alpha, label="Drive")
             ax2.set_ylim([0, 1.1*max(Omega/2/(2*pi)*coupling)])
         elif Nt == 2:
             Omegaq = kwargs['Omegaq']
             Omegac = kwargs['Omegac']
             ax2.set_ylabel('$\epsilon/2$ $/2/\pi$ [GHz]')
-            ax2.plot(times, Omegac/2/(2*pi)*coupling, color='g', alpha=alpha, label="Cavity-friendly drive")
-            ax2.plot(times, Omegaq/2/(2*pi)*coupling, color='c', alpha=alpha, label="Qubit-friendly drive")
+            ax2.plot(times, Omegac/2/(2*pi)*coupling, color=plotcolours['driveq'],
+                     alpha=alpha, label="Cavity-friendly drive")
+            ax2.plot(times, Omegaq/2/(2*pi)*coupling, color=plotcolours['drivec'],
+                     alpha=alpha, label="Qubit-friendly drive")
             ax2.set_ylim([0, 1.1*max(Omegac/2/(2*pi)*coupling)])
         ax2.tick_params(axis='y')
         ax2.legend(loc='center right')
 
     fig = plt.gcf()
+    axp = plt.gca()
     
     if "title" in kwargs:
         plt.title(kwargs['title'])
@@ -553,4 +554,4 @@ def sb_combined_probs(times, sb, Nt, H_args, coupling, xlim=None, ylim=None, fig
     plt.tight_layout()
     plt.show()
     
-    return fig
+    return fig, axp
