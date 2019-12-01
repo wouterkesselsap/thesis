@@ -43,7 +43,7 @@ class Convresult:
         self.expect[i].append(val)
     
     def extend_expect(self, i, val):
-        self.expect[i].extend(val)
+        self.expect[i].append(val)
 
 
 def calculate(H, psi0, e_ops, H_args, options, Nc, Np, Np_per_batch, home,

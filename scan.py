@@ -92,17 +92,17 @@ def sbsample(Nq, wq, wc, Ec, g, shift, sb, Nt, H, H_args, psi0, Np_per_batch,
             print("min = {}, max = {}".format(round(min(e0-g1), 4), round(max(e0-g1), 4)))
             expect_title = "shift = {}".format(shift/2/pi)
             cp_title = "shift = {}, min = {}, max = {}".format(shift/2/pi, round(min(e0-g1), 4), round(max(e0-g1), 4))
-            figqc = sb_expect(times, expect, sb, Nt, H_args, coupling, xlim=None, ylim=None, figsize=[15,3],
+            figqc, axqc = sb_expect(times, expect, sb, Nt, H_args, coupling, xlim=None, ylim=None, figsize=[15,3],
                               wd=wd, wsb=0, title=expect_title, Omega=Omega)
-            fig = sb_combined_probs(times, sb, Nt, H_args, coupling,
+            fig, axp = sb_combined_probs(times, sb, Nt, H_args, coupling,
                                     e0=e0, g1=g1, wd=wd, wsb=0, title=cp_title, Omega=Omega)
         elif sb == 'blue':
             print("min = {}, max = {}".format(round(min(e1-g0), 4), round(max(e1-g0), 4)))
             expect_title = "shift = {}".format(shift/2/pi)
             cp_title = "shift = {}, min = {}, max = {}".format(shift/2/pi, round(min(e1-g0), 4), round(max(e1-g0), 4))
-            figqc = sb_expect(times, expect, sb, Nt, H_args, coupling, xlim=None, ylim=None, figsize=[15,3],
+            figqc, axqc = sb_expect(times, expect, sb, Nt, H_args, coupling, xlim=None, ylim=None, figsize=[15,3],
                               wd=wd, wsb=0, title=expect_title, Omega=Omega)
-            fig = sb_combined_probs(times, sb, Nt, H_args, coupling,
+            fig, axp = sb_combined_probs(times, sb, Nt, H_args, coupling,
                                     e1=e1, g0=g0, wd=wd, wsb=0, title=cp_title, Omega=Omega)            
     elif Nt == 2:
         Omegaq = args[0]
@@ -112,18 +112,18 @@ def sbsample(Nq, wq, wc, Ec, g, shift, sb, Nt, H, H_args, psi0, Np_per_batch,
             print("min = {}, max = {}".format(round(min(e0-g1), 4), round(max(e0-g1), 4)))
             expect_title = "shift = {}".format(shift/2/pi)
             cp_title = "shift = {}, min = {}, max = {}".format(shift/2/pi, round(min(e0-g1), 4), round(max(e0-g1), 4))
-            figqc = sb_expect(times, expect, sb, Nt, H_args, coupling, xlim=None, ylim=None, figsize=[15,3],
+            figqc, axqc = sb_expect(times, expect, sb, Nt, H_args, coupling, xlim=None, ylim=None, figsize=[15,3],
                               wsb=0, title=expect_title, Omegaq=Omegaq, Omegac=Omegac)
-            fig = sb_combined_probs(times, sb, Nt, H_args, coupling,
+            fig, axp = sb_combined_probs(times, sb, Nt, H_args, coupling,
                                     xlim=None, ylim=None, figsize=[15,3], e0=e0, g1=g1, wsb=0,
                                     title=cp_title, Omegaq=Omegaq, Omegac=Omegac)
         elif sb == 'blue':
             print("min = {}, max = {}".format(round(min(e1-g0), 4), round(max(e1-g0), 4)))
             expect_title = "shift = {}".format(shift/2/pi)
             cp_title = "shift = {}, min = {}, max = {}".format(shift/2/pi, round(min(e1-g0), 4), round(max(e1-g0), 4))
-            figqc = sb_expect(times, expect, sb, Nt, H_args, coupling, xlim=None, ylim=None, figsize=[15,3],
+            figqc, axqc = sb_expect(times, expect, sb, Nt, H_args, coupling, xlim=None, ylim=None, figsize=[15,3],
                               wsb=0, title=expect_title, Omegaq=Omegaq, Omegac=Omegac)
-            fig = sb_combined_probs(times, sb, Nt, H_args, coupling,
+            fig, axp = sb_combined_probs(times, sb, Nt, H_args, coupling,
                                     xlim=None, ylim=None, figsize=[15,3], e1=e1, g0=g0, wsb=0,
                                     title=cp_title, Omegaq=Omegaq, Omegac=Omegac)
     fig.savefig(home + "temp/fig{}_{}.png".format(num, shift/2/pi))
@@ -136,21 +136,6 @@ def sbsample(Nq, wq, wc, Ec, g, shift, sb, Nt, H, H_args, psi0, Np_per_batch,
 def sbsample_visualize_sweep(Nq, wq, wc, Ec, g, shift, sb, Nt, H, H_args, psi0,
                              Np_per_batch, options, home, parallel, *args):
     from envelopes import drive
-    
-    small = 14
-    medium = 16
-    big = 18
-    
-    plt.rc('font', size=medium)          # controls default text sizes
-    plt.rc('axes', titlesize=big)     # fontsize of the axes title
-    plt.rc('axes', labelsize=medium)    # fontsize of the x and y labels
-    plt.rc('xtick', labelsize=medium)    # fontsize of the tick labels
-    plt.rc('ytick', labelsize=medium)    # fontsize of the tick labels
-    plt.rc('legend', fontsize=medium)    # legend fontsize
-    plt.rc('figure', titlesize=big)     # fontsize of the figure title
-    plt.rc('lines', linewidth=3)
-    
-    alpha = 0.6    
     
     i = shift[0]
     shift = shift[1]
@@ -205,18 +190,18 @@ def sbsample_visualize_sweep(Nq, wq, wc, Ec, g, shift, sb, Nt, H, H_args, psi0,
             print("min = {}, max = {}".format(round(min(e0-g1), 4), round(max(e0-g1), 4)))
             expect_title = "$\\omega_d / 2\\pi = {}$ GHz".format(np.round(wd/2/pi, 4))
             cp_title = "$\\omega_d / 2\\pi = {}$ GHz".format(np.round(wd/2/pi, 4))
-            figqc = sb_expect(times, expect, sb, Nt, H_args, coupling, xlim=None, ylim=[0, 1.02], figsize=[15,4],
+            figqc, axqc = sb_expect(times, expect, sb, Nt, H_args, coupling, xlim=None, ylim=[0, 1.02], figsize=[15,4],
                               wd=wd, wsb=0, title=expect_title, Omega=Omega, alpha=alpha)
-            fig = sb_combined_probs(times, sb, Nt, H_args, coupling,
-                                    e0=e0, g1=g1, wd=wd, wsb=0, ylim=[-1.02, 1.02], title=cp_title, Omega=Omega, alpha=alpha)
+            fig, axp = sb_combined_probs(times, sb, Nt, H_args, coupling,
+                                    e0=e0, g1=g1, wd=wd, wsb=0, ylim=[-1.02, 1.02], title=cp_title, Omega=Omega)
         elif sb == 'blue':
             print("min = {}, max = {}".format(round(min(e1-g0), 4), round(max(e1-g0), 4)))
             expect_title = "$\\omega_d / 2\\pi = {}$ GHz".format(np.round(wd/2/pi, 4))
             cp_title = "$\\omega_d / 2\\pi = {}$ GHz".format(np.round(wd/2/pi, 4))
-            figqc = sb_expect(times, expect, sb, Nt, H_args, coupling, xlim=None, ylim=[0, 1.02], figsize=[15,4],
+            figqc, axqc = sb_expect(times, expect, sb, Nt, H_args, coupling, xlim=None, ylim=[0, 1.02], figsize=[15,4],
                               wd=wd, wsb=0, title=expect_title, Omega=Omega, alpha=alpha)
-            fig = sb_combined_probs(times, sb, Nt, H_args, coupling,
-                                    e1=e1, g0=g0, wd=wd, wsb=0, ylim=[-1.02, 1.02], title=cp_title, Omega=Omega, alpha=alpha)   
+            fig, axp = sb_combined_probs(times, sb, Nt, H_args, coupling,
+                                    e1=e1, g0=g0, wd=wd, wsb=0, ylim=[-1.02, 1.02], title=cp_title, Omega=Omega)   
         fig.savefig("/Users/Wouter/Documents/TU/TN/Master/Thesis project/Midterm presentation/freq sweep method/fig_{}.png".format(wd/2/pi))
         figqc.savefig("/Users/Wouter/Documents/TU/TN/Master/Thesis project/Midterm presentation/freq sweep method/figqc_{}.png".format(wd/2/pi))
     
@@ -228,18 +213,18 @@ def sbsample_visualize_sweep(Nq, wq, wc, Ec, g, shift, sb, Nt, H, H_args, psi0,
             print("min = {}, max = {}".format(round(min(e0-g1), 4), round(max(e0-g1), 4)))
             expect_title = "$\\omega_{{d_{{q}}}} / 2\\pi = {}$ GHz".format(np.round(wdq/2/pi, 4))
             cp_title = "$\\omega_{{d{{q}}}} / 2\\pi = {}$ GHz".format(np.round(wdq/2/pi, 4))
-            figqc = sb_expect(times, expect, sb, Nt, H_args, coupling, xlim=None, ylim=[0, 1.02], figsize=[15,4],
+            figqc, axqc = sb_expect(times, expect, sb, Nt, H_args, coupling, xlim=None, ylim=[0, 1.02], figsize=[15,4],
                               wsb=0, title=expect_title, Omegaq=Omegaq, Omegac=Omegac, alpha=alpha)
-            fig = sb_combined_probs(times, sb, Nt, H_args, coupling,
+            fig, axp = sb_combined_probs(times, sb, Nt, H_args, coupling,
                                     xlim=None, ylim=[-1.02, 1.02], figsize=[15,4], e0=e0, g1=g1, wsb=0,
                                     title=cp_title, Omegaq=Omegaq, Omegac=Omegac, alpha=alpha)
         elif sb == 'blue':
             print("min = {}, max = {}".format(round(min(e1-g0), 4), round(max(e1-g0), 4)))
             expect_title = "$\\omega_{{d_{{q}}}} / 2\\pi = {}$ GHz".format(np.round(wdq/2/pi, 4))
             cp_title = "$\\omega_{{d{{q}}}} / 2\\pi = {}$ GHz".format(np.round(wdq/2/pi, 4))
-            figqc = sb_expect(times, expect, sb, Nt, H_args, coupling, xlim=None, ylim=[0, 1.02], figsize=[15,4],
+            figqc, axqc = sb_expect(times, expect, sb, Nt, H_args, coupling, xlim=None, ylim=[0, 1.02], figsize=[15,4],
                               wsb=0, title=expect_title, Omegaq=Omegaq, Omegac=Omegac, alpha=alpha)
-            fig = sb_combined_probs(times, sb, Nt, H_args, coupling,
+            fig, axp = sb_combined_probs(times, sb, Nt, H_args, coupling,
                                     xlim=None, ylim=[-1.02, 1.02], figsize=[15,4], e1=e1, g0=g0, wsb=0,
                                     title=cp_title, Omegaq=Omegaq, Omegac=Omegac, alpha=alpha)
         fig.savefig("/Users/Wouter/Documents/TU/TN/Master/Thesis project/Midterm presentation/freq sweep method/fig_{}.png".format(wdq/2/pi))
@@ -309,7 +294,7 @@ def cfs(Nq, Nc, wc, Ec, wp, H, H_args, psi0, Np_per_batch, options, home, parall
     print("max    =", max(expect[1]))
     
     plt.figure(figsize=[15,3])
-    plt.plot(times, expect[0], c='b')
+#    plt.plot(times, expect[0], c='b')
     plt.plot(times, expect[1], c='r')
     plt.title("shift {}, wp {}, max {}".format(np.round((wp-wc)/2/pi,4), np.round(wp/2/pi,4), np.round(max(expect[1]),6)))
     plt.savefig(home + "temp/fig{}_{}.png".format(num, (wp-wc)/2/pi))
