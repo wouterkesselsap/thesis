@@ -200,6 +200,229 @@ def calculate(H, psi0, e_ops, H_args, options, Nc, Np, Np_per_batch, home,
     return folder
 
 
+def drivefreq(Nq, wq, wc, H, sb, Nt, **kwargs):
+    """
+    Estimates the required driving frequency or frequencies to induce two-photon
+    sideband transitions between a dispersively coupled qubit and cavity, given
+    the system's parameters and time-independent Hamiltonian. The dispersive coupling
+    shift is calculated by diagonalization of this time-independent Hamiltonian
+    without driving terms. The qubit's additional shift due to driving is calculated
+    with the analytical formula of the AC-Stark shift and Bloch-Siegert shift.
+    The total deviation of the required driving frequency is assumed to be the
+    sum of these two effects.
+    
+    This function can distinguish between 8 cases, each of which is a combination
+    of the following three settings:
+    - TLS (two qubit levels) or Transmon (more than two qubit levels);
+    - monochromatic or bichromatic driving;
+    - red (e0-g1) or blue (e1-g0) sideband transitions.
+    
+    Assumptions:
+    - The qubit and cavity are dispersively coupled with sufficient detuning, but
+      wq < 2*wc and wc < 2*wq.
+    - With bichromatic driving, the cavity-friendly drive tone wdc is fixed in
+      frequency. The qubit-friendly tone wdq is to be estimated.
+    
+    Performance:
+    - At least accurate to MHz for low driving amplitudes in the transmon case,
+      or single-tone TLS case.
+    - At least accurate to 10 MHz for double-tone TLS case.
+    - Here used second-order perturbative approach not sufficient for large driving
+      amplitudes.
+    
+    
+    Input
+    -----
+    Nq : int
+        Number of qubit levels
+    wq : float
+        Qubit frequency [Grad/s]
+    wc : float
+        Cavity frequency [Grad/s]
+    H : qutip.qobj.Qobj
+        Time-independent Hamiltonian including the intrinsic terms of the qubit
+        and cavity, and thee coupling term
+    sb : str
+        Type of sideband transition, either 'red' (e0-g1) or 'blue' (e1-g0)
+    Nt : int
+        Number of drive tones
+    **kwargs
+        Available arguments:
+        'lower' : float
+            Lower bound of possible drive frequencies [Grad/s]
+        'upper' : float
+            Upper bound of possible drive frequencies [Grad/s]
+        'resolution' : float
+            Resolution within range of possible drive frequencies
+        'dw' : float
+            Detuning of cavity-friendly drive tone from uncoupled cavity frequency
+            [Grad/s]
+        'Ec' : float
+            Qubit's anharmonicty [Grad/s]
+        'eps' : float
+            Drive amplitude when driving monochromatically [Grad/s]
+        'epsq' : float
+            Amplitude of qubit-friendly drive tone when driving bichromatically
+            [Grad/s]
+        'epsc' : float
+            Amplitude of cavity-friendly drive tone when driving bichromatically
+            [Grad/s]
+        'verbose' : bool
+            Print estimated drive frequency or frequencies
+    
+    
+    Returns
+    -------
+    wd_estimate : float
+        Estimated monochromatic drive frequency [Grad/s]
+    wdq_estimate : float
+        Estimated qubit-friendly drive tone frequency when driving bichromatically
+        [Grad/s]
+    wdc : float
+        Cavity friendly drive tone frequency when driving bichromatically [Grad/s]
+    """
+    
+    # Determine drive frequency range to scan
+    # Monochromatic drive
+    if Nt == 1:
+        if 'lower' in kwargs:
+            lower_bound = kwargs['lower']
+        else:
+            if sb == 'red':
+                lower_bound = abs(wq-wc)/2 - 1.0 *2*pi
+            elif sb == 'blue':
+                lower_bound = abs(wq+wc)/2 - 1.0 *2*pi
+
+        if 'upper' in kwargs:
+            upper_bound = kwargs['upper']
+        else:
+            if sb == 'red':
+                upper_bound = abs(wq-wc)/2 + 1.0 *2*pi
+            elif sb == 'blue':
+                upper_bound = abs(wq+wc)/2 + 1.0 *2*pi
+
+        if 'resolution' in kwargs:
+            resolution = kwargs['resolution']
+        else:
+            resolution = 0.0001 *2*pi
+
+        wd_range = np.arange(lower_bound, upper_bound, resolution)
+    
+    # Bichromatic drive
+    elif Nt == 2:
+        if 'dw' in kwargs:
+            dw = kwargs['dw']
+        else:
+            dw = 0.5 *2*pi
+        
+        if 'lower' in kwargs:
+            lower_bound = kwargs['lower']
+        else:
+            if sb == 'red':
+                lower_bound = wq - dw - 1.0 *2*pi
+            elif sb == 'blue':
+                lower_bound = wq + dw - 1.0 *2*pi
+
+        if 'upper' in kwargs:
+            upper_bound = kwargs['upper']
+        else:
+            if sb == 'red':
+                upper_bound = wq - dw + 1.0 *2*pi
+            elif sb == 'blue':
+                upper_bound = wq + dw + 1.0 *2*pi
+
+        if 'resolution' in kwargs:
+            resolution = kwargs['resolution']
+        else:
+            resolution = 0.0001 *2*pi
+
+        wdq_range = np.arange(lower_bound, upper_bound, resolution)
+        wdc = wc - dw
+    
+    
+    # Calculate dispersive coupling shift by diagonalizing the time-independent,
+    # undriven Hamiltonian
+    EE = H.eigenenergies()
+    Eg0 = EE[0]
+    if wq > wc:
+        Eg1 = EE[1]
+        Ee0 = EE[2]
+    elif wq < wc:
+        Eg1 = EE[2]
+        Ee0 = EE[1]
+    if Nq == 2 and wq < wc:
+        Ee1 = EE[3]  # E(f0) < E(e1)
+    else:
+        Ee1 = EE[4]  # E(f0) > E(e1)
+    coupling_dev_red  = (Ee0 - Eg1) - (wq - wc)
+    coupling_dev_blue = (Ee1 - Eg0) - (wq + wc)
+    
+    
+    # Calculate dispersive driving shift by using the AC-Stark shift
+    # and Bloch-Sieger shift
+    # Monochromatic drive
+    if Nt == 1:
+        eps = kwargs['eps']
+        
+        # TLS
+        if Nq == 2:
+            drive_shifts = eps**2/2*(1/(wq-wd_range) + 1/(wq+wd_range))
+        
+        # Transmon
+        elif Nq > 2:
+            Ec = kwargs['Ec']
+            drive_shifts = eps**2/2*(1/(wq-wd_range) + 1/(wq+wd_range) - 1/(wq-Ec-wd_range) - 1/(wq-Ec+wd_range))
+
+    # Bichromatic drive
+    elif Nt == 2:
+        epsq = kwargs['epsq']
+        epsc = kwargs['epsc']
+        
+        # TLS
+        if Nq == 2:
+            drive_shifts = epsq**2/2*(1/(wq-wdq_range) + 1/(wq+wdq_range)) + epsc**2/2*(1/(wq-wdc) + 1/(wq+wdc))
+        
+        # Transmon
+        elif Nq > 2:
+            Ec = kwargs['Ec']
+            ge_shifts = epsq**2/2*(1/(wq-wdq_range) + 1/(wq+wdq_range)) + epsc**2/2*(1/(wq-wdc) + 1/(wq+wdc))
+            ef_shifts = epsq**2*(1/(wq-Ec-wdq_range) + 1/(wq-Ec+wdq_range)) + epsc**2*(1/(wq-Ec-wdc) + 1/(wq-Ec+wdc))
+            drive_shifts = ge_shifts - ef_shifts/2
+    
+    
+    # Calculate the frequency deviation for every wd in wd_range
+    # Monochromatic drive
+    if Nt == 1:
+        if sb == 'red':
+            deviations = drive_shifts + coupling_dev_red
+            diff = abs(wq + deviations - wc)/2 - wd_range
+        elif sb == 'blue':
+            deviations = drive_shifts + coupling_dev_blue
+            diff = (wq + deviations + wc)/2 - wd_range
+        diff = abs(diff)
+
+        wd_estimate = wd_range[diff.tolist().index(min(abs(diff)))]
+        if 'verbose' in kwargs and kwargs['verbose']:
+            print("Estimated drive frequency wd = {} GHz".format(np.round(wd_estimate/2/pi, 4)))
+        return wd_estimate
+    
+    # Bichromatic drive
+    elif Nt == 2:
+        if sb == 'red':
+            deviations = drive_shifts + coupling_dev_red
+            diff = abs(wq + deviations - wc) - abs(wdq_range - wdc)
+        elif sb == 'blue':
+            deviations = drive_shifts + coupling_dev_blue
+            diff = (wq + deviations + wc) - (wdq_range + wdc)
+        diff = abs(diff)
+        wdq_estimate = wdq_range[diff.tolist().index(min(abs(diff)))]
+        
+        if 'verbose' in kwargs and kwargs['verbose']:
+            print("Estimated qubit-friendly drive frequency wdq  = {} GHz".format(np.round(wdq_estimate/2/pi, 4)))
+            print("Cavity-friendly drive frequency          wdc  = {} GHz".format(np.round(wdc/2/pi, 4)))
+        return wdq_estimate, wdc
+
+
 def combined_probs(states, Nc):
     """
     Calculates |e,0> - |g,1> and |e,1> - |g,0> through time

@@ -39,8 +39,8 @@ def sbsample(Nq, wq, wc, Ec, g, wd, sb, Nt, H, H_args, psi0, Np_per_batch,
     """
     from envelopes import drive
     
-    i = shift[0]
-    shift = shift[1]
+    i = wd[0]
+    wd = wd[1]
     
     Nc = 10  # number of levels in resonator 1
     
@@ -73,19 +73,19 @@ def sbsample(Nq, wq, wc, Ec, g, wd, sb, Nt, H, H_args, psi0, Np_per_batch,
     
     if Nt == 1:
         Omega = args[0]
-        print("shift = {}, wd = {}".format(shift/2/pi, wd/2/pi))
+        print("wd = {}".format(wd/2/pi))
         if sb == 'red':
             print("min = {}, max = {}".format(round(min(e0-g1), 4), round(max(e0-g1), 4)))
             expect_title = "shift = {}".format(shift/2/pi)
-            cp_title = "shift = {}, min = {}, max = {}".format(shift/2/pi, round(min(e0-g1), 4), round(max(e0-g1), 4))
+            cp_title = "wd = {}, min = {}, max = {}".format(wd/2/pi, round(min(e0-g1), 4), round(max(e0-g1), 4))
             figqc, axqc = sb_expect(times, expect, sb, Nt, H_args, coupling, xlim=None, ylim=None, figsize=[15,3],
                               wd=wd, wsb=0, title=expect_title, Omega=Omega)
             fig, axp = sb_combined_probs(times, sb, Nt, H_args, coupling,
                                     e0=e0, g1=g1, wd=wd, wsb=0, title=cp_title, Omega=Omega)
         elif sb == 'blue':
             print("min = {}, max = {}".format(round(min(e1-g0), 4), round(max(e1-g0), 4)))
-            expect_title = "shift = {}".format(shift/2/pi)
-            cp_title = "shift = {}, min = {}, max = {}".format(shift/2/pi, round(min(e1-g0), 4), round(max(e1-g0), 4))
+            expect_title = "wd = {}".format(wd/2/pi)
+            cp_title = "wd = {}, min = {}, max = {}".format(wd/2/pi, round(min(e1-g0), 4), round(max(e1-g0), 4))
             figqc, axqc = sb_expect(times, expect, sb, Nt, H_args, coupling, xlim=None, ylim=None, figsize=[15,3],
                               wd=wd, wsb=0, title=expect_title, Omega=Omega)
             fig, axp = sb_combined_probs(times, sb, Nt, H_args, coupling,
@@ -93,11 +93,11 @@ def sbsample(Nq, wq, wc, Ec, g, wd, sb, Nt, H, H_args, psi0, Np_per_batch,
     elif Nt == 2:
         Omegaq = args[0]
         Omegac = args[1]
-        print("shift = {}".format(shift/2/pi))
+        print("wd = {}".format(wd/2/pi))
         if sb == 'red':
             print("min = {}, max = {}".format(round(min(e0-g1), 4), round(max(e0-g1), 4)))
-            expect_title = "shift = {}".format(shift/2/pi)
-            cp_title = "shift = {}, min = {}, max = {}".format(shift/2/pi, round(min(e0-g1), 4), round(max(e0-g1), 4))
+            expect_title = "wdq = {}".format(wdq/2/pi)
+            cp_title = "wdq = {}, min = {}, max = {}".format(wdq/2/pi, round(min(e0-g1), 4), round(max(e0-g1), 4))
             figqc, axqc = sb_expect(times, expect, sb, Nt, H_args, coupling, xlim=None, ylim=None, figsize=[15,3],
                               wsb=0, title=expect_title, Omegaq=Omegaq, Omegac=Omegac)
             fig, axp = sb_combined_probs(times, sb, Nt, H_args, coupling,
@@ -105,15 +105,15 @@ def sbsample(Nq, wq, wc, Ec, g, wd, sb, Nt, H, H_args, psi0, Np_per_batch,
                                     title=cp_title, Omegaq=Omegaq, Omegac=Omegac)
         elif sb == 'blue':
             print("min = {}, max = {}".format(round(min(e1-g0), 4), round(max(e1-g0), 4)))
-            expect_title = "shift = {}".format(shift/2/pi)
-            cp_title = "shift = {}, min = {}, max = {}".format(shift/2/pi, round(min(e1-g0), 4), round(max(e1-g0), 4))
+            expect_title = "wdq = {}".format(wdq/2/pi)
+            cp_title = "wdq = {}, min = {}, max = {}".format(wdq/2/pi, round(min(e1-g0), 4), round(max(e1-g0), 4))
             figqc, axqc = sb_expect(times, expect, sb, Nt, H_args, coupling, xlim=None, ylim=None, figsize=[15,3],
                               wsb=0, title=expect_title, Omegaq=Omegaq, Omegac=Omegac)
             fig, axp = sb_combined_probs(times, sb, Nt, H_args, coupling,
                                     xlim=None, ylim=None, figsize=[15,3], e1=e1, g0=g0, wsb=0,
                                     title=cp_title, Omegaq=Omegaq, Omegac=Omegac)
-    fig.savefig(home + "temp/fig{}_{}.png".format(num, shift/2/pi))
-    figqc.savefig(home + "temp/figqc{}_{}.png".format(num, shift/2/pi))
+    fig.savefig(home + "temp/fig{}_{}.png".format(num, wdq/2/pi))
+    figqc.savefig(home + "temp/figqc{}_{}.png".format(num, wdq/2/pi))
     plt.close(fig)
     plt.close(figqc)
     return figqc, fig
@@ -123,8 +123,8 @@ def sbsample_visualize_sweep(Nq, wq, wc, Ec, g, wd, sb, Nt, H, H_args, psi0,
                              Np_per_batch, options, home, parallel, *args):
     from envelopes import drive
     
-    i = shift[0]
-    shift = shift[1]
+    i = wd[0]
+    wd = wd[1]
     
     Nc = 10  # number of levels in resonator 1
     
@@ -157,7 +157,7 @@ def sbsample_visualize_sweep(Nq, wq, wc, Ec, g, wd, sb, Nt, H, H_args, psi0,
     
     if Nt == 1:
         Omega = args[0]
-        print("shift = {}, wd = {}".format(shift/2/pi, wd/2/pi))
+        print("wd = {}".format(wd/2/pi))
         if sb == 'red':
             print("min = {}, max = {}".format(round(min(e0-g1), 4), round(max(e0-g1), 4)))
             expect_title = "$\\omega_d / 2\\pi = {}$ GHz".format(np.round(wd/2/pi, 4))
@@ -180,7 +180,7 @@ def sbsample_visualize_sweep(Nq, wq, wc, Ec, g, wd, sb, Nt, H, H_args, psi0,
     elif Nt == 2:
         Omegaq = args[0]
         Omegac = args[1]
-        print("shift = {}".format(shift/2/pi))
+        print("wdq = {}".format(wdq/2/pi))
         if sb == 'red':
             print("min = {}, max = {}".format(round(min(e0-g1), 4), round(max(e0-g1), 4)))
             expect_title = "$\\omega_{{d_{{q}}}} / 2\\pi = {}$ GHz".format(np.round(wdq/2/pi, 4))
