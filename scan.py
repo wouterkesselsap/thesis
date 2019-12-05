@@ -11,7 +11,7 @@ from ipywidgets import widgets
 from IPython.display import display
 
 
-def sbsample(Nq, wq, wc, Ec, g, shift, sb, Nt, H, H_args, psi0, Np_per_batch,
+def sbsample(Nq, wq, wc, Ec, g, wd, sb, Nt, H, H_args, psi0, Np_per_batch,
              options, home, parallel, *args):
     """
     Performs a single- or double-tone sideband transition simulation
@@ -44,28 +44,14 @@ def sbsample(Nq, wq, wc, Ec, g, shift, sb, Nt, H, H_args, psi0, Np_per_batch,
     
     Nc = 10  # number of levels in resonator 1
     
-    if Nt == 1:
-        if sb == 'red':
-            if wq > wc:
-                wd = (wq + shift - wc)/2
-            elif wq < wc:
-                wd = (wc - wq - shift)/2
-        elif sb == 'blue':
-                wd = (wq + shift + wc)/2
-    elif Nt == 2:
-        dw = args[2]
-        if sb == 'red':
-            wdq =  wq + shift - dw
-            wdc =  wc - dw
-        elif sb == 'blue':
-            wdq =  wq + shift + dw
-            wdc =  wc - dw
-    
     Np = 100*int(H_args['t3'])  # number of discrete time steps for which to store the output
     b, a, nq, nc = ops(Nq, Nc)  # Operators
     if Nt == 1:
         H_args['wd'] = wd
     elif Nt == 2:
+        dw = args[2]
+        wdq = wd
+        wdc =  wc - dw
         H_args['wdq'] = wdq
         H_args['wdc'] = wdc
     e_ops = [nq, nc]
@@ -133,7 +119,7 @@ def sbsample(Nq, wq, wc, Ec, g, shift, sb, Nt, H, H_args, psi0, Np_per_batch,
     return figqc, fig
 
 
-def sbsample_visualize_sweep(Nq, wq, wc, Ec, g, shift, sb, Nt, H, H_args, psi0,
+def sbsample_visualize_sweep(Nq, wq, wc, Ec, g, wd, sb, Nt, H, H_args, psi0,
                              Np_per_batch, options, home, parallel, *args):
     from envelopes import drive
     
@@ -142,28 +128,14 @@ def sbsample_visualize_sweep(Nq, wq, wc, Ec, g, shift, sb, Nt, H, H_args, psi0,
     
     Nc = 10  # number of levels in resonator 1
     
-    if Nt == 1:
-        if sb == 'red':
-            if wq > wc:
-                wd = (wq + shift - wc)/2
-            elif wq < wc:
-                wd = (wc - wq - shift)/2
-        elif sb == 'blue':
-                wd = (wq + shift + wc)/2
-    elif Nt == 2:
-        dw = args[2]
-        if sb == 'red':
-            wdq =  wq + shift - dw
-            wdc =  wc - dw
-        elif sb == 'blue':
-            wdq =  wq + shift + dw
-            wdc =  wc - dw
-    
     Np = 100*int(H_args['t3'])  # number of discrete time steps for which to store the output
     b, a, nq, nc = ops(Nq, Nc)  # Operators
     if Nt == 1:
         H_args['wd'] = wd
     elif Nt == 2:
+        dw = args[2]
+        wdq = wd
+        wdc =  wc - dw
         H_args['wdq'] = wdq
         H_args['wdc'] = wdc
     e_ops = [nq, nc]
