@@ -52,7 +52,7 @@ def prepare_folder(home, parallel=False):
 
 
 def saveparams(Nq, Nc, Nt, wq, shift, wc, Ec, g, sb,
-               t0, t1, t2, t3, tg, tc, gauss, smooth, Q,
+               t0, t1, t2, t3, tg, anh_appr, gauss, smooth, Q,
                convergent, Np, H, psi0, e_ops, options,
                folder, frmt, **kwargs):
     """
@@ -75,7 +75,7 @@ def saveparams(Nq, Nc, Nt, wq, shift, wc, Ec, g, sb,
         data = {
             'Nq' : Nq, 'Nc' : Nc, 'Nt' : Nt, 'wq' : wq, 'shift' : shift, 'wc' : wc,
             'Ec' : Ec, 'g' : g, 'sb' : sb, 't0' : t0, 't1' : t1, 't2' : t2, 't3' : t3,
-            'tg' : tg, 'tc' : tc, 'gauss' : gauss, 'smooth' : smooth, 'Q' : Q, 
+            'tg' : tg, 'anh_appr' : anh_appr, 'gauss' : gauss, 'smooth' : smooth, 'Q' : Q, 
             'convergent' : convergent, 'Np' : Np, 'H' : H, 'psi0' : psi0,
             'e_ops' : e_ops, 'options' : options        
         }
@@ -104,6 +104,7 @@ def saveparams(Nq, Nc, Nt, wq, shift, wc, Ec, g, sb,
                 "qubit's ac-Stark shift          shift  : {} = {} GHz\n".format(shift, shift/2/pi),
                 "cavity frequency                wc     : {} = {} GHz\n".format(wc, wc/2/pi),
                 "anharmonicity                   Ec     : {} = {} GHz\n".format(Ec, Ec/2/pi),
+                "anharmonicty approximation      anh_ap : {}".format(anh_appr),
                 "qubit-cavity coupling strength  g      : {} = {} GHz\n".format(g, g/2/pi),
                 "sideband transition             sb     : {}\n".format(sb),
                 "start of simulation             t0     : {} ns\n".format(t0),
@@ -118,7 +119,6 @@ def saveparams(Nq, Nc, Nt, wq, shift, wc, Ec, g, sb,
         
         if convergent:
             data.append("convergent method               conv   : {}\n".format(convergent))
-            data.append("timestep for convergent method  tc     : {} ns\n".format(tc))
                 
         if Nt == 1:
             data.append("sideband drive amplitude        Omega  : {} = {} GHz\n".format(kwargs['Omega'], kwargs['Omega']/2/pi))
@@ -167,10 +167,12 @@ def getparams(folder):
     t3 = data['t3']
     tg = data['tg']
     try:
-        tc = data['tc']
+        anh_appr = data['anh_appr']
+    except:
+        anh_appr = False
+    try:
         convergent = data['convergent']
     except:
-        tc = 0
         convergent = False
     try:
         gauss = data['gauss']
@@ -204,7 +206,7 @@ def getparams(folder):
     
     infile.close()
             
-    return Nq, Nc, Nt, wq, shift, wc, Ec, g, sb, t0, t1, t2, t3, tg, tc, gauss, smooth, Q, convergent, Np, H, psi0, e_ops, options, Omega, wd, Omegaq, Omegac, dw, wdq, wdc
+    return Nq, Nc, Nt, wq, shift, wc, Ec, g, sb, t0, t1, t2, t3, tg, anh_appr, gauss, smooth, Q, convergent, Np, H, psi0, e_ops, options, Omega, wd, Omegaq, Omegac, dw, wdq, wdc
 
 
 def create_batches(t0, tf, Np, Nppb):
