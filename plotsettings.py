@@ -4,9 +4,9 @@ import matplotlib as mpl
 ###############################################################################
 
 
-small = 14
-medium = 16
-big = 18
+small = 12
+medium = 14
+big = 16
 
 # Give colours in hex
 qubit     = '#6d78aa'  # qubit
@@ -30,7 +30,7 @@ mpl.rcParams['xtick.labelsize'] = medium
 mpl.rcParams['ytick.labelsize'] = medium
 mpl.rcParams['legend.fontsize'] = medium
 mpl.rcParams['figure.titlesize'] = big
-mpl.rcParams['lines.linewidth'] = 3
+mpl.rcParams['lines.linewidth'] = 2
    
 
 ###############################################################################
