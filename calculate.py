@@ -46,7 +46,7 @@ class Convresult:
         self.expect[i].append(val)
 
 
-def calculate(H, psi0, e_ops, H_args, options, Nc, Np, Np_per_batch, home,
+def calculate(H, psi0, e_ops, c_ops, H_args, options, Nc, Np, Np_per_batch, home,
               parallel=False, verbose=True, **kwargs):
     """
     Integrate through time evolution using qutip's Lindblad master equation solver.
@@ -58,8 +58,10 @@ def calculate(H, psi0, e_ops, H_args, options, Nc, Np, Np_per_batch, home,
         [qutip.Qobj, callback function].
     psi0 : qutip.Qobj class object
         Initial state
-    e_ops : list of qutip.Qubj class objects
+    e_ops : list of qutip.Qobj class objects
         Operators for which to evaluate the expectation value
+    c_ops : list of qutip.Qobj class objects
+        Collapse operators
     H_args : dict
         Parameters for time-dependent Hamiltonians and collapse operators
     options : qutip.Options class object
@@ -97,7 +99,7 @@ def calculate(H, psi0, e_ops, H_args, options, Nc, Np, Np_per_batch, home,
         batches = create_batches(t0, t3, Np, Np_per_batch)
         
         for num, tlist in enumerate(batches):
-            result = mesolve(H, psi0, tlist, c_ops=[], e_ops=e_ops, args=H_args, options=options)
+            result = mesolve(H, psi0, tlist, c_ops=c_ops, e_ops=e_ops, args=H_args, options=options)
             
             if N_devices == 2:
                 e0, g1, e1, g0 = combined_probs(result.states, Nc)
@@ -145,7 +147,7 @@ def calculate(H, psi0, e_ops, H_args, options, Nc, Np, Np_per_batch, home,
         tlist = np.linspace(t0, 2*tg, 2001)
         H_args['t2'] = 2*tg
         H_args['t3'] = 2*tg
-        result = mesolve(H, psi0, tlist, c_ops=[], e_ops=e_ops, args=H_args, options=options)
+        result = mesolve(H, psi0, tlist, c_ops=c_ops, e_ops=e_ops, args=H_args, options=options)
         e0, g1, e1, g0 = combined_probs(result.states, Nc)
         
         convresult.append_state(result.states[-1])
@@ -170,7 +172,7 @@ def calculate(H, psi0, e_ops, H_args, options, Nc, Np, Np_per_batch, home,
             tlist = np.arange(tstart, t+(dt/refinement), dt/refinement)
             H_args['t2'] = copy(tlist[-1])
             H_args['t3'] = copy(tlist[-1])
-            result = mesolve(H, psi0, tlist, c_ops=[], e_ops=e_ops, args=H_args, options=options)
+            result = mesolve(H, psi0, tlist, c_ops=c_ops, e_ops=e_ops, args=H_args, options=options)
             e0, g1, e1, g0 = combined_probs(result.states, Nc)
             
             convresult.append_state(result.states[-1])

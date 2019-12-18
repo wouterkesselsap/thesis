@@ -407,7 +407,7 @@ def sb_expect(times, expect, sb, Nt, H_args, coupling, xlim=None, ylim=None, fig
         elif Nt == 2:
             Omegaq = kwargs['Omegaq']
             Omegac = kwargs['Omegac']
-            ax2.set_ylabel('$\epsilon/2$ $/2/\pi$ [GHz]')
+            ax2.set_ylabel('$\epsilon_{d_{q}}/2$ $/2/\pi$ [GHz]')
             ax2.plot(times, Omegac/2/(2*pi)*coupling, color=plotcolours['driveq'],
                      alpha=alpha, label="Cavity-friendly drive")
             ax2.plot(times, Omegaq/2/(2*pi)*coupling, color=plotcolours['drivec'],
@@ -445,6 +445,144 @@ def sb_expect(times, expect, sb, Nt, H_args, coupling, xlim=None, ylim=None, fig
     plt.show()
     
     return figqc, axqc
+
+
+def sb_expect_temporary(times, expect, sb, Nt, H_args, coupling, xlim=None, ylim=None, figsize=[15,3], incl_wsb=True, **kwargs):
+    """
+    Plots qubit's and cavity's expected occupation number from simulation
+    for sideband transitions.
+    
+    Input
+    -----
+    times : array-like
+        Time values of the simulation
+    expect : list of array-likes
+        Expectation values, assumes [qubit, cavity]
+    sb : str
+        Type of sideband transitions, either 'red' or 'blue'
+    Nt : int
+        Number of drive tones
+    H_args : dict
+        Parameters for time-dependent Hamiltonians and collapse operators
+    coupling : array-like
+        Normalized coupling strength of the drive tone(s) over time
+    xlim : list, tuple
+        Range of horizontal axis
+    ylim : list, tuple
+        Range of vertical axis
+    figsize : list, tuple
+        Size of figure
+    incl_wsb : bool
+        Print sideband transition frequency in figure title
+    
+    Returns
+    -------
+    figqc : matplotlib.figure.Figure class object
+        Figure
+    """
+    
+    fig, ax1 = plt.subplots(figsize=figsize)
+    ax1.plot(times, expect[0], color=plotcolours['qubit'],   alpha=alpha, label='Qubit')
+    ax1.plot(times, expect[1], color=plotcolours['cavity1'], alpha=alpha, label='Cavity')
+    ax1.axhline(0, ls=':', c=plotcolours['hline'], lw=1)
+    ax1.axhline(1/2, ls=':', c=plotcolours['hline'], lw=1)
+    highest_line = 0.5
+    if max(max(expect[0]), max(expect[1])) > 0.5:
+        ax1.axhline(1, ls=':', c=plotcolours['hline'], lw=1)
+        highest_line = 1
+    if max(max(expect[0]), max(expect[1])) > 1:
+        ax1.axhline(1.5, ls=':', c=plotcolours['hline'], lw=1)
+        highest_line = 1.5
+    if max(max(expect[0]), max(expect[1])) > 1.5:
+        ax1.axhline(2, ls=':', c=plotcolours['hline'], lw=1)
+        highest_line = 2
+    if max(max(expect[0]), max(expect[1])) > 2:
+        ax1.axhline(2.5, ls=':', c=plotcolours['hline'], lw=1)
+        highest_line = 2.5
+    if max(max(expect[0]), max(expect[1])) > 2.5:
+        ax1.axhline(3, ls=':', c=plotcolours['hline'], lw=1)
+        highest_line = 3
+    if max(max(expect[0]), max(expect[1])) > 3:
+        ax1.axhline(3.5, ls=':', c=plotcolours['hline'], lw=1)
+        highest_line = 3.5
+    if max(max(expect[0]), max(expect[1])) > 3.5:
+        ax1.axhline(4, ls=':', c=plotcolours['hline'], lw=1)
+        highest_line = 4
+    if max(max(expect[0]), max(expect[1])) > 4:
+        ax1.axhline(4.5, ls=':', c=plotcolours['hline'], lw=1)
+        highest_line = 4.5
+    if max(max(expect[0]), max(expect[1])) > 4.5:
+        ax1.axhline(5, ls=':', c=plotcolours['hline'], lw=1)
+        highest_line = 5
+    if max(max(expect[0]), max(expect[1])) > 5:
+        ax1.axhline(5.5, ls=':', c=plotcolours['hline'], lw=1)
+        highest_line = 5.5
+    ax1.set_xlabel("$t$ [ns]")
+    ax1.set_ylabel("$n$")
+    ax1.tick_params(axis='y')
+    ax1.legend(loc='center left')
+
+    if xlim == None:
+        ax1.set_xlim([min(times), max(times)])
+    else:
+        ax1.set_xlim(xlim)
+    
+    if ylim == None:
+        ax1.set_ylim([0, highest_line])
+    else:
+        ax1.set_ylim(ylim)
+    
+    if ('convergent' in H_args.keys() and not H_args['convergent']):
+        ax2 = ax1.twinx()
+        if Nt == 1:
+            Omega = kwargs['Omega']
+#            ax2.set_ylabel('$\epsilon_d/2$ $/2\pi$ [GHz]')
+            ax2.plot(times, Omega/2/(2*pi)*coupling, color=plotcolours['drive'], 
+                     alpha=alpha, label="Drive, coupling")
+            ax2.set_ylim([0, 1.1*max(Omega/2/(2*pi)*coupling)])
+        elif Nt == 2:
+            Omegaq = kwargs['Omegaq']
+            Omegac = kwargs['Omegac']
+#            ax2.set_ylabel('$\epsilon_{d_{q}}/2$ $/2/\pi$ [GHz]')
+            ax2.plot(times, Omegac/2/(2*pi)*coupling, color=plotcolours['driveq'],
+                     alpha=alpha, label="Cavity-friendly drive")
+            ax2.plot(times, Omegaq/2/(2*pi)*coupling, color=plotcolours['drivec'],
+                     alpha=alpha, label="Qubit-friendly drive")
+            ax2.set_ylim([0, 1.1*max(Omegac/2/(2*pi)*coupling)])
+        ax2.tick_params(axis='y')
+        ax2.set_yticks([])
+        ax2.legend(loc='center right')
+
+    figqc = plt.gcf()
+    axqc  = plt.gca()
+    
+    if "title" in kwargs:
+        plt.title(kwargs['title'])
+    else:
+        wsb = kwargs['wsb']
+        if sb == 'red':
+            if Nt == 1:
+                wd = kwargs['wd']
+                plt.title("Single-tone red sideband transitions " +
+                          "at $\\omega_d/2\\pi$ = {} GHz ($\\Omega_{{sb}}/2\\pi$ = {} MHz)".format(
+                          round(wd/2/pi, 3), round(1000*wsb/2/pi, 1)))
+            elif Nt == 2:
+                plt.title("Double-tone red sideband transitions ($\\Omega_{{sb}}/2\\pi$ = {} MHz)".format(
+                          round(1000*wsb/2/pi, 1)))
+        elif sb == 'blue':
+            if Nt == 1:
+                wd = kwargs['wd']
+                plt.title("Single-tone blue sideband transitions " +
+                          "at $\\omega_d/2\\pi$ = {} GHz ($\\Omega_{{sb}}/2\\pi$ = {} MHz)".format(
+                          round(wd/2/pi, 3), round(1000*wsb/2/pi, 1)))
+            elif Nt == 2:
+                plt.title("Double-tone blue sideband transitions ($\\Omega_{{sb}}/2\\pi$ = {} MHz)".format(
+                          round(1000*wsb/2/pi, 1)))
+    plt.tight_layout()
+    plt.show()
+    
+    return figqc, axqc
+
 
 
 def sb_combined_probs(times, sb, Nt, H_args, coupling, xlim=None, ylim=None, figsize=[15,3], **kwargs):
@@ -524,6 +662,118 @@ def sb_combined_probs(times, sb, Nt, H_args, coupling, xlim=None, ylim=None, fig
                      alpha=alpha, label="Qubit-friendly drive")
             ax2.set_ylim([0, 1.1*max(Omegac/2/(2*pi)*coupling)])
         ax2.tick_params(axis='y')
+        ax2.legend(loc='center right')
+
+    fig = plt.gcf()
+    axp = plt.gca()
+    
+    if "title" in kwargs:
+        plt.title(kwargs['title'])
+    else:
+        wsb = kwargs['wsb']
+        if sb == 'red':
+            if Nt == 1:
+                wd = kwargs['wd']
+                plt.title("Single-tone red sideband transitions " +
+                          "at $\\omega_d/2\\pi$ = {} GHz ($\\Omega_{{sb}}/2\\pi$ = {} MHz)".format(
+                          round(wd/2/pi, 3), round(1000*wsb/2/pi, 1)))
+            elif Nt == 2:
+                plt.title("Double-tone red sideband transitions ($\\Omega_{{sb}}/2\\pi$ = {} MHz)".format(
+                          round(1000*wsb/2/pi, 1)))
+        elif sb == 'blue':
+            if Nt == 1:
+                wd = kwargs['wd']
+                plt.title("Single-tone blue sideband transitions " +
+                          "at $\\omega_d/2\\pi$ = {} GHz ($\\Omega_{{sb}}/2\\pi$ = {} MHz)".format(
+                          round(wd/2/pi, 3), round(1000*wsb/2/pi, 1)))
+            elif Nt == 2:
+                plt.title("Double-tone blue sideband transitions ($\\Omega_{{sb}}/2\\pi$ = {} MHz)".format(
+                          round(1000*wsb/2/pi, 1)))
+    plt.tight_layout()
+    plt.show()
+    
+    return fig, axp
+
+
+
+def sb_combined_probs_temporary(times, sb, Nt, H_args, coupling, xlim=None, ylim=None, figsize=[15,3], **kwargs):
+    """
+    Plots |e0>-|g1> in case of red sideband transitions (specified by sb input),
+    or |e1>-|g0> in case of blue sideband transitions.
+    
+    Input
+    -----
+    times : array-like
+        Time values of the simulation
+    sb : str
+        Type of sideband transitions, either 'red' or 'blue'
+    Nt : int
+        Number of drive tones
+    H_args : dict
+        Parameters for time-dependent Hamiltonians and collapse operators
+    coupling : array-like
+        Normalized coupling strength of the drive tone(s) over time
+    xlim : list, tuple
+        Range of horizontal axis
+    ylim : list, tuple
+        Range of vertical axis
+    figsize : list, tuple
+        Size of figure
+    
+    Returns
+    -------
+    fig : matplotlib.figure.Figure class object
+        Figure
+    """
+    
+    fig, ax1 = plt.subplots(figsize=figsize)
+    if sb == 'red':
+        e0 = kwargs['e0']
+        g1 = kwargs['g1']
+        ax1.plot(times, e0-g1, color=plotcolours['sbred'], alpha=alpha, label='$P(e0) - P(g1)$')
+    if sb == 'blue':
+        e1 = kwargs['e1']
+        g0 = kwargs['g0']
+        ax1.plot(times, e1-g0, color=plotcolours['sbblue'], alpha=alpha, label='$P(e1) - P(g0)$')
+    ax1.axhline(1, ls=':', c=plotcolours['hline'], lw=1)
+    ax1.axhline(1/2, ls=':', c=plotcolours['hline'], lw=1)
+    ax1.axhline(0, ls=':', c=plotcolours['hline'], lw=1)
+    ax1.axhline(-1/2, ls=':', c=plotcolours['hline'], lw=1)
+    ax1.axhline(-1, ls=':', c=plotcolours['hline'], lw=1)
+    ax1.set_xlabel("$t$ [ns]")
+    ax1.set_ylabel("$P$")
+    ax1.tick_params(axis='y')
+    ax1.legend(loc='center left')
+    
+    if xlim == None:
+        ax1.set_xlim([min(times), max(times)])
+    else:
+        ax1.set_xlim(xlim)
+    
+    if ylim == None:
+        ax1.set_ylim([-1, 1])
+    else:
+        ax1.set_ylim(ylim)
+    
+    if ('convergent' in H_args.keys() and not H_args['convergent']):
+        ax2 = ax1.twinx()
+        if Nt == 1:
+            Omega = kwargs['Omega']
+#            ax2.set_ylabel('$\epsilon_d/2$ $/2\pi$ [GHz]')
+            ax2.plot(times, Omega/2/(2*pi)*coupling, color=plotcolours['drive'],
+                     alpha=alpha, label="Drive, coupling")
+            ax2.set_ylim([0, 1.1*max(Omega/2/(2*pi)*coupling)])
+        elif Nt == 2:
+            Omegaq = kwargs['Omegaq']
+            Omegac = kwargs['Omegac']
+#            ax2.set_ylabel('$\epsilon/2$ $/2/\pi$ [GHz]')
+            ax2.plot(times, Omegac/2/(2*pi)*coupling, color=plotcolours['driveq'],
+                     alpha=alpha, label="Cavity-friendly drive")
+            ax2.plot(times, Omegaq/2/(2*pi)*coupling, color=plotcolours['drivec'],
+                     alpha=alpha, label="Qubit-friendly drive")
+            ax2.set_ylim([0, 1.1*max(Omegac/2/(2*pi)*coupling)])
+        ax2.tick_params(axis='y')
+        ax2.set_yticks([])
         ax2.legend(loc='center right')
 
     fig = plt.gcf()
