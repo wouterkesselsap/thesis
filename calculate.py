@@ -595,7 +595,7 @@ def remove_micromotion(x, times, method='savgol', window_length=1001, order=2, *
         print("WARNING: lowpass filter does not yet give appropriate results")
         
     return xnew, times
-    
+
 
 
 def cluster(x, t, out='extremum'):

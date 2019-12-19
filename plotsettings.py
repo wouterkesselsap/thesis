@@ -28,7 +28,7 @@ mpl.rcParams['axes.titlesize'] = big
 mpl.rcParams['axes.labelsize'] = medium
 mpl.rcParams['xtick.labelsize'] = medium
 mpl.rcParams['ytick.labelsize'] = medium
-mpl.rcParams['legend.fontsize'] = medium
+mpl.rcParams['legend.fontsize'] = small
 mpl.rcParams['figure.titlesize'] = big
 mpl.rcParams['lines.linewidth'] = 2
    
