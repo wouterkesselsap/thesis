@@ -2,7 +2,7 @@ import os
 import shutil
 import numpy as np
 import matplotlib.pyplot as plt
-from datetime import datetime
+from datetime import datetime, timedelta
 from scipy.signal import savgol_filter
 from math import ceil
 from itertools import chain, groupby
@@ -197,7 +197,7 @@ def calculate(H, psi0, e_ops, c_ops, H_args, options, Nc, Np, Np_per_batch, home
     
     end_calc = datetime.now()
     if verbose:
-        print("Evolution completed in {} s".format((end_calc - now).total_seconds()))
+        print("Evolution completed in {} min".format((end_calc - now) // timedelta(minutes=1)))
     
     return folder
 
