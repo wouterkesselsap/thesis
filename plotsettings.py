@@ -30,7 +30,7 @@ mpl.rcParams['xtick.labelsize'] = medium
 mpl.rcParams['ytick.labelsize'] = medium
 mpl.rcParams['legend.fontsize'] = small
 mpl.rcParams['figure.titlesize'] = big
-mpl.rcParams['lines.linewidth'] = 2
+mpl.rcParams['lines.linewidth'] = 1
    
 
 ###############################################################################

@@ -18,8 +18,8 @@ def pump_strength(args):
     # TODO: include qubit decay rate kq
     
     integral = sqrt(2*pi)*std*erf(time(tau)/2)
-    Omega = pi/integral
-    return Omega
+    eps = pi/integral
+    return eps
 
 
 def pump(t, args):
@@ -156,8 +156,8 @@ def drivec(t, args):
     
     envelope = pulse*np.cos(wd*t)
     return envelope
-    
-    
+
+
 def drive_nonosc(t, args):
     "Sideband drive without oscillating terms."
     t1 = args['t1']    # start of pulse

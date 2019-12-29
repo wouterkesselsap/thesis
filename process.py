@@ -80,11 +80,11 @@ def saveparams(Nq, Nc, Nt, wq, shift, wc, Ec, g, sb,
             'e_ops' : e_ops, 'options' : options        
         }
         if Nt == 1:
-            data['Omega'] = kwargs['Omega']
+            data['eps'] = kwargs['eps']
             data['wd'] = kwargs['wd']
         elif Nt == 2:
-            data['Omegaq'] = kwargs['Omegaq']
-            data['Omegac'] = kwargs['Omegac']
+            data['epsq'] = kwargs['epsq']
+            data['epsc'] = kwargs['epsc']
             data['dw'] = kwargs['dw']
             data['wdq'] = kwargs['wdq']
             data['wdc'] = kwargs['wdc']
@@ -121,12 +121,12 @@ def saveparams(Nq, Nc, Nt, wq, shift, wc, Ec, g, sb,
             data.append("convergent method               conv   : {}\n".format(convergent))
                 
         if Nt == 1:
-            data.append("sideband drive amplitude        Omega  : {} = {} GHz\n".format(kwargs['Omega'], kwargs['Omega']/2/pi))
+            data.append("sideband drive amplitude        eps    : {} = {} GHz\n".format(kwargs['eps'], kwargs['eps']/2/pi))
             data.append("sideband drive frequency        wd     : {} = {} GHz\n".format(kwargs['wd'], kwargs['wd']/2/pi))
         elif Nt == 2:
-            data.append("amplitude of qubit-friendly sideband drive tone   Omegaq : {} = {} GHz\n".format(kwargs['Omegaq'], kwargs['Omegaq']/2/pi))
+            data.append("amplitude of qubit-friendly sideband drive tone   epsq   : {} = {} GHz\n".format(kwargs['epsq'], kwargs['epsq']/2/pi))
             data.append("frequency of qubit-friendly sideband drive tone   wdq    : {} = {} GHz\n".format(kwargs['wdq'], kwargs['wdq']/2/pi))
-            data.append("amplitude of cavity-friendly sideband drive tone  Omegac : {} = {} GHz\n".format(kwargs['Omegac'], kwargs['Omegac']/2/pi))
+            data.append("amplitude of cavity-friendly sideband drive tone  epsc   : {} = {} GHz\n".format(kwargs['epsc'], kwargs['epsc']/2/pi))
             data.append("frequency of cavity-friendly sideband drive tone  wdc    : {} = {} GHz\n".format(kwargs['wdc'], kwargs['wdc']/2/pi))
             data.append("detuning delta from wc                            dw     : {} = {} GHz\n".format(kwargs['dw'], kwargs['dw']/2/pi))
         
@@ -188,25 +188,34 @@ def getparams(folder):
     options = data['options']
     
     if Nt == 1:
-        Omega = data['Omega']
+        if 'eps' in data.keys():
+            eps = data['eps']
+        elif 'Omega' in data.keys():
+            eps = data['Omega']
         wd = data['wd']
-        Omegaq = None
-        Omegac = None
+        epsq = None
+        epsc = None
         dw = None
         wdq = None
         wdc = None
     elif Nt == 2:
-        Omega = None
+        eps = None
         wd = None
-        Omegaq = data['Omegaq']
-        Omegac = data['Omegac']
+        if 'epsq' in data.keys():
+            epsq = data['epsq']
+        elif 'Omegaq' in data.keys():
+            epsq = data['Omegaq']
+        if 'epsc' in data.keys():
+            epsc = data['epsc']
+        elif 'Omegac' in data.keys():
+            epsc = data['Omegac']
         dw = data['dw']
         wdq = data['wdq']
         wdc = data['wdc']
     
     infile.close()
             
-    return Nq, Nc, Nt, wq, shift, wc, Ec, g, sb, t0, t1, t2, t3, tg, anh_appr, gauss, smooth, Q, convergent, Np, H, psi0, e_ops, options, Omega, wd, Omegaq, Omegac, dw, wdq, wdc
+    return Nq, Nc, Nt, wq, shift, wc, Ec, g, sb, t0, t1, t2, t3, tg, anh_appr, gauss, smooth, Q, convergent, Np, H, psi0, e_ops, options, eps, wd, epsq, epsc, dw, wdq, wdc
 
 
 def create_batches(t0, tf, Np, Nppb):
