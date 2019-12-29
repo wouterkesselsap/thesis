@@ -269,6 +269,10 @@ def drivefreq(Nq, wq, wc, H, sb, Nt, **kwargs):
         'epsc' : float
             Amplitude of cavity-friendly drive tone when driving bichromatically
             [Grad/s]
+        'method' : str
+            Analytical formula to calculate shift of qubit levels due to dispersive
+            driving, either 'SBS' (ac-Stark + Bloch-Siegert shift) or 'SW' (Schrieffer-
+            Wolff transformation)
         'verbose' : bool
             Print estimated drive frequency or frequencies
     
@@ -283,6 +287,21 @@ def drivefreq(Nq, wq, wc, H, sb, Nt, **kwargs):
     wdc : float
         Cavity friendly drive tone frequency when driving bichromatically [Grad/s]
     """
+    
+    # Handle method argument
+    if 'method' in kwargs and kwargs['method'] == 'sbs':
+        kwargs['method'] = 'SBS'
+    elif 'method' in kwargs and kwargs['method'] == 'sw':
+        kwargs['method'] = 'SW'
+    elif 'method' not in kwargs:
+        kwargs['method'] = 'SBS'  # default
+    
+    if kwargs['method'] not in ('SBS', 'SW'):
+        raise ValueError("Unknown method")
+    
+    if kwargs['method'] == 'SW' and Nt == 2:
+        raise ValueError("Schrieffer-Wolff transformation not available for bichromatic driving")
+    
     
     # Determine drive frequency range to scan
     # Monochromatic drive
