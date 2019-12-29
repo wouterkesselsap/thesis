@@ -271,8 +271,13 @@ def drivefreq(Nq, wq, wc, H, sb, Nt, **kwargs):
             [Grad/s]
         'method' : str
             Analytical formula to calculate shift of qubit levels due to dispersive
-            driving, either 'SBS' (ac-Stark + Bloch-Siegert shift) or 'SW' (Schrieffer-
-            Wolff transformation)
+            driving, either 'SBS'/'sbs' (ac-Stark + Bloch-Siegert shift) or 'SW'/'sw'
+            (Schrieffer-Wolff transformation)
+        'anharm' : str
+            Linearity of transmon's anharmonicity. Linear anharmoncity corresponds
+            to performing RWA on anharmonicty term (b + b.dag)**4 (removes all off-
+            diagonal elements). Nonlinear leaves this fourth-power term untouched.
+            Either 'lin'/'linear' or 'nonlin'/'nonlinear'.
         'verbose' : bool
             Print estimated drive frequency or frequencies
     
@@ -301,6 +306,19 @@ def drivefreq(Nq, wq, wc, H, sb, Nt, **kwargs):
     
     if kwargs['method'] == 'SW' and Nt == 2:
         raise ValueError("Schrieffer-Wolff transformation not available for bichromatic driving")
+    if kwargs['method'] == 'SW' and Nq <= 2:
+        raise ValueError("Schrieffer-Wolff transformation not available for two-level system")
+    
+    # Handle anharmonicity argument
+    if 'anharm' in kwargs and kwargs['anharm'] == 'linear':
+        kwargs['anharm'] = 'lin'
+    elif 'anharm' in kwargs and kwargs['anharm'] == 'nonlinear':
+        kwargs['anharm'] = 'nonlin'
+    elif 'anharm' not in kwargs:
+        kwargs['anharm'] = 'lin'  # default
+    
+    if kwargs['anharm'] not in ('lin', 'nonlin'):
+        raise ValueError("Invalid anharm argument")
     
     
     # Determine drive frequency range to scan
@@ -392,7 +410,23 @@ def drivefreq(Nq, wq, wc, H, sb, Nt, **kwargs):
         # Transmon
         elif Nq > 2:
             Ec = kwargs['Ec']
-            drive_shifts = eps**2/2*(1/(wq-wd_range) + 1/(wq+wd_range) - 1/(wq-Ec-wd_range) - 1/(wq-Ec+wd_range))
+            
+            # Direct AC-Stark shift + Bloch-Siegert shift
+            if kwargs['method'] == 'SBS':
+                drive_shifts = eps**2/2*(1/(wq-wd_range) + 1/(wq+wd_range) - 1/(wq-Ec-wd_range) - 1/(wq-Ec+wd_range))
+            
+            # Frequency modulation after Schrieffer-Wolff transformation
+            elif kwargs['method'] == 'SW':
+                Delta_range = wd_range - wq
+                Sigma_range = wd_range + wq
+                
+                # Linear anharmonicity
+                if kwargs['anharm'] == 'lin':
+                    drive_shifts = -eps**2*Ec/2*(1/Delta_range**2 + 1/Sigma_range**2)
+                
+                # Nonlinear anharmonicity
+                if kwargs['anharm'] == 'nonlin':
+                    drive_shifts = -eps**2*Ec/2*(1/Delta_range**2 + 1/Sigma_range**2 - 2/Delta_range/Sigma_range)
 
     # Bichromatic drive
     elif Nt == 2:
