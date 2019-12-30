@@ -271,8 +271,8 @@ def drivefreq(Nq, wq, wc, H, sb, Nt, **kwargs):
             [Grad/s]
         'method' : str
             Analytical formula to calculate shift of qubit levels due to dispersive
-            driving, either 'SBS'/'sbs' (ac-Stark + Bloch-Siegert shift) or 'SW'/'sw'
-            (Schrieffer-Wolff transformation)
+            driving, either 'SBS'/'sbs' (ac-Stark + Bloch-Siegert shift) or 'displ'
+            (in displaced fram of monochromatic drive)
         'anharm' : str
             Linearity of transmon's anharmonicity. Linear anharmoncity corresponds
             to performing RWA on anharmonicty term (b + b.dag)**4 (removes all off-
@@ -296,18 +296,16 @@ def drivefreq(Nq, wq, wc, H, sb, Nt, **kwargs):
     # Handle method argument
     if 'method' in kwargs and kwargs['method'] == 'sbs':
         kwargs['method'] = 'SBS'
-    elif 'method' in kwargs and kwargs['method'] == 'sw':
-        kwargs['method'] = 'SW'
     elif 'method' not in kwargs:
         kwargs['method'] = 'SBS'  # default
     
-    if kwargs['method'] not in ('SBS', 'SW'):
+    if kwargs['method'] not in ('SBS', 'displ'):
         raise ValueError("Unknown method")
     
-    if kwargs['method'] == 'SW' and Nt == 2:
-        raise ValueError("Schrieffer-Wolff transformation not available for bichromatic driving")
-    if kwargs['method'] == 'SW' and Nq <= 2:
-        raise ValueError("Schrieffer-Wolff transformation not available for two-level system")
+    if kwargs['method'] == 'displ' and Nt == 2:
+        raise ValueError("Displaced drive frame not available for bichromatic driving")
+    if kwargs['method'] == 'displ' and Nq <= 2:
+        raise ValueError("Displaced drive frame not available for two-level system")
     
     # Handle anharmonicity argument
     if 'anharm' in kwargs and kwargs['anharm'] == 'linear':
@@ -415,8 +413,8 @@ def drivefreq(Nq, wq, wc, H, sb, Nt, **kwargs):
             if kwargs['method'] == 'SBS':
                 drive_shifts = eps**2/2*(1/(wq-wd_range) + 1/(wq+wd_range) - 1/(wq-Ec-wd_range) - 1/(wq-Ec+wd_range))
             
-            # Frequency modulation after Schrieffer-Wolff transformation
-            elif kwargs['method'] == 'SW':
+            # Frequency modulation in displaced drive frame
+            elif kwargs['method'] == 'displ':
                 Delta_range = wd_range - wq
                 Sigma_range = wd_range + wq
                 
