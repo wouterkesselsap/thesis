@@ -4,7 +4,7 @@ import matplotlib as mpl
 ###############################################################################
 
 
-small = 12
+small = 10
 medium = 14
 big = 16
 
@@ -21,16 +21,20 @@ sbred     = '#c86464'  # P(e0)-P(g1), red sideband transitions
 sbblue    = '#6196b3'  # P(e1)-P(g0), blue sideband transitions
 hline     = 'gray'     # horizontal domain lines
 
+# (line, marker) styles
+larger  = ('-', 'x')
+smaller = ('-.', '+')
+
 alpha = 1  # opacity of lines
 
 mpl.rcParams['font.size'] = medium
-mpl.rcParams['axes.titlesize'] = big
+mpl.rcParams['axes.titlesize'] = medium
 mpl.rcParams['axes.labelsize'] = medium
 mpl.rcParams['xtick.labelsize'] = medium
 mpl.rcParams['ytick.labelsize'] = medium
 mpl.rcParams['legend.fontsize'] = small
 mpl.rcParams['figure.titlesize'] = big
-mpl.rcParams['lines.linewidth'] = 1
+mpl.rcParams['lines.linewidth'] = 1.5
    
 
 ###############################################################################
@@ -50,4 +54,14 @@ plotcolours = {
     'sbred' : sbred,
     'sbblue' : sbblue,
     'hline' : hline
+}
+
+linestyles = {
+    'larger' : larger[0],
+    'smaller' : smaller[0]
+}
+
+markerstyles = {
+    'larger' : larger[1],
+    'smaller' : smaller[1]
 }
