@@ -46,6 +46,34 @@ class Convresult:
         self.expect[i].append(val)
 
 
+class Floquetresult():
+    def __init__(self):
+        self.times = list()
+        self.states = list()
+        self.expect = [list(), list()]
+    
+    def set_times(self, times):
+        self.times = times
+    
+    def append_time(self, t):
+        self.times.append(t)
+    
+    def extend_time(self, t):
+        self.times.extend(t)
+    
+    def append_state(self, state):
+        self.states.append(state)
+    
+    def extend_state(self, state):
+        self.states.extend(state)
+    
+    def append_expect(self, i, val):
+        self.expect[i].append(val)
+    
+    def extend_expect(self, i, val):
+        self.expect[i].append(val)
+
+
 def calculate(H, psi0, e_ops, c_ops, H_args, options, Nc, Np, Np_per_batch, home,
               parallel=False, verbose=True, **kwargs):
     """
@@ -94,8 +122,8 @@ def calculate(H, psi0, e_ops, c_ops, H_args, options, Nc, Np, Np_per_batch, home
     
     ID, folder, now = prepare_folder(home, parallel)
     
-    # Regular evolution
-    if not H_args['convergent']:
+    # Regular evolution with master equation solver
+    if not H_args['convergent'] and kwargs['method'] == 'me':
         batches = create_batches(t0, t3, Np, Np_per_batch)
         
         for num, tlist in enumerate(batches):
@@ -119,6 +147,94 @@ def calculate(H, psi0, e_ops, c_ops, H_args, options, Nc, Np, Np_per_batch, home
             del result, coupling
             if N_devices == 2:
                 del e0, g1, e1, g0
+    
+    # Regular evolution with Floquet decomposition
+    if not H_args['convergent'] and kwargs['method'] == 'floquet':
+        t1 = H_args['t1']
+        t2 = H_args['t2']
+        tg = H_args['tg']
+        
+        # Rise
+        tlist_rise = np.linspace(t0, t1+tg, np.ceil((t1+tg)/t3 *Np)+1)
+        rise = mesolve(H, psi0, tlist_rise, c_ops=c_ops, e_ops=e_ops, args=H_args, options=options)
+        
+        if N_devices == 2:
+            e0, g1, e1, g0 = combined_probs(rise.states, Nc)
+        
+        coupling = drive_nonosc(tlist_rise, H_args)  # unitless, peaks at 1
+        
+        psi0 = rise.states[-1]
+        
+        if N_devices == 1:
+                saveprog(rise, None, None, None, None, coupling, 0, folder)
+        elif N_devices == 2:
+            saveprog(rise, e0, g1, e1, g0, coupling, 0, folder)
+        
+        del rise, coupling
+        if N_devices == 2:
+            del e0, g1, e1, g0
+        
+        # Bulk
+        batches = create_batches(t1+tg, t2-tg, np.ceil((t2-t1-2*tg)/t3 *Np)+1, Np_per_batch)
+        
+        for num, tlist in enumerate(batches):
+            bulk = Floquetresult()
+            H0 = kwargs['H0']
+            Hd = kwargs['Hd']
+            H = [H0, [Hd, lambda t, H_args : np.cos(H_args['wd']*t)]]
+            T = (2*pi)/H_args['wd']
+            
+            print("modes")
+            f_modes_0, f_energies = floquet_modes(H, T, H_args)
+            print("coefficients")
+            f_coeff = floquet_state_decomposition(f_modes_0, f_energies, psi0)
+            for i, t in enumerate(tlist):
+                print("i")
+                psi_t = floquet_wavefunction_t(f_modes_0, f_energies, f_coeff, t, H, T, H_args)
+                bulk.append_time(t)
+                bulk.append_state(psi_t)
+                for e in range(len(e_ops)):
+                    bulk.append_expect(e, expect(e_ops[e], psi_t))
+            
+            if N_devices == 2:
+                e0, g1, e1, g0 = combined_probs(bulk.states, Nc)
+           
+            coupling = drive_nonosc(tlist, H_args)  # unitless, peaks at 1
+            
+            if verbose:
+                update_progress((num+1)/len(batches))
+            
+            if N_devices == 1:
+                saveprog(bulk, None, None, None, None, coupling, num+1, folder)
+            elif N_devices == 2:
+                saveprog(bulk, e0, g1, e1, g0, coupling, num+1, folder)
+            
+            psi0 = copy(bulk.states[-1])
+            
+            del bulk, coupling
+            if N_devices == 2:
+                del e0, g1, e1, g0
+        
+        if N_devices == 2:
+            e0, g1, e1, g0 = combined_probs(bulk.states, Nc)
+        
+        # Fall
+        tlist_fall = np.linspace(t2-tg, t3, np.ceil((t3-t2+tg)/t3 *Np)+1)
+        fall = mesolve(H, psi0, tlist_fall, c_ops=c_ops, e_ops=e_ops, args=H_args, options=options)
+        
+        if N_devices == 2:
+            e0, g1, e1, g0 = combined_probs(fall.states, Nc)
+        
+        coupling_rise = drive_nonosc(tlist_fall, H_args)  # unitless, peaks at 1
+        
+        if N_devices == 1:
+                saveprog(fall, None, None, None, None, coupling, num+1, folder)
+        elif N_devices == 2:
+            saveprog(fall, e0, g1, e1, g0, coupling, num+1, folder)
+        
+        del fall, coupling
+        if N_devices == 2:
+            del e0, g1, e1, g0
     
     
     # Evolution using convergent method
@@ -545,8 +661,8 @@ def drivefreq(Nq, wq, wc, H, sb, Nt, **kwargs):
             [Grad/s]
         'method' : str
             Analytical formula to calculate shift of qubit levels due to dispersive
-            driving, either 'SBS'/'sbs' (ac-Stark + Bloch-Siegert shift) or 'displ'
-            (in displaced fram of monochromatic drive)
+            driving, either 'SBS'/'sbs' (ac-Stark + Bloch-Siegert shift) or 'SW'
+            (in displaced frame of drive after Schriffer-Wolff transformation)
         'anharm' : str
             Linearity of transmon's anharmonicity. Linear anharmoncity corresponds
             to performing RWA on anharmonicty term (b + b.dag)**4 (removes all off-
@@ -570,16 +686,18 @@ def drivefreq(Nq, wq, wc, H, sb, Nt, **kwargs):
     # Handle method argument
     if 'method' in kwargs and kwargs['method'] == 'sbs':
         kwargs['method'] = 'SBS'
+    if 'method' in kwargs and kwargs['method'] == 'sw':
+        kwargs['method'] = 'SW'
     elif 'method' not in kwargs:
         kwargs['method'] = 'SBS'  # default
     
-    if kwargs['method'] not in ('SBS', 'displ'):
+    if kwargs['method'] not in ('SBS', 'SW'):
         raise ValueError("Unknown method")
     
-    if kwargs['method'] == 'displ' and Nt == 2:
-        raise ValueError("Displaced drive frame not available for bichromatic driving")
-    if kwargs['method'] == 'displ' and Nq <= 2:
-        raise ValueError("Displaced drive frame not available for two-level system")
+    if kwargs['method'] == 'SW' and Nt == 2:
+        raise ValueError("Schrieffer-Wolff transformation not available for bichromatic driving")
+    if kwargs['method'] == 'SW' and Nq <= 2:
+        raise ValueError("Schrieffer-Wolff transformation not available for two-level system")
     
     # Handle anharmonicity argument
     if 'anharm' in kwargs and kwargs['anharm'] == 'linear':
@@ -670,7 +788,7 @@ def drivefreq(Nq, wq, wc, H, sb, Nt, **kwargs):
                 drive_shifts = eps**2/2*(1/(wq-wd_range) + 1/(wq+wd_range) - 1/(wq-Ec-wd_range) - 1/(wq-Ec+wd_range))
             
             # Frequency modulation in displaced drive frame
-            elif kwargs['method'] == 'displ':
+            elif kwargs['method'] == 'SW':
                 pass  # shift by driving is calculated from diagonalization of the Hamiltonian
 
     # Bichromatic drive
@@ -702,7 +820,7 @@ def drivefreq(Nq, wq, wc, H, sb, Nt, **kwargs):
     dev_blue = list()
     
     # Transmon, monochromatic driving, frequency modulation after Schrieffer-Wolff transformation
-    if Nq > 2 and Nt == 1 and kwargs['method'] == 'displ':
+    if Nq > 2 and Nt == 1 and kwargs['method'] == 'SW':
         for wd in wd_range:
             Delta = wd - wq
             Sigma = wd + wq
