@@ -22,8 +22,11 @@ sbblue    = '#6196b3'  # P(e1)-P(g0), blue sideband transitions
 hline     = 'gray'     # horizontal domain lines
 
 # (line, marker) styles
-larger  = ('-', 'x')
-smaller = ('-.', '+')
+larger       = ('-', 'x')
+smaller      = ('-.', '+')
+analytical   = ('-', 'x')
+simulated    = ('--', '+')
+experimental = ('-.', '.')
 
 alpha = 1  # opacity of lines
 
@@ -34,7 +37,7 @@ mpl.rcParams['xtick.labelsize'] = medium
 mpl.rcParams['ytick.labelsize'] = medium
 mpl.rcParams['legend.fontsize'] = small
 mpl.rcParams['figure.titlesize'] = big
-mpl.rcParams['lines.linewidth'] = 1.5
+mpl.rcParams['lines.linewidth'] = 1
    
 
 ###############################################################################
@@ -58,10 +61,16 @@ plotcolours = {
 
 linestyles = {
     'larger' : larger[0],
-    'smaller' : smaller[0]
+    'smaller' : smaller[0],
+    'analytical' : analytical[0],
+    'simulated' : simulated[0],
+    'experimental' : experimental[0]
 }
 
 markerstyles = {
     'larger' : larger[1],
-    'smaller' : smaller[1]
+    'smaller' : smaller[1],
+    'analytical' : analytical[1],
+    'simulated' : simulated[1],
+    'experimental' : experimental[1]
 }
