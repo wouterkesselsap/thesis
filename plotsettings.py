@@ -4,9 +4,7 @@ import matplotlib as mpl
 ###############################################################################
 
 
-small = 10
-medium = 14
-big = 16
+figsize = (10, 5)
 
 # Give colours in hex
 qubit     = '#6d78aa'  # qubit
@@ -20,6 +18,7 @@ drivec    = 'cyan'     # cavity-friendly drive tone strenth
 sbred     = '#c86464'  # P(e0)-P(g1), red sideband transitions
 sbblue    = '#6196b3'  # P(e1)-P(g0), blue sideband transitions
 hline     = 'gray'     # horizontal domain lines
+colormap  = 'gist_heat'   # colormap for color plots
 
 # (line, marker) styles
 larger       = ('-', 'x')
@@ -30,14 +29,14 @@ experimental = ('-.', '.')
 
 alpha = 1  # opacity of lines
 
-mpl.rcParams['font.size'] = medium
-mpl.rcParams['axes.titlesize'] = medium
-mpl.rcParams['axes.labelsize'] = medium
-mpl.rcParams['xtick.labelsize'] = medium
-mpl.rcParams['ytick.labelsize'] = medium
-mpl.rcParams['legend.fontsize'] = small
-mpl.rcParams['figure.titlesize'] = big
-mpl.rcParams['lines.linewidth'] = 1
+mpl.rcParams['font.size'] = 24
+mpl.rcParams['axes.titlesize'] = 26
+mpl.rcParams['axes.labelsize'] = 24
+mpl.rcParams['xtick.labelsize'] = 22
+mpl.rcParams['ytick.labelsize'] = 22
+mpl.rcParams['legend.fontsize'] = 22
+mpl.rcParams['figure.titlesize'] = 26
+mpl.rcParams['lines.linewidth'] = 3
    
 
 ###############################################################################
@@ -56,7 +55,8 @@ plotcolours = {
     'drivec' : drivec,
     'sbred' : sbred,
     'sbblue' : sbblue,
-    'hline' : hline
+    'hline' : hline,
+    'colormap' : colormap
 }
 
 linestyles = {

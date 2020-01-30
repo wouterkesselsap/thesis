@@ -155,7 +155,7 @@ def calculate(H, psi0, e_ops, c_ops, H_args, options, Nc, Np, Np_per_batch, home
         tg = H_args['tg']
         
         # Rise
-        tlist_rise = np.linspace(t0, t1+tg, np.ceil((t1+tg)/t3 *Np)+1)
+        tlist_rise = np.linspace(t0, t1+tg, 2000)
         rise = mesolve(H, psi0, tlist_rise, c_ops=c_ops, e_ops=e_ops, args=H_args, options=options)
         
         if N_devices == 2:
@@ -175,7 +175,7 @@ def calculate(H, psi0, e_ops, c_ops, H_args, options, Nc, Np, Np_per_batch, home
             del e0, g1, e1, g0
         
         # Bulk
-        batches = create_batches(t1+tg, t2-tg, np.ceil((t2-t1-2*tg)/t3 *Np)+1, Np_per_batch)
+        batches = create_batches(t1+tg, t2-tg, np.ceil((t2-t1-2*tg)/t3 *Np)+1, np.ceil((t2-t1-2*tg)/t3 *Np)+1)
         
         for num, tlist in enumerate(batches):
             bulk = Floquetresult()
@@ -189,7 +189,7 @@ def calculate(H, psi0, e_ops, c_ops, H_args, options, Nc, Np, Np_per_batch, home
             print("coefficients")
             f_coeff = floquet_state_decomposition(f_modes_0, f_energies, psi0)
             for i, t in enumerate(tlist):
-                print("i")
+                print(i)
                 psi_t = floquet_wavefunction_t(f_modes_0, f_energies, f_coeff, t, H, T, H_args)
                 bulk.append_time(t)
                 bulk.append_state(psi_t)
@@ -215,17 +215,14 @@ def calculate(H, psi0, e_ops, c_ops, H_args, options, Nc, Np, Np_per_batch, home
             if N_devices == 2:
                 del e0, g1, e1, g0
         
-        if N_devices == 2:
-            e0, g1, e1, g0 = combined_probs(bulk.states, Nc)
-        
         # Fall
-        tlist_fall = np.linspace(t2-tg, t3, np.ceil((t3-t2+tg)/t3 *Np)+1)
+        tlist_fall = np.linspace(t2-tg, t3, 2000)
         fall = mesolve(H, psi0, tlist_fall, c_ops=c_ops, e_ops=e_ops, args=H_args, options=options)
         
         if N_devices == 2:
             e0, g1, e1, g0 = combined_probs(fall.states, Nc)
         
-        coupling_rise = drive_nonosc(tlist_fall, H_args)  # unitless, peaks at 1
+        coupling = drive_nonosc(tlist_fall, H_args)  # unitless, peaks at 1
         
         if N_devices == 1:
                 saveprog(fall, None, None, None, None, coupling, num+1, folder)
