@@ -58,7 +58,7 @@ def sbsample(Nq, wq, wc, Ec, g, wd, sb, Nt, H, H_args, psi0, Np_per_batch,
     c_ops = []
         
     srcfolder = calculate(H, psi0, e_ops, c_ops, H_args, options, Nc, Np, Np_per_batch,
-                          home, parallel, verbose=False)
+                          home, parallel, verbose=False, method='me')
     
     quants = ['times', 'expect', 'e0', 'g1', 'e1', 'g0', 'coupling']
     ID = getID(srcfolder)
