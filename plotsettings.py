@@ -74,3 +74,5 @@ markerstyles = {
     'simulated' : simulated[1],
     'experimental' : experimental[1]
 }
+
+mpl.rcParams['figure.figsize'] = figsize
