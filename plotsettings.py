@@ -4,7 +4,8 @@ import matplotlib as mpl
 ###############################################################################
 
 
-figsize = (10, 5)
+figsize_half = (10, 6)
+figsize_full = (22, 6)
 
 # Give colours in hex
 qubit     = '#6d78aa'  # qubit
@@ -20,23 +21,23 @@ sbblue    = '#6196b3'  # P(e1)-P(g0), blue sideband transitions
 hline     = 'gray'     # horizontal domain lines
 colormap  = 'gist_heat'   # colormap for color plots
 
-# (line, marker) styles
-larger       = ('-', 'x')
-smaller      = ('-.', '+')
-analytical   = ('-', 'x')
-simulated    = ('--', '+')
-experimental = ('-.', '.')
+# (line, marker, marker size)
+larger       = ('-', 'x', 120)
+smaller      = ('-.', '+', 200)
+analytical   = ('-', 'x', 120)
+simulated    = ('--', '+', 200)
+experimental = ('-.', '.', 100)
 
 alpha = 1  # opacity of lines
 
 mpl.rcParams['font.size'] = 24
-mpl.rcParams['axes.titlesize'] = 26
-mpl.rcParams['axes.labelsize'] = 24
-mpl.rcParams['xtick.labelsize'] = 22
-mpl.rcParams['ytick.labelsize'] = 22
-mpl.rcParams['legend.fontsize'] = 22
-mpl.rcParams['figure.titlesize'] = 26
-mpl.rcParams['lines.linewidth'] = 3
+mpl.rcParams['axes.titlesize'] = 22
+mpl.rcParams['axes.labelsize'] = 20
+mpl.rcParams['xtick.labelsize'] = 18
+mpl.rcParams['ytick.labelsize'] = 18
+mpl.rcParams['legend.fontsize'] = 17
+mpl.rcParams['figure.titlesize'] = 22
+mpl.rcParams['lines.linewidth'] = 2
    
 
 ###############################################################################
@@ -75,4 +76,4 @@ markerstyles = {
     'experimental' : experimental[1]
 }
 
-mpl.rcParams['figure.figsize'] = figsize
+mpl.rcParams['figure.figsize'] = figsize_half
