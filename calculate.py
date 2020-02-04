@@ -189,7 +189,6 @@ def calculate(H, psi0, e_ops, c_ops, H_args, options, Nc, Np, Np_per_batch, home
             print("coefficients")
             f_coeff = floquet_state_decomposition(f_modes_0, f_energies, psi0)
             for i, t in enumerate(tlist):
-                print(i)
                 psi_t = floquet_wavefunction_t(f_modes_0, f_energies, f_coeff, t, H, T, H_args)
                 bulk.append_time(t)
                 bulk.append_state(psi_t)
@@ -715,17 +714,17 @@ def drivefreq(Nq, wq, wc, H, sb, Nt, **kwargs):
             lower_bound = kwargs['lower']
         else:
             if sb == 'red':
-                lower_bound = abs(wq-wc)/2 - 1.0 *2*pi
+                lower_bound = abs(wq-wc)/2 - 0.5 *2*pi
             elif sb == 'blue':
-                lower_bound = abs(wq+wc)/2 - 1.0 *2*pi
+                lower_bound = abs(wq+wc)/2 - 0.5 *2*pi
 
         if 'upper' in kwargs:
             upper_bound = kwargs['upper']
         else:
             if sb == 'red':
-                upper_bound = abs(wq-wc)/2 + 1.0 *2*pi
+                upper_bound = abs(wq-wc)/2 + 0.5 *2*pi
             elif sb == 'blue':
-                upper_bound = abs(wq+wc)/2 + 1.0 *2*pi
+                upper_bound = abs(wq+wc)/2 + 0.5 *2*pi
 
         if 'resolution' in kwargs:
             resolution = kwargs['resolution']
