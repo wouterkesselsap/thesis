@@ -11,8 +11,8 @@ from ipywidgets import widgets
 from IPython.display import display
 
 
-def sbsample(Nq, wq, wc, Ec, g, wd, sb, Nt, H, H_args, psi0, Np_per_batch,
-             options, home, parallel, *args):
+def sbsample(Nq, wq, wc, Ec, g, wd, sb, Nt, H, H_args, psi0, c_ops, Np_per_batch,
+             options, home, parallel, *args, **kwargs):
     """
     Performs a single- or double-tone sideband transition simulation
     with the given input parameters. Plots the expectation
@@ -55,7 +55,6 @@ def sbsample(Nq, wq, wc, Ec, g, wd, sb, Nt, H, H_args, psi0, Np_per_batch,
         H_args['wdq'] = wdq
         H_args['wdc'] = wdc
     e_ops = [nq, nc]
-    c_ops = []
         
     srcfolder = calculate(H, psi0, e_ops, c_ops, H_args, options, Nc, Np, Np_per_batch,
                           home, parallel, verbose=False, method='me')
