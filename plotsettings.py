@@ -30,7 +30,7 @@ experimental = ('-.', '.', 100)
 
 alpha = 1  # opacity of lines
 
-mpl.rcParams['font.size'] = 24
+mpl.rcParams['font.size'] = 22
 mpl.rcParams['axes.titlesize'] = 22
 mpl.rcParams['axes.labelsize'] = 20
 mpl.rcParams['xtick.labelsize'] = 18
@@ -74,6 +74,14 @@ markerstyles = {
     'analytical' : analytical[1],
     'simulated' : simulated[1],
     'experimental' : experimental[1]
+}
+
+markersizes = {
+    'larger' : larger[2],
+    'smaller' : smaller[2],
+    'analytical' : analytical[2],
+    'simulated' : simulated[2],
+    'experimental' : experimental[2]
 }
 
 mpl.rcParams['figure.figsize'] = figsize_half
