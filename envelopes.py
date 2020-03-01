@@ -90,6 +90,74 @@ def drive(t, args):
     return envelope
 
 
+def drive_no_CR_m(t, args):
+    "Sideband drive with oscillating term."
+    t1 = args['t1']    # start of pulse
+    t2 = args['t2']    # end of pulse
+    tg = args['tg']    # time of Gaussian rise and fall
+    try:
+        gauss = args['gauss']  # whether or not to rise and fall with gaussian
+        smooth = args['smooth']  # wether to start gaussian at zero or with a small jump
+    except:
+        gauss = args['smooth']  # for older data where the names were different
+    Q  = args['Q']     # number of std's in Gaussian rise and fall
+    wd = args['wd']  # drive frequency
+    
+    confine = np.heaviside((t-t1), 0) - np.heaviside((t-t2), 0)  # entire pulse
+    
+    # Rise and fall with Gaussian
+    std = tg/Q  # standard deviation of Gaussian
+    gaussian = lambda mu : exp(-(t-mu)**2/(2*std**2))  # Gaussian
+    
+    if gauss:
+        block = np.heaviside((t-(t1+tg)), 0) - np.heaviside((t-(t2-tg)), 0)
+        rise = gaussian(t1+tg) * (1-np.heaviside((t-(t1+tg)), 0))
+        fall = gaussian(t2-tg) * (np.heaviside((t-(t2-tg)), 0))
+        pulse = (rise + block + fall)*confine
+        if ('gauss' in args and smooth):
+            jump = (exp(-(t1-(t1+tg))**2/(2*std**2))) * (1-np.heaviside((t1-(t1+tg)), 0))
+            pulse = (pulse-jump)/(1-jump)
+    else:
+        pulse = confine
+    
+    envelope = pulse*np.exp(-1j*wd*t)
+    return envelope
+
+
+def drive_no_CR_p(t, args):
+    "Sideband drive with oscillating term."
+    t1 = args['t1']    # start of pulse
+    t2 = args['t2']    # end of pulse
+    tg = args['tg']    # time of Gaussian rise and fall
+    try:
+        gauss = args['gauss']  # whether or not to rise and fall with gaussian
+        smooth = args['smooth']  # wether to start gaussian at zero or with a small jump
+    except:
+        gauss = args['smooth']  # for older data where the names were different
+    Q  = args['Q']     # number of std's in Gaussian rise and fall
+    wd = args['wd']  # drive frequency
+    
+    confine = np.heaviside((t-t1), 0) - np.heaviside((t-t2), 0)  # entire pulse
+    
+    # Rise and fall with Gaussian
+    std = tg/Q  # standard deviation of Gaussian
+    gaussian = lambda mu : exp(-(t-mu)**2/(2*std**2))  # Gaussian
+    
+    if gauss:
+        block = np.heaviside((t-(t1+tg)), 0) - np.heaviside((t-(t2-tg)), 0)
+        rise = gaussian(t1+tg) * (1-np.heaviside((t-(t1+tg)), 0))
+        fall = gaussian(t2-tg) * (np.heaviside((t-(t2-tg)), 0))
+        pulse = (rise + block + fall)*confine
+        if ('gauss' in args and smooth):
+            jump = (exp(-(t1-(t1+tg))**2/(2*std**2))) * (1-np.heaviside((t1-(t1+tg)), 0))
+            pulse = (pulse-jump)/(1-jump)
+    else:
+        pulse = confine
+    
+    envelope = pulse*np.exp(1j*wd*t)
+    return envelope
+
+
 def driveq(t, args):
     "Qubit-friendly sideband drive with oscillating term."
     t1 = args['t1']    # start of pulse
