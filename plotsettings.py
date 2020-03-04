@@ -1,15 +1,14 @@
 import matplotlib as mpl
 
 
-###############################################################################
-
+""
 
 figsize_half = (10, 6)
 figsize_full = (22, 6)
 
 # Give colours in hex
-qubit     = '#6d78aa'  # qubit
-cavity1   = '#c86464'  # cavity 1
+qubit     = '#664277'  # qubit
+cavity1   = '#fa476f'  # cavity 1
 cavity2   = '#c86464'  # cavity 2
 coupling1 = '#68b799'  # coupling between qubit and cavity 1
 coupling2 = '#7eb6a1'  # coupling between qubit and cavity 1
@@ -22,11 +21,13 @@ hline     = 'gray'     # horizontal domain lines
 colormap  = 'gist_heat'   # colormap for color plots
 
 # (line, marker, marker size)
-larger       = ('-', 'x', 120)
-smaller      = ('-.', '+', 200)
-analytical   = ('-', 'x', 120)
+larger       = ('-', '+', 200)
+smaller      = ('-.', 'x', 120)
+analytical   = ('-.', 'x', 120)
 simulated    = ('--', '+', 200)
-experimental = ('-.', '.', 100)
+experimental = ('--', '.', 100)
+Duffing = ('-', '+', 200)
+Kerr = ('-.', 'x', 120)
 
 alpha = 1  # opacity of lines
 
@@ -38,10 +39,9 @@ mpl.rcParams['ytick.labelsize'] = 18
 mpl.rcParams['legend.fontsize'] = 17
 mpl.rcParams['figure.titlesize'] = 22
 mpl.rcParams['lines.linewidth'] = 2
-   
 
-###############################################################################
- 
+
+""
 
 plotcolours = {
     'qubit' : qubit,
@@ -65,7 +65,9 @@ linestyles = {
     'smaller' : smaller[0],
     'analytical' : analytical[0],
     'simulated' : simulated[0],
-    'experimental' : experimental[0]
+    'experimental' : experimental[0],
+    'Duffing' : Duffing[0],
+    'Kerr' : Kerr[0]
 }
 
 markerstyles = {
@@ -73,7 +75,9 @@ markerstyles = {
     'smaller' : smaller[1],
     'analytical' : analytical[1],
     'simulated' : simulated[1],
-    'experimental' : experimental[1]
+    'experimental' : experimental[1],
+    'Duffing' : Duffing[1],
+    'Kerr' : Kerr[1]
 }
 
 markersizes = {
@@ -81,7 +85,9 @@ markersizes = {
     'smaller' : smaller[2],
     'analytical' : analytical[2],
     'simulated' : simulated[2],
-    'experimental' : experimental[2]
+    'experimental' : experimental[2],
+    'Duffing' : Duffing[2],
+    'Kerr' : Kerr[2]
 }
 
 mpl.rcParams['figure.figsize'] = figsize_half
