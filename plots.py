@@ -14,7 +14,7 @@ from qutip.wigner import wigner as wig
 from qutip.visualization import hinton, matrix_histogram, matrix_histogram_complex
 from envelopes import *
 from supports import *
-from plotsettings import plotcolours, alpha
+from figures.plotsettings import plotcolours, alpha
 
 
 
