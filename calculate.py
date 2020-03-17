@@ -264,7 +264,7 @@ def calculate(H, psi0, e_ops, c_ops, H_args, options, Nc, Np, Np_per_batch, home
         
         convresult.append_state(result.states[-1])
         convresult.append_expect(0, result.expect[0][-1])
-        convresult.append_expect(1, result.expect[0][-1])
+        convresult.append_expect(1, result.expect[1][-1])
         e0list.append(e0[-1])
         e1list.append(e1[-1])
         g0list.append(g0[-1])
@@ -289,7 +289,7 @@ def calculate(H, psi0, e_ops, c_ops, H_args, options, Nc, Np, Np_per_batch, home
             
             convresult.append_state(result.states[-1])
             convresult.append_expect(0, result.expect[0][-1])
-            convresult.append_expect(1, result.expect[0][-1])
+            convresult.append_expect(1, result.expect[1][-1])
             e0list.append(e0[-1])
             e1list.append(e1[-1])
             g0list.append(g0[-1])
