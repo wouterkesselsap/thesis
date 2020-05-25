@@ -1,3 +1,9 @@
+"""
+Author 		: Wouter Kessels @TU Delft (wouter@wouterkessels.nl)
+Modified by : Byoung-moo Ann @TU Delft (physicsdiv@gmail.com)
+"""
+
+
 import os
 import shutil
 import numpy as np
@@ -885,7 +891,217 @@ def drivefreq(Nq, wq, wc, H, sb, Nt, **kwargs):
         return wdq_estimate, wdc
 
 
+# +
+def sidebandrate_TLS(wq, wc, g, H, sb, Nt, **kwargs):
+    """
+    Estimates the required transition rate induce two-photon
+    sideband transitions between a dispersively coupled qubit and cavity, given
+    the system's parameters and time-independent Hamiltonian. First, it calculate
+    the proper driving frequency for given configuration. Then, it calculate sideband 
+    transition rate based on theoretical calculation.
+    
+    This function can distinguish between 4 cases, each of which is a combination
+    of the following three settings:
+    - TLS (two qubit levels) only;
+    - monochromatic or bichromatic driving;
+    - red (e0-g1) or blue (e1-g0) sideband transitions.
+    For bichromatic driving case, each drive is called cavity friendly and qubit friendly.
+    The frequency of cavity friendly drive is fixed by argument wc and dw (wc-dw).
+    
+    Assumptions:
+    - The qubit and cavity are dispersively coupled with sufficient detuning, but
+      wq < 2*wc and wc < 2*wq.
+    - With bichromatic driving, the cavity-friendly drive tone wdc is fixed in
+      frequency. The qubit-friendly tone wdq is to be estimated.
+    
+    
+    Input
+    -----
+    wq : float
+        Qubit frequency [Grad/s]
+    wc : float
+        Cavity frequency [Grad/s]    
+    g : float
+        Bare coupling strength between qubit and cavity [Grad/s]
+        Must be the same as with that in H operator.
+    H : qutip.qobj.Qobj
+        Time-independent Hamiltonian including the intrinsic terms of the qubit
+        and cavity, and thee coupling term
+    sb : str
+        Type of sideband transition, either 'red' (e0-g1) or 'blue' (e1-g0)
+    Nt : int
+        Number of drive tones
+    **kwargs
+        Available arguments:
+        'lower' : float
+            Lower bound of possible drive frequencies [Grad/s]
+        'upper' : float
+            Upper bound of possible drive frequencies [Grad/s]
+        'resolution' : float
+            Resolution within range of possible drive frequencies
+        'dw' : float
+            Detuning of cavity-friendly drive tone from uncoupled cavity frequency
+            [Grad/s]
+        'eps' : float
+            Drive amplitude when driving monochromatically [Grad/s]
+        'epsq' : float
+            Amplitude of qubit-friendly drive tone when driving bichromatically
+            [Grad/s]
+        'epsc' : float
+            Amplitude of cavity-friendly drive tone when driving bichromatically
+            [Grad/s]
+    
+    
+    Returns
+    -------
+    sb_rate : float
+        Estimated sideband transition rate[Grad/s]
+    """
+    
+    # Determine drive frequency range to scan
+    # Monochromatic drive
+    if Nt == 1:
+        if 'lower' in kwargs:
+            lower_bound = kwargs['lower']
+        else:
+            if sb == 'red':
+                lower_bound = abs(wq-wc)/2 - 0.5 *2*pi
+            elif sb == 'blue':
+                lower_bound = abs(wq+wc)/2 - 0.5 *2*pi
 
+        if 'upper' in kwargs:
+            upper_bound = kwargs['upper']
+        else:
+            if sb == 'red':
+                upper_bound = abs(wq-wc)/2 + 0.5 *2*pi
+            elif sb == 'blue':
+                upper_bound = abs(wq+wc)/2 + 0.5 *2*pi
+
+        if 'resolution' in kwargs:
+            resolution = kwargs['resolution']
+        else:
+            resolution = 0.0001 *2*pi
+
+        wd_range = np.arange(lower_bound, upper_bound, resolution)
+    
+    # Bichromatic drive
+    elif Nt == 2:
+        if 'dw' in kwargs:
+            dw = kwargs['dw']
+        else:
+            dw = 0.5 *2*pi
+        
+        if 'lower' in kwargs:
+            lower_bound = kwargs['lower']
+        else:
+            if sb == 'red':
+                lower_bound = wq - dw - 1.0 *2*pi
+            elif sb == 'blue':
+                lower_bound = wq + dw - 1.0 *2*pi
+
+        if 'upper' in kwargs:
+            upper_bound = kwargs['upper']
+        else:
+            if sb == 'red':
+                upper_bound = wq - dw + 1.0 *2*pi
+            elif sb == 'blue':
+                upper_bound = wq + dw + 1.0 *2*pi
+
+        if 'resolution' in kwargs:
+            resolution = kwargs['resolution']
+        else:
+            resolution = 0.0001 *2*pi
+
+        wdq_range = np.arange(lower_bound, upper_bound, resolution)
+        wdc = wc - dw
+    
+    
+    # Calculate dispersive driving shift by using the AC-Stark shift
+    # and Bloch-Sieger shift
+    # Monochromatic drive
+    if Nt == 1:
+        eps = kwargs['eps']
+        drive_shifts = 2*eps**2/2*(1/(wq-wd_range) + 1/(wq+wd_range))
+        
+
+    # Bichromatic drive
+    elif Nt == 2:
+        epsq = kwargs['epsq']
+        epsc = kwargs['epsc']
+        drive_shifts = 2*epsq**2/2*(1/(wq-wdq_range) + 1/(wq+wdq_range)) + epsc**2/2*(1/(wq-wdc) + 1/(wq+wdc))
+        
+    
+    # Calculate dispersive coupling shift by diagonalizing the time-independent,
+    # Hamiltonian, subject to the qubit shift by driving
+    if 'Nc' in kwargs.keys():
+        Nc = kwargs['Nc']
+    else:
+        Nc = 10  # default
+    b, _, nq, _ = ops(2, Nc)  # Operators
+    
+    dev_red  = list()
+    dev_blue = list()
+    
+    for drive_shift in drive_shifts:
+        H_shifted = H + drive_shift*nq
+        EE = H_shifted.eigenenergies()
+        Eg0 = EE[0]
+        if wq > wc:
+            Eg1 = EE[1]
+            Ee0 = EE[2]
+            Ee1 = EE[4]  
+        elif wq < wc:
+            Eg1 = EE[2]
+            Ee0 = EE[1]
+            Ee1 = EE[3]  
+        dev_red.append((Ee0 - Eg1) - (wq - wc))
+        dev_blue.append((Ee1 - Eg0) - (wq + wc))
+    
+    
+    # Calculate the frequency deviation for every wd in wd_range
+    # Monochromatic drive
+    if Nt == 1:
+        if sb == 'red':
+            diff = abs(wq + np.asarray(dev_red) - wc)/2 - wd_range
+        elif sb == 'blue':
+            diff = (wq + np.asarray(dev_blue) + wc)/2 - wd_range
+        diff = abs(diff)
+
+        wd_estimate = wd_range[diff.tolist().index(min(abs(diff)))]
+    
+    # Bichromatic drive
+    elif Nt == 2:
+        if sb == 'red':
+            diff = abs(wq + dev_red - wc) - abs(wdq_range - wdc)
+        elif sb == 'blue':
+            diff = (wq + dev_blue + wc) - (wdq_range + wdc)
+        diff = abs(diff)
+        wdq_estimate = wdq_range[diff.tolist().index(min(abs(diff)))]
+        
+# SBT calculation
+    # Monochromatic drive
+    if Nt == 1:
+        eps_m = 2*eps**2/(wq-wd_estimate) + 2*eps**2/(wq+wd_estimate) - 2*wq*eps**2/(wq-wd_estimate)/(wq+wd_estimate)
+        if sb == 'red' and wq > wc:
+            sb_rate = 2*g*(eps**2/(wq-wd_estimate)/(wq+wd_estimate) + eps**2/(wq-wd_estimate)**2) + 2*g*eps_m/2/wd_estimate
+        elif sb == 'red' and wq < wc:
+            sb_rate = 2*g*(eps**2/(wq-wd_estimate)/(wq+wd_estimate) + eps**2/(wq+wd_estimate)**2) - 2*g*eps_m/2/wd_estimate
+        elif sb == 'blue':
+            sb_rate = 2*g*(eps**2/(wq-wd_estimate)/(wq+wd_estimate) + eps**2/(wq-wd_estimate)**2) + 2*g*eps_m/2/wd_estimate
+        return sb_rate
+
+    # Bichromatic drive
+    elif Nt == 2:
+        eps_m = epsq*epsc/(1/(wq-wdq_0)+1/(wq-wdc)+1/(wq+wdq_estimate)+1/(wq+wdc))
+        if sb == 'red' and wq > wc:
+            sb_rate = 2*g*(epsq*epsc/(wq-wdq_estimate)/(wq-wdc) + epsq*epsc/(wq+wdq_estimate)/(wq+wdc) + 2*epsq*epsc/(wq-wdq_estimate)/(wq+wdc)) + 2*g*eps_m/(wdq_estimate-wdc)
+        elif sb == 'red'and wq < wc:
+            sb_rate = 2*g*(epsq*epsc/(wq-wdq_estimate)/(wq-wdc) + epsq*epsc/(wq+wdq_estimate)/(wq+wdc) + 2*epsq*epsc/(wq-wdc)/(wq+wdq_estimate)) + 2*g*eps_m/(wdc-wdq_estimate)
+        elif sb == 'blue':
+            sb_rate = 2*g*(2*epsq*epsc/(wq-wdq_estimate)/(wq-wdc) + epsq*epsc/(wq-wdq_estimate)/(wq+wdc) + epsq*epsc/(wq+wdq_estimate)/(wq-wdc)) + 2*g*eps_m/(wdq_estimate+wdc)
+        return sb_rate
+
+# -
 def combined_probs(states, Nc):
     """
     Calculates |e,0> - |g,1> and |e,1> - |g,0> through time

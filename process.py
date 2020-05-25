@@ -121,7 +121,7 @@ def saveparams(Nq, Nc, Nt, wq, shift, wc, Ec, g, sb,
             data.append("convergent method               conv   : {}\n".format(convergent))
                 
         if Nt == 1:
-            data.append("sideband drive amplitude        eps    : {} = {} GHz\n".format(kwargs['eps'], kwargs['eps']/2/pi))
+            data.append("sideband drive amplitude        Omega  : {} = {} GHz\n".format(kwargs['eps'], kwargs['eps']/2/pi))
             data.append("sideband drive frequency        wd     : {} = {} GHz\n".format(kwargs['wd'], kwargs['wd']/2/pi))
         elif Nt == 2:
             data.append("amplitude of qubit-friendly sideband drive tone   epsq   : {} = {} GHz\n".format(kwargs['epsq'], kwargs['epsq']/2/pi))
