@@ -115,6 +115,8 @@ def calculate(H, psi0, e_ops, c_ops, H_args, options, Nc, Np, Np_per_batch, home
     **kwargs
     Available arguments:
         'method' : 'me' or 'floquet'
+            Calculation method.
+        'convergent' : 'True' or 'False'
             Simulation method.
         'refinement' : int
             Only when convergent is true.
@@ -134,7 +136,7 @@ def calculate(H, psi0, e_ops, c_ops, H_args, options, Nc, Np, Np_per_batch, home
     ID, folder, now = prepare_folder(home, parallel)
     
     # Regular evolution with master equation solver
-    if not H_args['convergent'] and kwargs['method'] == 'me':
+    if kwargs['convergent'] == False and kwargs['method'] == 'me':
         batches = create_batches(t0, t3, Np, Np_per_batch)
         
         for num, tlist in enumerate(batches):
@@ -160,7 +162,7 @@ def calculate(H, psi0, e_ops, c_ops, H_args, options, Nc, Np, Np_per_batch, home
                 del e0, g1, e1, g0
     
     # Regular evolution with Floquet decomposition
-    if not H_args['convergent'] and kwargs['method'] == 'floquet':
+    if kwargs['convergent'] == False and kwargs['method'] == 'floquet':
         t1 = H_args['t1']
         t2 = H_args['t2']
         tg = H_args['tg']
@@ -177,7 +179,7 @@ def calculate(H, psi0, e_ops, c_ops, H_args, options, Nc, Np, Np_per_batch, home
         psi0 = rise.states[-1]
         
         if N_devices == 1:
-                saveprog(rise, None, None, None, None, coupling, 0, folder)
+            saveprog(rise, None, None, None, None, coupling, 0, folder)
         elif N_devices == 2:
             saveprog(rise, e0, g1, e1, g0, coupling, 0, folder)
         
@@ -245,7 +247,7 @@ def calculate(H, psi0, e_ops, c_ops, H_args, options, Nc, Np, Np_per_batch, home
     
     
     # Evolution using convergent method
-    elif H_args['convergent']:
+    elif kwargs['convergent'] == True:
         if N_devices != 2:
             raise IOError("System must contain exactly one qubit and one cavity,\
                            in order to use the convergent method.")
