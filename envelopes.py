@@ -72,21 +72,24 @@ def drive(t, args):
     confine = np.heaviside((t-t1), 0) - np.heaviside((t-t2), 0)  # entire pulse
     
     # Rise and fall with Gaussian
-    std = tg/Q  # standard deviation of Gaussian
-    gaussian = lambda mu : exp(-(t-mu)**2/(2*std**2))  # Gaussian
+    if tg == 0:
+        envelope = np.cos(wd*t)
+    else:  
+        std = tg/Q  # standard deviation of Gaussian
+        gaussian = lambda mu : exp(-(t-mu)**2/(2*std**2))  # Gaussian
     
-    if gauss:
-        block = np.heaviside((t-(t1+tg)), 0) - np.heaviside((t-(t2-tg)), 0)
-        rise = gaussian(t1+tg) * (1-np.heaviside((t-(t1+tg)), 0))
-        fall = gaussian(t2-tg) * (np.heaviside((t-(t2-tg)), 0))
-        pulse = (rise + block + fall)*confine
-        if ('gauss' in args and smooth):
-            jump = (exp(-(t1-(t1+tg))**2/(2*std**2))) * (1-np.heaviside((t1-(t1+tg)), 0))
-            pulse = (pulse-jump)/(1-jump)
-    else:
-        pulse = confine
+        if gauss:
+            block = np.heaviside((t-(t1+tg)), 0) - np.heaviside((t-(t2-tg)), 0)
+            rise = gaussian(t1+tg) * (1-np.heaviside((t-(t1+tg)), 0))
+            fall = gaussian(t2-tg) * (np.heaviside((t-(t2-tg)), 0))
+            pulse = (rise + block + fall)*confine
+            if ('gauss' in args and smooth):
+                jump = (exp(-(t1-(t1+tg))**2/(2*std**2))) * (1-np.heaviside((t1-(t1+tg)), 0))
+                pulse = (pulse-jump)/(1-jump)
+        else:
+            pulse = confine
     
-    envelope = pulse*np.cos(wd*t)
+        envelope = pulse*np.cos(wd*t)
     return envelope
 
 
@@ -106,21 +109,25 @@ def drive_no_CR_m(t, args):
     confine = np.heaviside((t-t1), 0) - np.heaviside((t-t2), 0)  # entire pulse
     
     # Rise and fall with Gaussian
-    std = tg/Q  # standard deviation of Gaussian
-    gaussian = lambda mu : exp(-(t-mu)**2/(2*std**2))  # Gaussian
-    
-    if gauss:
-        block = np.heaviside((t-(t1+tg)), 0) - np.heaviside((t-(t2-tg)), 0)
-        rise = gaussian(t1+tg) * (1-np.heaviside((t-(t1+tg)), 0))
-        fall = gaussian(t2-tg) * (np.heaviside((t-(t2-tg)), 0))
-        pulse = (rise + block + fall)*confine
-        if ('gauss' in args and smooth):
-            jump = (exp(-(t1-(t1+tg))**2/(2*std**2))) * (1-np.heaviside((t1-(t1+tg)), 0))
-            pulse = (pulse-jump)/(1-jump)
+    if tg == 0:
+        envelope = np.exp(-1j*wd*t)
     else:
-        pulse = confine
+        std = tg/Q  # standard deviation of Gaussian
+        gaussian = lambda mu : exp(-(t-mu)**2/(2*std**2))  # Gaussian
     
-    envelope = pulse*np.exp(-1j*wd*t)
+        if gauss:
+            block = np.heaviside((t-(t1+tg)), 0) - np.heaviside((t-(t2-tg)), 0)
+            rise = gaussian(t1+tg) * (1-np.heaviside((t-(t1+tg)), 0))
+            fall = gaussian(t2-tg) * (np.heaviside((t-(t2-tg)), 0))
+            pulse = (rise + block + fall)*confine
+            if ('gauss' in args and smooth):
+                jump = (exp(-(t1-(t1+tg))**2/(2*std**2))) * (1-np.heaviside((t1-(t1+tg)), 0))
+                pulse = (pulse-jump)/(1-jump)
+        else:
+            pulse = confine
+    
+        envelope = pulse*np.exp(-1j*wd*t)
+        
     return envelope
 
 
@@ -140,21 +147,24 @@ def drive_no_CR_p(t, args):
     confine = np.heaviside((t-t1), 0) - np.heaviside((t-t2), 0)  # entire pulse
     
     # Rise and fall with Gaussian
-    std = tg/Q  # standard deviation of Gaussian
-    gaussian = lambda mu : exp(-(t-mu)**2/(2*std**2))  # Gaussian
-    
-    if gauss:
-        block = np.heaviside((t-(t1+tg)), 0) - np.heaviside((t-(t2-tg)), 0)
-        rise = gaussian(t1+tg) * (1-np.heaviside((t-(t1+tg)), 0))
-        fall = gaussian(t2-tg) * (np.heaviside((t-(t2-tg)), 0))
-        pulse = (rise + block + fall)*confine
-        if ('gauss' in args and smooth):
-            jump = (exp(-(t1-(t1+tg))**2/(2*std**2))) * (1-np.heaviside((t1-(t1+tg)), 0))
-            pulse = (pulse-jump)/(1-jump)
+    if tg == 0:
+        envelope = np.exp(1j*wd*t)
     else:
-        pulse = confine
+        std = tg/Q  # standard deviation of Gaussian
+        gaussian = lambda mu : exp(-(t-mu)**2/(2*std**2))  # Gaussian
     
-    envelope = pulse*np.exp(1j*wd*t)
+        if gauss:
+            block = np.heaviside((t-(t1+tg)), 0) - np.heaviside((t-(t2-tg)), 0)
+            rise = gaussian(t1+tg) * (1-np.heaviside((t-(t1+tg)), 0))
+            fall = gaussian(t2-tg) * (np.heaviside((t-(t2-tg)), 0))
+            pulse = (rise + block + fall)*confine
+            if ('gauss' in args and smooth):
+                jump = (exp(-(t1-(t1+tg))**2/(2*std**2))) * (1-np.heaviside((t1-(t1+tg)), 0))
+                pulse = (pulse-jump)/(1-jump)
+        else:
+            pulse = confine
+    
+        envelope = pulse*np.exp(1j*wd*t)
     return envelope
 
 
@@ -174,21 +184,24 @@ def driveq(t, args):
     confine = np.heaviside((t-t1), 0) - np.heaviside((t-t2), 0)  # entire pulse
     
     # Rise and fall with Gaussian
-    std = tg/Q  # standard deviation of Gaussian
-    gaussian = lambda mu : exp(-(t-mu)**2/(2*std**2))  # Gaussian
+    if tg == 0:
+        envelope = np.cos(wd*t)
+    else:  
+        std = tg/Q  # standard deviation of Gaussian
+        gaussian = lambda mu : exp(-(t-mu)**2/(2*std**2))  # Gaussian
     
-    if gauss:
-        block = np.heaviside((t-(t1+tg)), 0) - np.heaviside((t-(t2-tg)), 0)
-        rise = gaussian(t1+tg) * (1-np.heaviside((t-(t1+tg)), 0))
-        fall = gaussian(t2-tg) * (np.heaviside((t-(t2-tg)), 0))
-        pulse = (rise + block + fall)*confine
-        if ('gauss' in args and smooth):
-            jump = exp(-(t1-(t1+tg))**2/(2*std**2)) * (1-np.heaviside((t1-(t1+tg)), 0))
-            pulse = (pulse-jump)/(1-jump)
-    else:
-        pulse = confine
+        if gauss:
+            block = np.heaviside((t-(t1+tg)), 0) - np.heaviside((t-(t2-tg)), 0)
+            rise = gaussian(t1+tg) * (1-np.heaviside((t-(t1+tg)), 0))
+            fall = gaussian(t2-tg) * (np.heaviside((t-(t2-tg)), 0))
+            pulse = (rise + block + fall)*confine
+            if ('gauss' in args and smooth):
+                jump = (exp(-(t1-(t1+tg))**2/(2*std**2))) * (1-np.heaviside((t1-(t1+tg)), 0))
+                pulse = (pulse-jump)/(1-jump)
+        else:
+            pulse = confine
     
-    envelope = pulse*np.cos(wd*t)
+        envelope = pulse*np.cos(wd*t)
     return envelope
 
 
@@ -208,21 +221,24 @@ def drivec(t, args):
     confine = np.heaviside((t-t1), 0) - np.heaviside((t-t2), 0)  # entire pulse
     
     # Rise and fall with Gaussian
-    std = tg/Q  # standard deviation of Gaussian
-    gaussian = lambda mu : exp(-(t-mu)**2/(2*std**2))  # Gaussian
+    if tg == 0:
+        envelope = np.cos(wd*t)
+    else:  
+        std = tg/Q  # standard deviation of Gaussian
+        gaussian = lambda mu : exp(-(t-mu)**2/(2*std**2))  # Gaussian
     
-    if gauss:
-        block = np.heaviside((t-(t1+tg)), 0) - np.heaviside((t-(t2-tg)), 0)
-        rise = gaussian(t1+tg) * (1-np.heaviside((t-(t1+tg)), 0))
-        fall = gaussian(t2-tg) * (np.heaviside((t-(t2-tg)), 0))
-        pulse = (rise + block + fall)*confine
-        if ('gauss' in args and smooth):
-            jump = exp(-(t1-(t1+tg))**2/(2*std**2)) * (1-np.heaviside((t1-(t1+tg)), 0))
-            pulse = (pulse-jump)/(1-jump)
-    else:
-        pulse = confine
+        if gauss:
+            block = np.heaviside((t-(t1+tg)), 0) - np.heaviside((t-(t2-tg)), 0)
+            rise = gaussian(t1+tg) * (1-np.heaviside((t-(t1+tg)), 0))
+            fall = gaussian(t2-tg) * (np.heaviside((t-(t2-tg)), 0))
+            pulse = (rise + block + fall)*confine
+            if ('gauss' in args and smooth):
+                jump = (exp(-(t1-(t1+tg))**2/(2*std**2))) * (1-np.heaviside((t1-(t1+tg)), 0))
+                pulse = (pulse-jump)/(1-jump)
+        else:
+            pulse = confine
     
-    envelope = pulse*np.cos(wd*t)
+        envelope = pulse*np.cos(wd*t)
     return envelope
 
 
@@ -241,19 +257,22 @@ def drive_nonosc(t, args):
     confine = np.heaviside((t-t1), 0) - np.heaviside((t-t2), 0)  # entire pulse
     
     # Rise and fall with Gaussian
-    std = tg/Q  # standard deviation of Gaussian
-    gaussian = lambda mu : exp(-(t-mu)**2/(2*std**2))  # Gaussian
-    
-    if gauss:
-        block = np.heaviside((t-(t1+tg)), 0) - np.heaviside((t-(t2-tg)), 0)
-        rise = gaussian(t1+tg) * (1-np.heaviside((t-(t1+tg)), 0))
-        fall = gaussian(t2-tg) * (np.heaviside((t-(t2-tg)), 0))
-        pulse = (rise + block + fall)*confine
-        if ('gauss' in args and smooth):
-            jump = (exp(-(t1-(t1+tg))**2/(2*std**2))) * (1-np.heaviside((t1-(t1+tg)), 0))
-            pulse = (pulse-jump)/(1-jump)
+    if tg == 0:
+        envelope = np.cos(wd*t)   
     else:
-        pulse = confine
+        std = tg/Q  # standard deviation of Gaussian
+        gaussian = lambda mu : exp(-(t-mu)**2/(2*std**2))  # Gaussian
+    
+        if gauss:
+            block = np.heaviside((t-(t1+tg)), 0) - np.heaviside((t-(t2-tg)), 0)
+            rise = gaussian(t1+tg) * (1-np.heaviside((t-(t1+tg)), 0))
+            fall = gaussian(t2-tg) * (np.heaviside((t-(t2-tg)), 0))
+            pulse = (rise + block + fall)*confine
+            if ('gauss' in args and smooth):
+                jump = (exp(-(t1-(t1+tg))**2/(2*std**2))) * (1-np.heaviside((t1-(t1+tg)), 0))
+                pulse = (pulse-jump)/(1-jump)
+        else:
+            pulse = confine
     
     return pulse
 

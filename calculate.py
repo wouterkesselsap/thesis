@@ -1,6 +1,6 @@
 """
 Author 		: Wouter Kessels @TU Delft (wouter@wouterkessels.nl)
-Modified by : Byoung-moo Ann @TU Delft (physicsdiv@gmail.com)
+Modified by : Byoung-moo Ann @TU Delft (byoungmoo.Ann@gmail.com)
 """
 
 
@@ -112,7 +112,12 @@ def calculate(H, psi0, e_ops, c_ops, H_args, options, Nc, Np, Np_per_batch, home
         Whether multiple simulations are run in parallel
     verbose : bool
         Print progress
-    
+    **kwargs
+    Available arguments:
+        'method' : 'me' or 'floquet'
+            Simulation method.
+        'refinement' : int
+            Only when convergent is true.
     Returns
     -------
     folder : str
@@ -339,7 +344,7 @@ def drivefreq_old(Nq, wq, wc, H, sb, Nt, **kwargs):
     
     Assumptions:
     - The qubit and cavity are dispersively coupled with sufficient detuning, but
-      wq < 2*wc and wc < 2*wq.
+      wq < 2*wc or wc < 2*wq.
     - With bichromatic driving, the cavity-friendly drive tone wdc is fixed in
       frequency. The qubit-friendly tone wdq is to be estimated.
     
@@ -613,7 +618,7 @@ def drivefreq(Nq, wq, wc, H, sb, Nt, **kwargs):
     
     Assumptions:
     - The qubit and cavity are dispersively coupled with sufficient detuning, but
-      wq < 2*wc and wc < 2*wq.
+      wq < 2*wc or wc < 2*wq.
     - With bichromatic driving, the cavity-friendly drive tone wdc is fixed in
       frequency. The qubit-friendly tone wdq is to be estimated.
     
@@ -879,9 +884,9 @@ def drivefreq(Nq, wq, wc, H, sb, Nt, **kwargs):
     # Bichromatic drive
     elif Nt == 2:
         if sb == 'red':
-            diff = abs(wq + dev_red - wc) - abs(wdq_range - wdc)
+            diff = abs(wq + np.asarray(dev_red) - wc) - abs(wdq_range - wdc)
         elif sb == 'blue':
-            diff = (wq + dev_blue + wc) - (wdq_range + wdc)
+            diff = (wq + np.asarray(dev_blue) + wc) - (wdq_range + wdc)
         diff = abs(diff)
         wdq_estimate = wdq_range[diff.tolist().index(min(abs(diff)))]
         
@@ -910,7 +915,7 @@ def sidebandrate_TLS(wq, wc, g, H, sb, Nt, **kwargs):
     
     Assumptions:
     - The qubit and cavity are dispersively coupled with sufficient detuning, but
-      wq < 2*wc and wc < 2*wq.
+      wq < 2*wc or wc < 2*wq.
     - With bichromatic driving, the cavity-friendly drive tone wdc is fixed in
       frequency. The qubit-friendly tone wdq is to be estimated.
     
