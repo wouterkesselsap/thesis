@@ -116,9 +116,6 @@ def saveparams(Nq, Nc, Nt, wq, shift, wc, Ec, g, sb,
                 "Gaussian starting at zero       smooth : {}\n".format(smooth),
                 "# of std's in Gaussian          Q      : {}\n".format(Q),
                 "# of data points                Np     : {}\n".format(Np)]
-        
-        if convergent:
-            data.append("convergent method               conv   : {}\n".format(convergent))
                 
         if Nt == 1:
             data.append("sideband drive amplitude        Omega  : {} = {} GHz\n".format(kwargs['eps'], kwargs['eps']/2/pi))
@@ -642,6 +639,336 @@ def combine_batches(folder, quants='all', return_data=True):
         return times_combined, states_combined, expect_combined, e0_combined, g1_combined, e1_combined, g0_combined, coupling_combined
 
 
+def combine_batches_update(folder, start=None, stop=None, quants='all', return_data=True):
+    """
+    Combine the specified quantities from all batches into a separate file.
+    
+    Input
+    -----
+    folder : str
+        Path to the simulation folder
+    quants : str, list of str
+        Specific quantities to extract from batches and combine into a file.
+        Can contain 'times', 'states', 'expect', 'g0', 'g1', 'e0', 'e1', and 'coupling'.
+        Default is 'all' which selects all of these.
+    return_data : bool
+        Return the data at the end of this function.
+        If set to False, all quantities are returned as NoneType.
+    
+    Returns
+    -------
+    times_combined : np.array
+        All time values
+    states_combined : list of qutip.Qobj
+        All quantum states through time
+    expect_combined : list of list
+        All expected occupation numbers
+    e0_combined : np.array
+        All probabilities of |e0>
+    g1_combined : np.array
+        All probabilities of |g1>
+    e1_combined : np.array
+        All probabilities of |e1>
+    g0_combined : np.array
+        All probabilities of |g0>
+    coupling_combined : np.array
+        Coupling strength of the drive tone(s) through time
+    """
+    if start == None or stop == None:
+        combine_batches(folder, quants='all', return_data=True)
+
+    else:
+        if quants == 'all':
+            quants = ['times', 'states', 'expect', 'g0', 'g1', 'e0', 'e1', 'coupling']
+        if isinstance(quants, str):
+            quants = [quants]
+        
+        # Remove already existing files with combined batches
+        try:
+            os.remove(folder + "/{}_{}_times.pkl".format(start,stop))
+        except:
+            pass
+        try:
+            os.remove(folder + "/{}_{}_states.pkl".format(start,stop))
+        except:
+            pass
+        try:
+            os.remove(folder + "/{}_{}_expect.pkl".format(start,stop))
+        except:
+            pass
+        try:
+            os.remove(folder + "/{}_{}_g0.pkl".format(start,stop))
+        except:
+            pass
+        try:
+            os.remove(folder + "/{}_{}_g1.pkl".format(start,stop))
+        except:
+            pass
+        try:
+            os.remove(folder + "/{}_{}_e0.pkl".format(start,stop))
+        except:
+            pass
+        try:
+            os.remove(folder + "/{}_{}_e1.pkl".format(start,stop))
+        except:
+            pass
+        try:
+            os.remove(folder + "/{}_{}_e1.pkl".format(start,stop))
+        except:
+            pass
+        try:
+            os.remove(folder + "/coupling.pkl".format(start,stop))
+        except:
+            pass
+            
+        all_file = folder + "/evolution_*"
+        filelist = []
+
+        for i in np.arange(start,stop+1):
+            file = folder + "/evolution_[{}].pkl".format(i)
+            temp = glob(file)
+            for i in temp:
+                filelist.append(i)
+            
+        filecount     = len(filelist)
+        filecount_all = len(glob(all_file))
+        if start > filecount_all or stop > filecount_all:
+            raise ValueError("Start and stop values are wrong.")
+                
+        if 'times' in quants:
+            times = [None] * filecount
+            for file in filelist:
+                infile = open(file, 'rb')
+                data = pickle.load(infile)
+                if data['num'] == 0:				
+                    times[data['num']] = data['times']
+                else:
+                    times[data['num']-start] = data['times'][1:]
+                infile.close()
+            times_combined = np.asarray(list(chain.from_iterable(times)))
+            
+            name = folder + "/{}_{}_times.pkl".format(start,stop)
+            data = {
+                'quantity' : 'times',
+                'data'     : times_combined,
+            }
+            out_file = open(name, 'wb')
+            pickle.dump(data, out_file)
+            out_file.close()
+            
+            del times
+            if not return_data:
+                del times_combined
+        else:
+            times_combined = None
+        
+        if 'states' in quants:
+            states = [None] * filecount
+            for file in filelist:
+                infile = open(file, 'rb')
+                data = pickle.load(infile)
+                if data['num'] == 0:
+                    states[data['num']] = data['states']
+                else:
+                    states[data['num']-start] = data['states'][1:]
+                infile.close()
+            states_combined = list()
+            for lst in states:
+                for state in lst:
+                    states_combined.append(state)
+            
+            name = folder + "/{}_{}_states.pkl".format(start,stop)
+            data = {
+                'quantity' : 'states',
+                'data' : states_combined
+            }
+            out_file = open(name, "wb")
+            pickle.dump(data, out_file)
+            out_file.close()
+            
+            del states
+            if not return_data:
+                del states_combined
+        else:
+            states_combined = None
+    		
+        if 'expect' in quants:
+            expect = [None] * filecount
+            for file in filelist:
+                infile = open(file, 'rb')
+                data = pickle.load(infile)
+                if data['num'] == 0:
+                    expect[data['num']] = data['expect']
+                else:
+                    expect[data['num']-start] = data['expect']
+                infile.close()
+            expect_combined = list()
+            for op in expect[0]:
+                expect_combined.append(list())
+            if start == 0:
+                for i in range(len(expect[0])):
+                    for ib, batch in enumerate(expect):
+                        [expect_combined[i].append(value) for value in batch[i] if ib == 0]
+                        [expect_combined[i].append(value) for iv, value in enumerate(batch[i]) if (ib > 0 and iv > 0)]
+            else:
+                 for i in range(len(expect[0])):
+                    for ib, batch in enumerate(expect):
+                        [expect_combined[i].append(value) for value in batch[i][1:] if ib == 0]
+
+            name = folder + "/{}_{}_expect.pkl".format(start,stop)
+            data = {
+                'quantity' : 'expect',
+                'data' : expect_combined
+            }
+            out_file = open(name, "wb")
+            pickle.dump(data, out_file)
+            out_file.close()
+            
+            del expect
+            if not return_data:
+                del expect_combined
+        else:
+            expect_combined = None
+    	
+        if 'g0' in quants:
+            g0 = [None] * filecount
+            for file in filelist:
+                infile = open(file, 'rb')
+                data = pickle.load(infile)
+                if data['num'] == 0:				
+                    g0[data['num']] = data['g0']
+                else:
+                    g0[data['num']-start] = data['g0'][1:]
+                infile.close()
+            g0_combined = np.asarray(list(chain.from_iterable(g0)))
+            
+            name = folder + "/{}_{}_g0.pkl".format(start,stop)
+            data = {
+                'quantity' : 'g0',
+                'data'     : g0_combined,
+            }
+            out_file = open(name, 'wb')
+            pickle.dump(data, out_file)
+            out_file.close()
+            
+            del g0
+            if not return_data:
+                del g0_combined
+        else:
+            g0_combined = None
+    	
+        if 'g1' in quants:
+            g1 = [None] * filecount
+            for file in filelist:
+                infile = open(file, 'rb')
+                data = pickle.load(infile)
+                if data['num'] == 0:				
+                    g1[data['num']] = data['g1']
+                else:
+                    g1[data['num']-start] = data['g1'][1:]
+                infile.close()
+            g1_combined = np.asarray(list(chain.from_iterable(g1)))
+            
+            name = folder + "/{}_{}_g1.pkl".format(start,stop)
+            data = {
+                'quantity' : 'g1',
+                'data'     : g1_combined,
+            }
+            out_file = open(name, 'wb')
+            pickle.dump(data, out_file)
+            out_file.close()
+            
+            del g1
+            if not return_data:
+                del g1_combined
+        else:
+            g1_combined = None
+    		
+        if 'e0' in quants:
+            e0 = [None] * filecount
+            for file in filelist:
+                infile = open(file, 'rb')
+                data = pickle.load(infile)
+                if data['num'] == 0:				
+                    e0[data['num']] = data['e0']
+                else:
+                    e0[data['num']-start] = data['e0'][1:]
+                infile.close()
+            e0_combined = np.asarray(list(chain.from_iterable(e0)))
+            
+            name = folder + "/{}_{}_e0.pkl".format(start,stop)
+            data = {
+                'quantity' : 'e0',
+                'data'     : e0_combined,
+            }
+            out_file = open(name, 'wb')
+            pickle.dump(data, out_file)
+            out_file.close()
+            
+            del e0
+            if not return_data:
+                del e0_combined
+        else:
+            e0_combined = None
+    	
+        if 'e1' in quants:
+            e1 = [None] * filecount
+            for file in filelist:
+                infile = open(file, 'rb')
+                data = pickle.load(infile)
+                if data['num'] == 0:				
+                    e1[data['num']] = data['e1']
+                else:
+                    e1[data['num']-start] = data['e1'][1:]
+                infile.close()
+            e1_combined = np.asarray(list(chain.from_iterable(e1)))
+            
+            name = folder + "/{}_{}_e1.pkl".format(start,stop)
+            data = {
+                'quantity' : 'e1',
+                'data'     : e1_combined,
+            }
+            out_file = open(name, 'wb')
+            pickle.dump(data, out_file)
+            out_file.close()
+            
+            del e1
+            if not return_data:
+                del e1_combined
+        else:
+            e1_combined = None
+        
+        if 'coupling' in quants:
+            coupling = [None] * filecount
+            for file in filelist:
+                infile = open(file, 'rb')
+                data = pickle.load(infile)
+                if data['num'] == 0:				
+                    coupling[data['num']] = data['coupling']
+                else:
+                    coupling[data['num']-start] = data['coupling'][1:]
+                infile.close()
+            coupling_combined = np.asarray(list(chain.from_iterable(coupling)))
+            
+            name = folder + "/{}_{}_coupling.pkl".format(start,stop)
+            data = {
+                'quantity' : 'coupling',
+                'data'     : coupling_combined,
+            }
+            out_file = open(name, 'wb')
+            pickle.dump(data, out_file)
+            out_file.close()
+            
+            del coupling
+            if not return_data:
+                del coupling_combined
+        else:
+            coupling_combined = None
+        
+        if return_data:
+            return times_combined, states_combined, expect_combined, e0_combined, g1_combined, e1_combined, g0_combined, coupling_combined
+
+
 def load_data(quants, srcfolder):
     """
     Extract the full evolution of specified saved quantities of a simulation.
@@ -751,6 +1078,122 @@ def load_data(quants, srcfolder):
         coupling = None
     
     return times, states, expect, e0, g1, e1, g0, coupling
+
+def load_data_update(quants, srcfolder, start = None, stop = None):
+    """
+    Extract the full evolution of specified saved quantities of a simulation.
+    All quantities not specified in quants are returned as NoneType.
+    This function is for combined files using 'conbine_batches_update'
+    
+    quants : str, list of str
+        Specific quantities to extract from batches and combine into a file.
+        Can contain 'times', 'states', 'expect', 'g0', 'g1', 'e0', 'e1', and 'coupling'.
+        Default is 'all' which selects all of these.
+    srcfolder : str
+        Path to the simulation folder
+        
+    Returns
+    -------
+    times : np.array
+        All time values
+    states : list of qutip.Qobj
+        All quantum states through time
+    expect : list of list
+        All expected occupation numbers
+    e0 : np.array
+        All probabilities of |e0>
+    g1 : np.array
+        All probabilities of |g1>
+    e1 : np.array
+        All probabilities of |e1>
+    g0 : np.array
+        All probabilities of |g0>
+    coupling : np.array
+        Coupling strength of the drive tone(s) through time
+    """
+
+    if start == None or stop == None:
+        load_data(quants, srcfolder)
+        
+    else:
+        if quants == 'all':
+            quants = ['times', 'states', 'expect', 'g0', 'g1', 'e0', 'e1', 'coupling']
+        if isinstance(quants, str):
+            quants = [quants]
+        
+        if 'times' in quants:
+            tfile = open(srcfolder + "/{}_{}_times.pkl".format(start, stop), 'rb')
+            tdata = pickle.load(tfile)
+            times = tdata['data']
+            tfile.close()
+            del tdata
+        else:
+            times = None
+        
+        if 'states' in quants:
+            sfile = open(srcfolder + "/{}_{}_states.pkl".format(start, stop), 'rb')
+            sdata = pickle.load(sfile)
+            states = sdata['data']
+            sfile.close()
+            del sdata
+        else:
+            states = None
+        
+        if 'expect' in quants:
+            efile = open(srcfolder + "/{}_{}_expect.pkl".format(start, stop), 'rb')
+            edata = pickle.load(efile)
+            expect = edata['data']
+            efile.close()
+            del edata
+        else:
+            expect = None
+        
+        if 'e0' in quants:
+            pfile = open(srcfolder + "/{}_{}_e0.pkl".format(start, stop), 'rb')
+            pdata = pickle.load(pfile)
+            e0 = pdata['data']
+            pfile.close()
+            del pdata
+        else:
+            e0 = None
+        
+        if 'g1' in quants:
+            pfile = open(srcfolder + "/{}_{}_g1.pkl".format(start, stop), 'rb')
+            pdata = pickle.load(pfile)
+            g1 = pdata['data']
+            pfile.close()
+            del pdata
+        else:
+            g1 = None
+
+        if 'e1' in quants:
+            pfile = open(srcfolder + "/{}_{}_e1.pkl".format(start, stop), 'rb')
+            pdata = pickle.load(pfile)
+            e1 = pdata['data']
+            pfile.close()
+            del pdata
+        else:
+            e1 = None
+        
+        if 'g0' in quants:
+            pfile = open(srcfolder + "/{}_{}_g0.pkl".format(start, stop), 'rb')
+            pdata = pickle.load(pfile)
+            g0 = pdata['data']
+            pfile.close()
+            del pdata
+        else:
+            g0 = None
+        
+        if 'coupling' in quants:
+            gfile = open(srcfolder + "/{}_{}_coupling.pkl".format(start, stop), 'rb')
+            gdata = pickle.load(gfile)
+            coupling = gdata['data']
+            gfile.close()
+            del gdata
+        else:
+            coupling = None
+        
+        return times, states, expect, e0, g1, e1, g0, coupling
 
 
 def getquants(folder):
