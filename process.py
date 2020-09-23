@@ -647,6 +647,9 @@ def combine_batches_update(folder, start=None, stop=None, quants='all', return_d
     -----
     folder : str
         Path to the simulation folder
+    start and stop : int
+        Set a range of batches you want to combine.
+        If either start or stop is 'None', then just operate 'combine_batches' function.
     quants : str, list of str
         Specific quantities to extract from batches and combine into a file.
         Can contain 'times', 'states', 'expect', 'g0', 'g1', 'e0', 'e1', and 'coupling'.
@@ -657,6 +660,8 @@ def combine_batches_update(folder, start=None, stop=None, quants='all', return_d
     
     Returns
     -------
+    pickle files containing below information :
+    
     times_combined : np.array
         All time values
     states_combined : list of qutip.Qobj
@@ -672,7 +677,7 @@ def combine_batches_update(folder, start=None, stop=None, quants='all', return_d
     g0_combined : np.array
         All probabilities of |g0>
     coupling_combined : np.array
-        Coupling strength of the drive tone(s) through time
+        Coupling strength of the drive tone(s) through time       
     """
     if start == None or stop == None:
         combine_batches(folder, quants='all', return_data=True)
@@ -685,39 +690,39 @@ def combine_batches_update(folder, start=None, stop=None, quants='all', return_d
         
         # Remove already existing files with combined batches
         try:
-            os.remove(folder + "/{}_{}_times.pkl".format(start,stop))
+            os.remove(folder + "/Start-{}_Stop-{}_times.pkl".format(start,stop))
         except:
             pass
         try:
-            os.remove(folder + "/{}_{}_states.pkl".format(start,stop))
+            os.remove(folder + "/Start-{}_Stop-{}_states.pkl".format(start,stop))
         except:
             pass
         try:
-            os.remove(folder + "/{}_{}_expect.pkl".format(start,stop))
+            os.remove(folder + "/Start-{}_Stop-{}_expect.pkl".format(start,stop))
         except:
             pass
         try:
-            os.remove(folder + "/{}_{}_g0.pkl".format(start,stop))
+            os.remove(folder + "/Start-{}_Stop-{}_g0.pkl".format(start,stop))
         except:
             pass
         try:
-            os.remove(folder + "/{}_{}_g1.pkl".format(start,stop))
+            os.remove(folder + "/Start-{}_Stop-{}_g1.pkl".format(start,stop))
         except:
             pass
         try:
-            os.remove(folder + "/{}_{}_e0.pkl".format(start,stop))
+            os.remove(folder + "/Start-{}_Stop-{}_e0.pkl".format(start,stop))
         except:
             pass
         try:
-            os.remove(folder + "/{}_{}_e1.pkl".format(start,stop))
+            os.remove(folder + "/Start-{}_Stop-{}_e1.pkl".format(start,stop))
         except:
             pass
         try:
-            os.remove(folder + "/{}_{}_e1.pkl".format(start,stop))
+            os.remove(folder + "/Start-{}_Stop-{}_e1.pkl".format(start,stop))
         except:
             pass
         try:
-            os.remove(folder + "/coupling.pkl".format(start,stop))
+            os.remove(folder + "/Start-{}_Stop-{}_coupling.pkl".format(start,stop))
         except:
             pass
             
@@ -747,7 +752,7 @@ def combine_batches_update(folder, start=None, stop=None, quants='all', return_d
                 infile.close()
             times_combined = np.asarray(list(chain.from_iterable(times)))
             
-            name = folder + "/{}_{}_times.pkl".format(start,stop)
+            name = folder + "/Start-{}_Stop-{}_times.pkl".format(start,stop)
             data = {
                 'quantity' : 'times',
                 'data'     : times_combined,
@@ -777,7 +782,7 @@ def combine_batches_update(folder, start=None, stop=None, quants='all', return_d
                 for state in lst:
                     states_combined.append(state)
             
-            name = folder + "/{}_{}_states.pkl".format(start,stop)
+            name = folder + "/Start-{}_Stop-{}_states.pkl".format(start,stop)
             data = {
                 'quantity' : 'states',
                 'data' : states_combined
@@ -815,7 +820,7 @@ def combine_batches_update(folder, start=None, stop=None, quants='all', return_d
                     for ib, batch in enumerate(expect):
                         [expect_combined[i].append(value) for value in batch[i][1:] if ib == 0]
 
-            name = folder + "/{}_{}_expect.pkl".format(start,stop)
+            name = folder + "/Start-{}_Stop-{}_expect.pkl".format(start,stop)
             data = {
                 'quantity' : 'expect',
                 'data' : expect_combined
@@ -842,7 +847,7 @@ def combine_batches_update(folder, start=None, stop=None, quants='all', return_d
                 infile.close()
             g0_combined = np.asarray(list(chain.from_iterable(g0)))
             
-            name = folder + "/{}_{}_g0.pkl".format(start,stop)
+            name = folder + "/Start-{}_Stop-{}_g0.pkl".format(start,stop)
             data = {
                 'quantity' : 'g0',
                 'data'     : g0_combined,
@@ -869,7 +874,7 @@ def combine_batches_update(folder, start=None, stop=None, quants='all', return_d
                 infile.close()
             g1_combined = np.asarray(list(chain.from_iterable(g1)))
             
-            name = folder + "/{}_{}_g1.pkl".format(start,stop)
+            name = folder + "/Start-{}_Stop-{}_g1.pkl".format(start,stop)
             data = {
                 'quantity' : 'g1',
                 'data'     : g1_combined,
@@ -896,7 +901,7 @@ def combine_batches_update(folder, start=None, stop=None, quants='all', return_d
                 infile.close()
             e0_combined = np.asarray(list(chain.from_iterable(e0)))
             
-            name = folder + "/{}_{}_e0.pkl".format(start,stop)
+            name = folder + "/Start-{}_Stop-{}_e0.pkl".format(start,stop)
             data = {
                 'quantity' : 'e0',
                 'data'     : e0_combined,
@@ -923,7 +928,7 @@ def combine_batches_update(folder, start=None, stop=None, quants='all', return_d
                 infile.close()
             e1_combined = np.asarray(list(chain.from_iterable(e1)))
             
-            name = folder + "/{}_{}_e1.pkl".format(start,stop)
+            name = folder + "/Start-{}_Stop-{}_e1.pkl".format(start,stop)
             data = {
                 'quantity' : 'e1',
                 'data'     : e1_combined,
@@ -950,7 +955,7 @@ def combine_batches_update(folder, start=None, stop=None, quants='all', return_d
                 infile.close()
             coupling_combined = np.asarray(list(chain.from_iterable(coupling)))
             
-            name = folder + "/{}_{}_coupling.pkl".format(start,stop)
+            name = folder + "/Start-{}_Stop-{}_coupling.pkl".format(start,stop)
             data = {
                 'quantity' : 'coupling',
                 'data'     : coupling_combined,
