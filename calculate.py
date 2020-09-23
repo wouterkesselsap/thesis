@@ -116,10 +116,11 @@ def calculate(H, psi0, e_ops, c_ops, H_args, options, Nc, Np, Np_per_batch, home
     Available arguments:
         'method' : 'me' or 'floquet'
             Calculation method.
-        'convergent' : 'True' or 'False'
+        'convergent' : 'True' or 'False'.
             Simulation method.
         'refinement' : int
             Only when convergent is true.
+        'SaveQobject' : 'True' or 'False'.
     Returns
     -------
     folder : str
@@ -150,10 +151,17 @@ def calculate(H, psi0, e_ops, c_ops, H_args, options, Nc, Np, Np_per_batch, home
             if verbose:
                 update_progress((num+1)/len(batches))
             
-            if N_devices == 1:
-                saveprog(result, None, None, None, None, coupling, num, folder)
-            elif N_devices == 2:
-                saveprog(result, e0, g1, e1, g0, coupling, num, folder)
+            if kwargs['SaveQobject'] == False:
+                if N_devices == 1:
+                    saveprog(None, None, None, None, coupling, num, folder)
+                elif N_devices == 2:
+                    saveprog(e0, g1, e1, g0, coupling, num, folder)
+            else:
+                if N_devices == 1:
+                    saveprog(result, None, None, None, None, coupling, num, folder)
+                elif N_devices == 2:
+                    saveprog(result, e0, g1, e1, g0, coupling, num, folder) 
+                  
             
             psi0 = copy(result.states[-1])
             
@@ -182,6 +190,7 @@ def calculate(H, psi0, e_ops, c_ops, H_args, options, Nc, Np, Np_per_batch, home
             saveprog(rise, None, None, None, None, coupling, 0, folder)
         elif N_devices == 2:
             saveprog(rise, e0, g1, e1, g0, coupling, 0, folder)
+        
         
         del rise, coupling
         if N_devices == 2:
@@ -258,7 +267,7 @@ def calculate(H, psi0, e_ops, c_ops, H_args, options, Nc, Np, Np_per_batch, home
         tc = t3/Np
         
         if (np.round(t3, 3) <= np.round(2*tg, 3) and H_args['gauss']):
-            raise ValueError("Total simulation length must be longer than one " + 
+            raise ValueError("Total simulation length must be longer than that of " + 
                              "subsequent Gaussian rise and fall")
         
         convresult   = Convresult()
@@ -317,9 +326,12 @@ def calculate(H, psi0, e_ops, c_ops, H_args, options, Nc, Np, Np_per_batch, home
             del result, e0, g1, e1, g0
         
         coupling = np.zeros(Np)
-        saveprog(convresult, e0list, g1list, e1list, g0list, coupling, 0, folder)
+        if kwargs['SaveQobject'] == False:
+            saveprog(e0list, g1list, e1list, g0list, coupling, 0, folder)
+        else:
+            saveprog(convresult, e0list, g1list, e1list, g0list, coupling, 0, folder)
+
             
-    
     end_calc = datetime.now()
     if verbose:
         print("Evolution completed in {} min".format((end_calc - now) // timedelta(minutes=1)))
